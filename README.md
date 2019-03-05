@@ -2,8 +2,6 @@
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
 ### Prerequisites
 
 
@@ -12,14 +10,58 @@ These instructions will get you a copy of the project up and running on your loc
 Give examples
 ```
 
-### Installing
+### Files
 
-mouse_perturbation_robot 				c++ code, experiment protocal, modulation dynamical system
-obstacle_with_sample_from_dynamics 		matlab code, experiment irl node.
+#### mouse\_perturbation_robot 			
 
-## Running the tests
+It includes c++ code, experiment protocol, modulation dynamical system.
+
+##### MotionGenerator
+
+the constant to be specified: numObstacle (1 or 2). 
+
+##### MouseInterface
+declare mouseMessage and publish it to the motionGenerator (in my PC). If we use the code in KUKA robot-arm PC, then the mouse data is published by another node "spacenav".
+
+
+
+#### obstacle\_with\_sample\_from_dynamics 		
+matlab code, experiment irl node.
+
+### Usage of ROS code
+
+
+
+
+### Usage of MATLAB code
+
+launch MATLAB $cd /usr/local/MATLAB/R20XXx/bin/
+$./matlab
+
+
+addpaths.m
+
+
+## Running the codes
 
 Explain how to run the automated tests for this system
+
+Parametere setting in the robotarm PC:
+90/1000
+90/500
+11/50
+2/50
+
+### code procedure
+
+start the ROS core
+
+
+
+start the mouse interface node
+
+start the motion generator node
+
 
 ### Break down into end to end tests
 
@@ -29,13 +71,6 @@ Explain what these tests test and why
 Give an example
 ```
 
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
 
 ## Deployment
 

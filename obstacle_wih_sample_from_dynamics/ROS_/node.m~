@@ -1,6 +1,6 @@
 function node(states)
 
-if nargin<1 % if there is a input argument, then skip the ROS node creation
+if nargin<1 % if there is a input argument, then 
     % create a ros node
     if(~exist('node1','var'))
         node1 = robotics.ros.Node('/irl_parameter_update');

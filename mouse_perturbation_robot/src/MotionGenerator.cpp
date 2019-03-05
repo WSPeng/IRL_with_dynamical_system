@@ -13,8 +13,11 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	me = this;
 	ROS_INFO_STREAM("The motion generator node is created at: " << _n.getNamespace() << " with freq: " << frequency << "Hz");
 
-	// 1 or 2 for number obstacle
-	_numObstacle = 2;
+	// 1 or 2 for obstacle number
+	_numObstacle = 1;
+
+	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
+	_boolSpacenav = 0;
 
 	//obstacle definition
 	_obs._a << 0.5f, 0.1f, 0.12f ; // 0.5 0.1 0.12       0.15f, 0.10f, 0.5f
@@ -52,13 +55,13 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 bool MotionGenerator::init() 
 {
 	// Variable initialization
-  _wRb.setConstant(0.0f);
-  _x.setConstant(0.0f);
-  _q.setConstant(0.0f);
-  _x0.setConstant(0.0f);
+  _wRb.setConstant(0.0f); 
+  _x.setConstant(0.0f); // end effector position
+  _q.setConstant(0.0f); // end effector direction
+  _x0.setConstant(0.0f); // target position
 
-  _qd.setConstant(0.0f);
-  _omegad.setConstant(0.0f);
+  _qd.setConstant(0.0f); // target end effector direction during motion
+  _omegad.setConstant(0.0f); //angular velocity
   _xd.setConstant(0.0f);
   _vd.setConstant(0.0f);
 
@@ -118,7 +121,10 @@ bool MotionGenerator::init()
 	_subMouse= _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
 	_subRealPose = _n.subscribe("/lwr/ee_pose", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
 	_subRealTwist = _n.subscribe("/lwr/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());
-	_subSpaceNav = _n.subscribe("/spacenav/joy", 1, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
+	if(_boolSpacenav)
+	{
+		_subSpaceNav = _n.subscribe("/spacenav/joy", 1, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
+	}	
 	_subIRL = _n.subscribe("/parameters_tuning", 1, &MotionGenerator::updateIRLParameter, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// Publisher definitions
@@ -580,7 +586,7 @@ void MotionGenerator::mouseControlledMotion()
 }
 
 
-void MotionGenerator::processMouseEvents()
+void MotionGenerator::processMouseEvents() // process mouse events 
 {
   uint8_t event;
   int buttonState, relX, relY, relZ, relWheel;
@@ -618,34 +624,35 @@ void MotionGenerator::processMouseEvents()
   event = _lastMouseEvent;
 	
   // Process corresponding event
-  /*
-  // this block to work 
-  switch(event)
+  if(!_boolSpacenav)
   {
-    case mouse_perturbation_robot::MouseMsg::M_CURSOR:
-    {
-      processCursorEvent(filteredRelX, filteredRelY, filetredRelZ, newEvent);
-      break;
-    }
-    default:
-    {
-      break;
-    }
+  	  switch(event)
+	  {
+	    case mouse_perturbation_robot::MouseMsg::M_CURSOR:
+	    {
+	      processCursorEvent(filteredRelX, filteredRelY, filetredRelZ, newEvent);
+	      break;
+	    }
+	    default:
+	    {
+	      break;
+	    }
+	  }
   }
-  */
 
-  // following working on real
-  //std::cout<< "here ====="<< 0.0f <<std::endl;
-  //std::cout<< "here ====="<< _msgSpacenav <<std::endl;
-    processCursorEvent(-350.0f*_msgSpacenav.axes[1]/0.69f, -350.0f*_msgSpacenav.axes[0]/0.69f, -350.0f*_msgSpacenav.axes[2]/0.69f, true);
-  // std::cerr << _mouseVelocity.transpose() << std::endl;
-
-
-  // std::cerr << "a" << std::endl;
-  // std::cerr << _msgSpacenav.axes[0] << " " << _msgSpacenav.axes[1] << " " << _msgSpacenav.axes[2] << std::endl;
-  // std::cerr << "b" << std::endl;
-
-
+  //--------
+  // following working on the laboratory
+  if(_boolSpacenav)
+  {
+  	//std::cout<< "here ====="<< 0.0f <<std::endl;
+	//std::cout<< "here ====="<< _msgSpacenav <<std::endl;
+  	processCursorEvent(-350.0f*_msgSpacenav.axes[1]/0.69f, -350.0f*_msgSpacenav.axes[0]/0.69f, -350.0f*_msgSpacenav.axes[2]/0.69f, true);
+    //std::cerr << _mouseVelocity.transpose() << std::endl;
+	// std::cerr << "a" << std::endl;
+  	// std::cerr << _msgSpacenav.axes[0] << " " << _msgSpacenav.axes[1] << " " << _msgSpacenav.axes[2] << std::endl;
+  	// std::cerr << "b" << std::endl;
+  }
+  //--------
 }
 
 
