@@ -583,6 +583,7 @@ void MotionGenerator::mouseControlledMotion()
 
 	// Desired quaternion to have the end effector looking down
 	_qd << 0.0f, 0.0f, 1.0f, 0.0f;
+	//_qd << 0.0f, -0.7f, 0.05f, 0.7f;// if points in horizontal direction
 }
 
 

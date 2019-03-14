@@ -17,6 +17,7 @@ USE_EXP = 1; % Use exponential transform to enforce positivity.
 % This is based on the NLOPT Augmented Lagrangian initialization.
 [funcVal,grad] = fun(params);
 %mu = max(INIT_MIN,min(INIT_MAX,2.0*abs(funcVal)/(params(min_idx)^(2*AUGLAG_POWER))));
+% the upper line existed in the cioc collection
 mu = max(INIT_MIN,min(INIT_MAX,0.1*mean(abs(grad))/abs(AUGLAG_POWER*(params(min_idx)^(2*AUGLAG_POWER-1)))));
 lambda = 0.0;
 prevreg = params(min_idx);
@@ -56,8 +57,8 @@ while (abs(params(min_idx)) > REG_TOL || (converged == 0 && iterations < 2)),
         % Increase mu if constraint violation is not decreasing.
         if abs(params(min_idx)^AUGLAG_POWER) > TAU*abs(prevreg^AUGLAG_POWER) && abs(params(min_idx)) > REG_TOL,
             mu = mu*10.0;
-        end;
-    end;
+        end
+    end
     % Store old constraint violation.
     prevreg = params(min_idx);
     % Print status.

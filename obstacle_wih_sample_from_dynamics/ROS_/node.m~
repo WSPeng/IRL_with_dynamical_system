@@ -1,6 +1,6 @@
 function node(states)
 
-if nargin<1 % if there is a input argument, then 
+if nargin<1 % if there is a input argument, then skip the ROS node creation
     % create a ros node
     if(~exist('node1','var'))
         node1 = robotics.ros.Node('/irl_parameter_update');
@@ -106,6 +106,7 @@ while 1
     
     
     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
+    % First parameter: 1 use ame, 2 use 
 
     msg.Data(1) = rho;
     msg.Data(2) = sf;
