@@ -106,7 +106,8 @@ while 1
     
     
     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
-    % First parameter: 1 use ame, 2 use gpirl.
+    % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
+    % Should be fixed to be 2.. ame performace is very poor
 
     msg.Data(1) = rho;
     msg.Data(2) = sf;

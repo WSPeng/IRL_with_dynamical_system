@@ -113,7 +113,7 @@ end
 % Run single test.
 if nargin > 5
     test_result = runtest(algorithms{a},algorithm_params{a},...
-                          world,mdp_params{s},test_params{s}, example_human);
+                          world,mdp_params{s},test_params{s}, example_human); % the thrid one corresponding to the MDP
 else
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s});

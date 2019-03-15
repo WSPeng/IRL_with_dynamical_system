@@ -1,6 +1,8 @@
 # IRL with dynamical system
 
 ## Getting Started
+remember the ros program in this folder is not the updated one, the updated one is in 
+
 
 ### Prerequisites
 

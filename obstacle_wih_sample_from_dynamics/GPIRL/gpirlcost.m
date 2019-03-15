@@ -52,7 +52,7 @@ for i=1:length(infos_pt)
     
     if nargout > 1
         % Compute gradient with respect to linear terms.
-        gradwts = gradwts + sum(sum(bsxfun(@times,infos_dyn{i}.g,h),3),1) - ... % This is h'*dg.
+        gradwts = 1.0*gradwts + sum(sum(bsxfun(@times,infos_dyn{i}.g,h),3),1) - ... % This is h'*dg.
                0.5*sum(sum(sum(bsxfun(@times,bsxfun(@times,infos_dyn{i}.Hh,Jh),permute(Jh,[1 2 4 3])),1),3),4) - ... % This is Jh'*dHh*Jh.
                0.5*sum(sum(sum(bsxfun(@times,bsxfun(@times,infos_dyn{i}.Ht,h),permute(h,[1 2 4 3])),1),3),4) + ... % This is h'*dHt*h.
                0.5*sum(sum(sum(bsxfun(@times,Htd,infos_dyn{i}.Ht),3),4),1) + ... % This is trace(Hinv*dHt)

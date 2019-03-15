@@ -32,28 +32,28 @@ else
     [u,r] = minFunc(@(p)trajectoryreward(p,example.s,mdp_data,mdp,reward),example.u(:),options);
 end
 
-if restarts(1) > 1,
-    if size(restarts,2) > 2,
+if restarts(1) > 1
+    if size(restarts,2) > 2
         % Set number of iterations.
         options.maxIter = restarts(3);
         options.MaxFunEvals = restarts(3);
-    end;
+    end
     % Run restarts.
-    for i=2:restarts(1),
+    for i=2:restarts(1)
         newu = feval(strcat(mdp,'samplecontrols'),size(example.u,1),mdp_data);
-        if isfield(mdp_data,'optimizes'),
+        if isfield(mdp_data,'optimizes')
             % Run task-specific optimization.
             [newu,newr] = feval(strcat(mdp,'optimize'),example.s,newu,mdp_data,mdp,reward,options);
             newu = newu(:);
         else
             [newu,newr] = minFunc(@(p)trajectoryreward(p,example.s,mdp_data,mdp,reward),newu(:),options);
-        end;
-        if newr < r,
+        end
+        if newr < r
             r = newr;
             u = newu;
-        end;
-    end;
-end;
+        end
+    end
+end
 r = -trajectoryreward(u,example.s,mdp_data,mdp,true_reward);
 u = reshape(u,size(example.u,1),mdp_data.udims);
 states = feval(strcat(mdp,'control'),mdp_data,example.s,u);

@@ -9,21 +9,21 @@ Dx = size(states,2);
 
 % Evaluate the reward and gradients for all components.
 r = zeros(T,1);
-if nargout >= 2,
+if nargout >= 2
     g = zeros(T,Du);
-end;
-if nargout >= 3,
+end
+if nargout >= 3
     drdu = zeros(T,Du);
     d2rdudu = zeros(T,Du,Du);
-end;
-if nargout >= 5,
+end
+if nargout >= 5
     drdx = zeros(T,Dx);
     d2rdxdx = zeros(T,Dx,Dx);
-end;
-if nargout >= 7,
+end
+if nargout >= 7
     gfull = zeros(T,T*Du);
     Hfull = zeros(T,T*Du,T*Du);
-end;
+end
 
 % Defer gradient if possible.
 mdp_data.defergrad = 1;
