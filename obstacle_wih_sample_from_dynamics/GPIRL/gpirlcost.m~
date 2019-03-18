@@ -32,8 +32,8 @@ for i=1:length(gp.dyn_priors)
 end
 
 %%%%%%%%%%%%
-% discounting factor [failed]
-discount = 1;
+% discounting factor
+discount = 0.9;
 %%%%%%%%%%%%
 
 % Step over each trajectory.
@@ -53,25 +53,24 @@ for i=1:length(infos_pt)
     end
     
     % Add to likelihood.
-    ll = discount*ll + 0.5*sum(sum(g.*h,3),1)*infos_pt{i}.discount + 0.5*logDet*infos_pt{i}.discount;
+    ll = discount*ll + 0.5*sum(sum(g.*h,3),1) + 0.5*logDet;
     
     if nargout > 1
         % Compute gradient with respect to linear terms.
-        gradwts = discount*gradwts + (sum(sum(bsxfun(@times,infos_dyn{i}.g,h),3),1) - ... % This is h'*dg.
+        gradwts = discount*gradwts + sum(sum(bsxfun(@times,infos_dyn{i}.g,h),3),1) - ... % This is h'*dg.
                0.5*sum(sum(sum(bsxfun(@times,bsxfun(@times,infos_dyn{i}.Hh,Jh),permute(Jh,[1 2 4 3])),1),3),4) - ... % This is Jh'*dHh*Jh.
                0.5*sum(sum(sum(bsxfun(@times,bsxfun(@times,infos_dyn{i}.Ht,h),permute(h,[1 2 4 3])),1),3),4) + ... % This is h'*dHt*h.
                0.5*sum(sum(sum(bsxfun(@times,Htd,infos_dyn{i}.Ht),3),4),1) + ... % This is trace(Hinv*dHt)
                0.5*sum(sum(sum(bsxfun(@times,Hhd,infos_dyn{i}.Hh),3),4),1) + ... % This is trace([J'HinvJ]*dHh)
-               0.5*sum(sum(bsxfun(@times,infos_dyn{i}.gh,Hso),3),1)) ...  % This is the second order term
-                *infos_pt{i}.discount; 
+               0.5*sum(sum(bsxfun(@times,infos_dyn{i}.gh,Hso),3),1); % This is the second order term
 
         % Add to gradients.
-        gradu = gradu + ugrad*infos_pt{i}.discount;
+        gradu = discount*gradu + ugrad;
         if gp.learn_ard
-            gradgp.inv_widths = gradgp.inv_widths + gpirlhpxform(gp.inv_widths,iwgrad,gp.ard_xform,2)*infos_pt{i}.discount;
+            gradgp.inv_widths = discount*gradgp.inv_widths + gpirlhpxform(gp.inv_widths,iwgrad,gp.ard_xform,2);
         end
         if gp.learn_rbf
-            gradgp.rbf_var = gradgp.rbf_var + gpirlhpxform(gp.rbf_var,rbfgrad,gp.rbf_xform,2)*infos_pt{i}.discount;
+            gradgp.rbf_var = discount*gradgp.rbf_var + gpirlhpxform(gp.rbf_var,rbfgrad,gp.rbf_xform,2);
         end
     end
 end
