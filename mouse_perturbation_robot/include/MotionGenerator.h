@@ -156,8 +156,9 @@ class MotionGenerator
     int _numObstacle;
     int _numOfDemo;
 
-    int _rhosfSave [20][2];
-
+    double _rhosfSave [20][2];
+    double init_sf;
+    double init_rho;
   public:
     // Class constructor
     MotionGenerator(ros::NodeHandle &n, double frequency);

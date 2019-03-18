@@ -17,15 +17,18 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_numObstacle = 1;
 
 	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-	_boolSpacenav = 0;
+	_boolSpacenav = 1;
+
+	init_sf = 0.9f;
+	init_rho = 0.9f;
 
 	//obstacle definition
 	_obs._a << 0.5f, 0.1f, 0.12f ; // 0.5 0.1 0.12       0.15f, 0.10f, 0.5f
 	_obs._p.setConstant(1.0f);
-	_obs._safetyFactor = 0.9f;// was 1.1
+	_obs._safetyFactor = init_sf;// was 1.1
 	_obs._tailEffect = true;
 	_obs._bContour = false;
-	_obs._rho = 0.9f;// was 1.1
+	_obs._rho = init_rho;// was 1.1
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
@@ -330,10 +333,22 @@ void MotionGenerator::mouseControlledMotion()
 							// clear what stored before
 							_msgRealPoseArray.poses.clear();
 							_updateIRLParameter = true;
-							_rhosfSave[_numOfDemo][0] = _obs._rho;
-							_rhosfSave[_numOfDemo][1] = _obs._safetyFactor;
+							if (_numOfDemo == 0)
+							{
+								_rhosfSave[_numOfDemo][0] = init_rho;
+								_rhosfSave[_numOfDemo][1] = init_sf;
+							}
+							else
+							{
+								_rhosfSave[_numOfDemo][0] = _obs._rho;
+								_rhosfSave[_numOfDemo][1] = _obs._safetyFactor;
+							}
 							_numOfDemo++;
-							std::cout << "Saving is" << _rhosfSave << "\n";
+							for(int i=0;i<_numObstacle;++i)
+							{
+								std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
+								std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
+							}
 						}
 						#ifndef BINARY_INPUT
 						else if (_mouseVelocity(2)<0.0f) // if the node is lifted
@@ -354,8 +369,24 @@ void MotionGenerator::mouseControlledMotion()
 						{
 							// use the previous set of parameters rho and sf
 							_updateIRLParameter = false;
+							std::cout << "Use the previous set of parameters " << "\n";
+							
+							// use the early set of parameters
+							std::cout<<"Return to the previous set of parameters"<< "\n";
+							if (_numOfDemo>=1)
+							{
+								_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
+								_obs._rho = _rhosfSave[_numOfDemo-1][0];
+								std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
+								std::cout<<"rho \n" <<_obs._rho << "\n";
+							}
+
+							std::cout << "Cleaning the trjaectory ===== " << "\n";
+							_msgRealPoseArray.poses.clear();
+
+
 						}
-						else _updateIRLParameter = true;
+						//else _updateIRLParameter = true;
 						#endif
 						_ifSentTraj = false;
 						if(_mouseVelocity(0)>0.0f) // positice or negative for direction.
@@ -840,16 +871,6 @@ void MotionGenerator::updateIRLParameter(const std_msgs::Float32MultiArray::Cons
 		std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
 		std::cout<<"rho \n" <<_obs._rho << "\n";
 	}
-	else
-	{
-		// use the early set of parameters
-		std::cout<<"Return to the previous set of parameters"<< "\n";
-		_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
-		_obs._rho = _rhosfSave[_numOfDemo-1][0];
-		std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
-		std::cout<<"rho \n" <<_obs._rho << "\n";		
-	}
-
 }
 
 
