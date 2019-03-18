@@ -36,10 +36,11 @@
 #define MIN_ETA 0.8f
 #define MIN_Y_REL 150
 
+#define BINARY_INPUT
 
 class MotionGenerator 
 {
-	private:
+    private:
 
     // State phase enum
     // INIT: Initial phase where the user get used to what a clean motion is
@@ -51,15 +52,15 @@ class MotionGenerator
     // There is four targets available. Only A and B are used for the back and forth motion
     enum Target {A = 0, B = 1, C = 2, D = 3};
 
-	// ROS variables
-	ros::NodeHandle _n;
-	ros::Rate _loopRate;
-	float _dt;
+    // ROS variables
+    ros::NodeHandle _n;
+    ros::Rate _loopRate;
+    float _dt;
 
-	// Subscribers and publishers declaration
-	ros::Subscriber _subRealPose;			// Subscribe to robot current pose
+    // Subscribers and publishers declaration
+    ros::Subscriber _subRealPose;           // Subscribe to robot current pose
     ros::Subscriber _subRealTwist;          // Subscribe to robot current pose
-	ros::Subscriber _subMouse;              // Subscribe to foot mouse data
+    ros::Subscriber _subMouse;              // Subscribe to foot mouse data
     ros::Subscriber _subSpaceNav;              // Subscribe to space nav 3d mouse
     ros::Subscriber _subIRL;                // Subscribe to the parameter generating node
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
@@ -70,7 +71,7 @@ class MotionGenerator
     geometry_msgs::Pose _msgRealPose;
     geometry_msgs::Quaternion _msgDesiredOrientation;
     geometry_msgs::Twist _msgDesiredTwist;
-		mouse_perturbation_robot::MouseMsg _msgMouse;
+        mouse_perturbation_robot::MouseMsg _msgMouse;
     // Messages for trajectory
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
@@ -123,8 +124,9 @@ class MotionGenerator
     bool _perturbationFlag;           // Flag to set whether random perturbations occur
     bool _switchingTrajectories;      // Flag to set whether the obstacle parameters can randomly change
     bool _errorButtonPressed;         // Monitor the keyboard
-
-    bool _ifSentTraj;
+    bool _boolSpacenav;               // to indicate in the lab PC or my PC
+    bool _ifSentTraj;                 // 
+    bool _updateIRLParameter;          // if update parameter from the IRL node, if not then use the one more previous parameter set. 
 
     // Arduino related variables
     int farduino;
@@ -152,20 +154,23 @@ class MotionGenerator
     int _indexy;
 
     int _numObstacle;
+    int _numOfDemo;
+
+    int _rhosfSave [20][2];
 
   public:
     // Class constructor
     MotionGenerator(ros::NodeHandle &n, double frequency);
 
-		// Initialize node
-		bool init();
+        // Initialize node
+        bool init();
 
-		// Run node main loop
-		void run();
+        // Run node main loop
+        void run();
 
-	private:
+    private:
     // Stop node callback 
-		static void stopNodeCallback(int sig);
+        static void stopNodeCallback(int sig);
 
     // Compute command to be sent to passive ds controller
     void computeCommand();
@@ -214,8 +219,8 @@ class MotionGenerator
     // Send value to arduino
     void sendValueArduino(uint8_t value);
 
-	// Dynamic reconfigure callback
-	void dynamicReconfigureCallback(mouse_perturbation_robot::obstacleAvoidance_paramsConfig &config, uint32_t level);
+    // Dynamic reconfigure callback
+    void dynamicReconfigureCallback(mouse_perturbation_robot::obstacleAvoidance_paramsConfig &config, uint32_t level);
 
     // Detect keyboard presses
     int getch();

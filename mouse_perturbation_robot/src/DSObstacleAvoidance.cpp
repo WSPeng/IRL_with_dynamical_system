@@ -5,6 +5,7 @@ DSObstacleAvoidance::DSObstacleAvoidance()
 	ROS_INFO_STREAM("Obstacle modulator generated: waiting for obstacle parameters");
 }
 
+
 void DSObstacleAvoidance::setObstacle(Obstacle &obs, Obstacle &obs2, int _numObstacle)
 {
 	_obs = obs;
@@ -16,6 +17,7 @@ void DSObstacleAvoidance::setObstacle(Obstacle &obs, Obstacle &obs2, int _numObs
 	}
 	// ROS_INFO_STREAM("Obstacle parameters recieved.");
 }
+
 
 Eigen::Vector3f DSObstacleAvoidance::obsModulationEllipsoid(Eigen::Vector3f x, Eigen::Vector3f xd, bool bContour, int _numObstacle)
 {
@@ -109,6 +111,7 @@ Eigen::Vector3f DSObstacleAvoidance::obsModulationEllipsoid(Eigen::Vector3f x, E
 	//std::cerr << "b contour" << bContour << std::endl;
 	return _modulatedVel;
 }
+
 
 void DSObstacleAvoidance::computeBasisMatrix(Eigen::Vector3f x)
 {

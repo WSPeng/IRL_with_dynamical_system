@@ -33,16 +33,16 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	{
 		//obstacle definition 1 
 		//_obs._a << 0.03f, 0.02f, 0.5f; // 0.5 0.1 0.12
-		_obs._a << 0.5f, 0.1f, 0.12f;
+		_obs._a << 0.5f, 0.1f, 0.12f; // 0.12f, 0.1f, 0.5f
 		_obs._p.setConstant(1.0f);
-		_obs._safetyFactor = 1.0f;// was 1.1
+		_obs._safetyFactor = 1.0f;// was 1.1 // may 0.9f
 		_obs._tailEffect = false;
 		_obs._bContour = false;
-		_obs._rho = 1.0f;// was 1.1
+		_obs._rho = 1.0f;// was 1.1 // may 0.9f
 
 		//obstacle definition 2The motion generator is ready.The motion generator is ready.The motion generator is ready.
 		//_obs2._a << 0.20f, 0.07f, 0.5f; // 0.5 0.1 0.12
-		_obs2._a << 0.5f, 0.1f, 0.12f;
+		_obs2._a << 0.5f, 0.1f, 0.12f; //0.15f, 0.1f, 0.5f
 		_obs2._p.setConstant(1.0f);
 		_obs2._safetyFactor = 1.0f;// was 1.1
 		_obs2._tailEffect = false;
@@ -55,40 +55,40 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 bool MotionGenerator::init() 
 {
 	// Variable initialization
-  _wRb.setConstant(0.0f); 
-  _x.setConstant(0.0f); // end effector position
-  _q.setConstant(0.0f); // end effector direction
-  _x0.setConstant(0.0f); // target position
+  	_wRb.setConstant(0.0f); 
+  	_x.setConstant(0.0f); // end effector position
+  	_q.setConstant(0.0f); // end effector direction
+  	_x0.setConstant(0.0f); // target position
 
-  _qd.setConstant(0.0f); // target end effector direction during motion
-  _omegad.setConstant(0.0f); //angular velocity
-  _xd.setConstant(0.0f);
-  _vd.setConstant(0.0f);
+  	_qd.setConstant(0.0f); // target end effector direction during motion
+  	_omegad.setConstant(0.0f); //angular velocity
+  	_xd.setConstant(0.0f);
+  	_vd.setConstant(0.0f);
 
-  _xp.setConstant(0.0f);
-  _mouseVelocity.setConstant(0.0f);
-  _targetOffset.col(Target::A) << 0.0f, 0.0f, 0.0f;
-  _targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f; // 0.0f, 0.85f, 0.0f;
-  _targetOffset.col(Target::C) << -0.16f,0.25f,0.0f;
-  _targetOffset.col(Target::D) << -0.16f,-0.25f,0.0f;
-  _perturbationOffset.setConstant(0.0f);
-  _phaseDuration = 0.0f;
-  _minCleanMotionDuration = 5.0f;
-  _maxCleanMotionDuration = 12.0f;
-  _jerkyMotionDuration = 0.4f;
-  _initDuration = 10.0f;
-  _pauseDuration = 0.4f;
-  _commandLagDuration = 0.3f;
-  _reachedTime = 0.0f;
-  _trialCount = 0;
-  _perturbationCount = 0;
-  _lastMouseEvent = mouse_perturbation_robot::MouseMsg::M_NONE;
-  _errorButtonCounter = 0;
-  _eventLogger = 0;
+  	_xp.setConstant(0.0f);
+  	_mouseVelocity.setConstant(0.0f);
+  	_targetOffset.col(Target::A) << 0.0f, 0.0f, 0.0f;
+  	_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f; // 0.0f, 0.85f, 0.0f;
+  	_targetOffset.col(Target::C) << -0.16f,0.25f,0.0f;
+  	_targetOffset.col(Target::D) << -0.16f,-0.25f,0.0f;
+  	_perturbationOffset.setConstant(0.0f);
+  	_phaseDuration = 0.0f;
+  	_minCleanMotionDuration = 5.0f;
+  	_maxCleanMotionDuration = 12.0f;
+  	_jerkyMotionDuration = 0.4f;
+  	_initDuration = 10.0f;
+  	_pauseDuration = 0.4f;
+  	_commandLagDuration = 0.3f;
+  	_reachedTime = 0.0f;
+  	_trialCount = 0;
+  	_perturbationCount = 0;
+  	_lastMouseEvent = mouse_perturbation_robot::MouseMsg::M_NONE;
+  	_errorButtonCounter = 0;
+  	_eventLogger = 0;
 
-  _indexx = 0;
-  _indexy = 0;
-  _ifSentTraj = false;
+  	_indexx = 0;
+  	_indexy = 0;
+  	_ifSentTraj = false;
 
 	_firstRealPoseReceived = false;
 	_firstMouseEventReceived = false;
@@ -101,6 +101,7 @@ bool MotionGenerator::init()
 	_switchingTrajectories = false;  //to be configured in dynamic reconfigure GUI
 	_errorButtonPressed = false;
 	_firstSpacenavDataReceived = false;
+	_numOfDemo = 0;
 
 	_state = State::INIT;
 	//_previousTarget = Target::A;
@@ -216,7 +217,7 @@ void MotionGenerator::run()
 			logData();
 
 			// Publish data to topics
-			publishData();
+			publishData(); // publish the data to controller. 
 		}
 		else
 		{
@@ -315,31 +316,47 @@ void MotionGenerator::mouseControlledMotion()
 				_xd = _x0 + _targetOffset.col(_currentTarget);
 				
 				float distance1 = (_xd-_x).norm();
-				if(distance1 < TARGET_TOLERANCE)
+				if(distance1 < TARGET_TOLERANCE) // push the trajectory to the IRL node.
 				{
-					// If 1 motion is completed before  and  haven't publish yet. call the publisher to pushlish traj
-					// which will decided by z direction velocity
+					// If 1 motion is completed before  and haven't publish yet. call the publisher to pushlish traj
+					// which will decided by z direction velocity, (pressed, lifted, and no change)
 					//std::cout << "mouse vvv"<<std::endl;
 					if(fabs(_mouseVelocity(2))>=300.0f and !_ifSentTraj)
 					{
-						if (_mouseVelocity(2)>0.0f)
+						if (_mouseVelocity(2)>0.0f) // if the node is pressed
 						{
 							_ifSentTraj = true;
 							sendMsgForParameterUpdate();
 							// clear what stored before
 							_msgRealPoseArray.poses.clear();
+							_updateIRLParameter = true;
+							_rhosfSave[_numOfDemo][0] = _obs._rho;
+							_rhosfSave[_numOfDemo][1] = _obs._safetyFactor;
+							_numOfDemo++;
+							std::cout << "Saving is" << _rhosfSave << "\n";
 						}
-						else if (_mouseVelocity(2)<0.0f)
+						#ifndef BINARY_INPUT
+						else if (_mouseVelocity(2)<0.0f) // if the node is lifted
 						{
 							_ifSentTraj = true;
 							std::cout << "Cleaning the trjaectory ===== " << "\n";
 							_msgRealPoseArray.poses.clear();
+							_updateIRLParameter = true;
 						}
+						#endif
 					}
 
 					// Update target from mouse input
-					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))
+					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))// start the next motion
 					{
+						#ifdef BINARY_INPUT
+						if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true.
+						{
+							// use the previous set of parameters rho and sf
+							_updateIRLParameter = false;
+						}
+						else _updateIRLParameter = true;
+						#endif
 						_ifSentTraj = false;
 						if(_mouseVelocity(0)>0.0f) // positice or negative for direction.
 						{
@@ -816,10 +833,23 @@ void MotionGenerator::updateSpacenavData(const sensor_msgs::Joy::ConstPtr& msg)
 void MotionGenerator::updateIRLParameter(const std_msgs::Float32MultiArray::ConstPtr& msg)
 {
 	std::cout<<"updating \n ";
-	_obs._safetyFactor = msg -> data[1];
-	_obs._rho = msg -> data[0];
-	std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
-	std::cout<<"rho \n" <<_obs._rho << "\n";
+	if(_updateIRLParameter)
+	{
+		_obs._safetyFactor = msg -> data[1];
+		_obs._rho = msg -> data[0];
+		std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
+		std::cout<<"rho \n" <<_obs._rho << "\n";
+	}
+	else
+	{
+		// use the early set of parameters
+		std::cout<<"Return to the previous set of parameters"<< "\n";
+		_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
+		_obs._rho = _rhosfSave[_numOfDemo-1][0];
+		std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
+		std::cout<<"rho \n" <<_obs._rho << "\n";		
+	}
+
 }
 
 
@@ -1058,8 +1088,15 @@ void MotionGenerator::changeRhoEta(int indcator)
 			if (_indexx >= 5)
 			{
 				_indexx = 0;
-				_obs._safetyFactor += 0.01/2;
-				_obs._rho += 0.1/2;
+				
+				#ifndef BINARY_INPUT
+					_obs._safetyFactor += 0.01/2;
+					_obs._rho += 0.1/2;
+				#else
+					_obs._safetyFactor += 0.01/4; // in binary feedback case.. 
+					_obs._rho += 0.1/4;
+				#endif
+
 				if (_obs._safetyFactor >= MAX_ETA)
 				{
 					_obs._safetyFactor = MAX_ETA;
@@ -1080,28 +1117,32 @@ void MotionGenerator::changeRhoEta(int indcator)
 		}
 		else
 		{
-			_indexy += 1;
-			if (_indexy >= 5)
+			#ifndef BINARY_INPUT
 			{
-				_indexy = 0;
-				_obs._safetyFactor -= 0.01;
-				_obs._rho -= 0.1;
-			if (_obs._safetyFactor <= MIN_ETA)
-			{
-				_obs._safetyFactor = MIN_ETA;
-			}
-			if (_obs._rho <= MIN_RHO)
-			{
-				_obs._rho = MIN_RHO;
-			}
-			if (_numObstacle == 2)
+				_indexy += 1;
+				if (_indexy >= 5)
 				{
-					_obs2._rho = _obs._rho;
-					_obs2._safetyFactor = _obs._safetyFactor;
+					_indexy = 0;
+					_obs._safetyFactor -= 0.01;
+					_obs._rho -= 0.1;
+				if (_obs._safetyFactor <= MIN_ETA)
+				{
+					_obs._safetyFactor = MIN_ETA;
 				}
-				std::cout << "_safetyFactor Decreasing " << _obs._safetyFactor<<"\n";
-				std::cout << "_rho Decreasing " << _obs._rho << "\n";
+				if (_obs._rho <= MIN_RHO)
+				{
+					_obs._rho = MIN_RHO;
+				}
+				if (_numObstacle == 2)
+					{
+						_obs2._rho = _obs._rho;
+						_obs2._safetyFactor = _obs._safetyFactor;
+					}
+					std::cout << "_safetyFactor Decreasing " << _obs._safetyFactor<<"\n";
+					std::cout << "_rho Decreasing " << _obs._rho << "\n";
+				}				
 			}
+			#endif
 		}
 	}	
 }
