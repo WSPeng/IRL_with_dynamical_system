@@ -1,6 +1,6 @@
 function node(states)
 
-if nargin<1 % if there is a input argument, then skip the ROS node creation
+if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
     if(~exist('node1','var'))
         node1 = robotics.ros.Node('/irl_parameter_update');
@@ -20,6 +20,14 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation
     if(~exist('msg','var'))
         msg = rosmessage('std_msgs/Float32MultiArray');
     end
+    
+    if(~exist('sub_mouse','var'))
+%         folderpath = "~/catkin_ws/src";
+%         rosgenmsg(folderpath)
+%        folderpath = "~//Downloads/Untitled Folder/";
+        sub_mouse = robotics.ros.Subscriber(node1, ...
+            '/mouse_message_update_to_irl', 'mouse_perturbation_robot/MouseMsgPassIRL');
+    end
 
     states_ = cell(1,1);
 end
@@ -30,8 +38,9 @@ j = 1;
 while 1
     if nargin < 1
         scandata = receive(sub);
-
         disp('got trajctory')
+        scandat2 = receive(sub_mouse);
+        disp('got trajctory (mouse)')
 
         % x = scandata.Poses(1).Position.X; 
         % unpack pose data to trajectory in 2D

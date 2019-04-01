@@ -1,5 +1,7 @@
 # IRL with dynamical system
 
+Includes mouse_perturbation ROS package, the marker package, and the IRL matlab code.
+
 ## Getting Started
 remember the ros program in this folder is not the updated one, the updated one is in 
 
