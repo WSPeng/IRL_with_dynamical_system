@@ -20,6 +20,7 @@
 #include "geometry_msgs/PointStamped.h" 
 #include <rosserial_mbed/Adc.h>
 #include "MouseInterface.h"
+#include "mouse_perturbation_robot/MouseMsgPassIRL.h"
 #include "DSObstacleAvoidance.h"
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
 
@@ -63,18 +64,28 @@ class MotionGenerator
     ros::Subscriber _subMouse;              // Subscribe to foot mouse data
     ros::Subscriber _subSpaceNav;              // Subscribe to space nav 3d mouse
     ros::Subscriber _subIRL;                // Subscribe to the parameter generating node
+    ros::Subscriber _subPositionObs;        // Subscribe to the obstacle position
+    ros::Subscriber _subPositionTar;        // Subscribe to the target position
+
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
     ros::Publisher _pubFeedBackToParameter; // Publish feed back to rho and sf generator
+    ros::Publisher _pubMouseMsgIRL;
+    ros::Publisher _pubTarPosition;
+    ros::Publisher _pubObsPosition;
 
     // Messages declaration
     geometry_msgs::Pose _msgRealPose;
+    geometry_msgs::Pose _msgPositionObs;  // added for position input from another node obs
+    geometry_msgs::Pose _msgPositionTar;  // added for position input from another node tar
     geometry_msgs::Quaternion _msgDesiredOrientation;
     geometry_msgs::Twist _msgDesiredTwist;
-        mouse_perturbation_robot::MouseMsg _msgMouse;
+    mouse_perturbation_robot::MouseMsg _msgMouse;
     // Messages for trajectory
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
+
+    mouse_perturbation_robot::MouseMsgPassIRL _msgMouseIRL;
 
     // End effector state variables
     Eigen::Vector3f _x;      // Current position [m] (3x1)
@@ -127,6 +138,10 @@ class MotionGenerator
     bool _boolSpacenav;               // to indicate in the lab PC or my PC
     bool _ifSentTraj;                 // 
     bool _updateIRLParameter;          // if update parameter from the IRL node, if not then use the one more previous parameter set. 
+    bool _obsPositionInput;            // if the obstacle position is decided by the input or not
+    bool _recievedObsPositionInput;   // if the obstacle and target position is modified by the other node
+    bool _recievedTarPositionInput;
+    bool _delayIntroduce;             // if the delay is introduced
 
     // Arduino related variables
     int farduino;
@@ -229,6 +244,16 @@ class MotionGenerator
     // send message for parameter update
     //void sendMsgForParameterUpdate(const std_msgs::Float32 value);
     void sendMsgForParameterUpdate();
+
+    // send the target and obstable position for marker 
+    void sendTarPosition();
+    void sendObsPosition(bool if_obs);
+
+    // receive position from the other node
+    void subPositionObs(const geometry_msgs::Pose::ConstPtr& msg);
+
+    // reveive the target position
+    void subPositionTar(const geometry_msgs::Pose::ConstPtr& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);

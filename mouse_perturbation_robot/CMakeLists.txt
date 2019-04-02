@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
   message_generation
   dynamic_reconfigure
 )
@@ -18,11 +19,13 @@ add_message_files(
    DIRECTORY msg
    FILES
    MouseMsg.msg
+   MouseMsgPassIRL.msg
 )
 
 generate_messages(
    DEPENDENCIES
    std_msgs
+   geometry_msgs
  )
 
 
@@ -33,7 +36,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs message_generation dynamic_reconfigure
+  CATKIN_DEPENDS roscpp rospy std_msgs message_generation dynamic_reconfigure geometry_msgs
   # DEPENDS Eigen3
  )
 

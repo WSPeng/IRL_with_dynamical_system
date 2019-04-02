@@ -13,17 +13,25 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	me = this;
 	ROS_INFO_STREAM("The motion generator node is created at: " << _n.getNamespace() << " with freq: " << frequency << "Hz");
 
+	// if the delay is introduced
+	_delayIntroduce = 1;
+
 	// 1 or 2 for obstacle number
 	_numObstacle = 1;
 
 	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-	_boolSpacenav = 1;
+	_boolSpacenav = 0; // in my PC, do not use the spacenav
+
+	// Recieve obstacle&target position from outside node OR use the position predefined.
+	_obsPositionInput = 1;
+	_recievedObsPositionInput = false;
+	_recievedTarPositionInput = false;
 
 	init_sf = 0.9f;
 	init_rho = 0.9f;
 
 	//obstacle definition
-	_obs._a << 0.5f, 0.1f, 0.12f ; // 0.5 0.1 0.12       0.15f, 0.10f, 0.5f
+	_obs._a << 0.5f, 0.1f, 0.12f; // 0.5 0.1 0.12       0.15f, 0.10f, 0.5f
 	_obs._p.setConstant(1.0f);
 	_obs._safetyFactor = init_sf;// was 1.1
 	_obs._tailEffect = true;
@@ -71,7 +79,12 @@ bool MotionGenerator::init()
   	_xp.setConstant(0.0f);
   	_mouseVelocity.setConstant(0.0f);
   	_targetOffset.col(Target::A) << 0.0f, 0.0f, 0.0f;
-  	_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f; // 0.0f, 0.85f, 0.0f;
+  	// The target B is the target
+  	if (!_obsPositionInput)
+  		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f; // 0.0f, 0.85f, 0.0f;
+  	else
+  		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
+
   	_targetOffset.col(Target::C) << -0.16f,0.25f,0.0f;
   	_targetOffset.col(Target::D) << -0.16f,-0.25f,0.0f;
   	_perturbationOffset.setConstant(0.0f);
@@ -122,20 +135,28 @@ bool MotionGenerator::init()
 	_msg_para_up.data = 1.0f;
 
 	// Subscriber definitions
-	_subMouse= _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
+	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
 	_subRealPose = _n.subscribe("/lwr/ee_pose", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
 	_subRealTwist = _n.subscribe("/lwr/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());
 	if(_boolSpacenav)
-	{
 		_subSpaceNav = _n.subscribe("/spacenav/joy", 1, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
-	}	
+	
 	_subIRL = _n.subscribe("/parameters_tuning", 1, &MotionGenerator::updateIRLParameter, this, ros::TransportHints().reliable().tcpNoDelay());
+	if(_obsPositionInput)
+	{
+		_subPositionObs = _n.subscribe("/position_post/obstacle_position", 1, &MotionGenerator::subPositionObs, this, ros::TransportHints().reliable().tcpNoDelay());
+		_subPositionTar = _n.subscribe("/position_post/target_position", 1, &MotionGenerator::subPositionTar, this, ros::TransportHints().reliable().tcpNoDelay());
+	}
 
 	// Publisher definitions
 	_pubDesiredTwist = _n.advertise<geometry_msgs::Twist>("/lwr/joint_controllers/passive_ds_command_vel", 1);
 	_pubDesiredOrientation = _n.advertise<geometry_msgs::Quaternion>("/lwr/joint_controllers/passive_ds_command_orient", 1);
 	//_pubFeedBackToParameter = _n.advertise<std_msgs::Float32>("/motion_generator_to_parameter_update", 1);
 	_pubFeedBackToParameter = _n.advertise<geometry_msgs::PoseArray>("/motion_generator_to_parameter_update", 1);
+	if(_delayIntroduce)
+		_pubMouseMsgIRL = _n.advertise<mouse_perturbation_robot::MouseMsgPassIRL>("/mouse_message_update_to_irl", 1);
+	_pubTarPosition = _n.advertise<geometry_msgs::Pose>("/send_position_target_marker", 1);
+	_pubObsPosition = _n.advertise<geometry_msgs::Pose>("/send_position_obstacle_marker", 1);
 
 	// Dynamic reconfigure definition
 	_dynRecCallback = boost::bind(&MotionGenerator::dynamicReconfigureCallback, this, _1, _2);
@@ -153,6 +174,8 @@ bool MotionGenerator::init()
 	{
 		initArduino();
 	}
+
+	sendTarPosition();
 
 	// Check if node OK
 	if (_n.ok()) 
@@ -306,6 +329,14 @@ void MotionGenerator::mouseControlledMotion()
 		{
 			// Check if mouse is in use
 			_mouseInUse = true; // make the if statement alway ture -> never go back to the start point		
+			if(_obsPositionInput && _recievedTarPositionInput)
+			{
+				// I put the Target::B redeclaration here.
+				_targetOffset.col(Target::B) << _msgPositionTar.position.x, _msgPositionTar.position.y, _msgPositionTar.position.z;	
+				sendTarPosition();
+				_recievedTarPositionInput = false;
+			}
+
 			if(_mouseInUse or currentTime - _lastMouseTime < _commandLagDuration)
 			{
 				if (_mouseInUse)
@@ -439,10 +470,26 @@ void MotionGenerator::mouseControlledMotion()
 					_perturbationDirection = temp.cross(_motionDirection);
 					_perturbationDirection.normalize();
 					
-					_obs._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
-					_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
-					_obs._x0(1) -= 0.0f; //0.0
-					_obs._x0(0) -= 0.1f; //-0.1 +0.001
+					if (!_obsPositionInput)
+					{
+						_obs._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
+						_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+						_obs._x0(1) -= 0.0f; //0.0
+						_obs._x0(0) -= 0.1f; //-0.1 +0.001
+
+						sendObsPosition(true);//the sending is very frequent..
+					}
+					//else if (_recievedObsPositionInput)
+					if (_recievedObsPositionInput)
+					{
+						// use the position from input, but still using the difference!
+						_obs._x0 = _targetOffset.col(_previousTarget);
+						_obs._x0(2) += _msgPositionObs.position.z; //0.05f move the obstacle lower, 0.1
+						_obs._x0(1) += _msgPositionObs.position.y; //0.0
+						_obs._x0(0) += _msgPositionObs.position.x; //-0.1 +0.001
+						//sendObsPosition();
+						//_recievedObsPositionInput = false;
+					}
 
 					if (_numObstacle == 2)
 					{
@@ -751,6 +798,13 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
     {
     	_mouseVelocity(2) = 0.0f;
     }
+
+    geometry_msgs::Pose _msgMouseI;
+    _msgMouseI.position.x = _mouseVelocity(0);
+    _msgMouseI.position.y = _mouseVelocity(1);
+    _msgMouseI.position.z = _mouseVelocity(2);
+    // publish the mouse message to irl
+    _msgMouseIRL.xyz.push_back(_msgMouseI);
   }
 }
 
@@ -1040,6 +1094,62 @@ void MotionGenerator::sendMsgForParameterUpdate()
 {
 	_pubFeedBackToParameter.publish(_msgRealPoseArray);
 	std::cout << "Publishing the trjaectory ===== " << "\n";
+
+	if(_delayIntroduce)
+	{
+		_pubMouseMsgIRL.publish(_msgMouseIRL);
+		//_msgMouseIRL.clear();		
+		//_msgMouseIRL.deallocate();
+		std::cout << "Publishing the trjaectory (mouse) ===== " << "\n";
+	}
+}
+
+
+void MotionGenerator::sendTarPosition()
+{
+	geometry_msgs::Pose _msgTar;
+	_msgTar.position.x = _targetOffset(0,Target::B);
+	_msgTar.position.y = _targetOffset(1,Target::B);
+	_msgTar.position.z = _targetOffset(2,Target::B);
+	std::cout<< _msgTar.position.x <<" "<< _msgTar.position.y <<" "<< _msgTar.position.z << std::endl;	
+	_pubTarPosition.publish(_msgTar);
+}
+
+
+void MotionGenerator::sendObsPosition(bool if_obs)
+{
+	geometry_msgs::Pose _msgObs;
+	if (if_obs)
+	{
+		_msgObs.position.x = _obs._x0(0);
+		_msgObs.position.y = _obs._x0(1);
+		_msgObs.position.z = _obs._x0(2);	
+	}
+	else
+	{
+		_msgObs.position.x = _msgPositionObs.position.x;
+		_msgObs.position.y = _msgPositionObs.position.y;
+		_msgObs.position.z = _msgPositionObs.position.z;	
+	}
+	std::cout<< "obstacle "<<_msgObs.position.x <<" "<< _msgObs.position.y <<" "<< _msgObs.position.z << std::endl;	
+	_pubObsPosition.publish(_msgObs);
+}
+
+
+void MotionGenerator::subPositionObs(const geometry_msgs::Pose::ConstPtr& msg)
+{
+	_msgPositionObs = *msg;
+	_recievedObsPositionInput = true;
+	std::cout << "Recieved the position obstacle : " << _msgPositionObs.position.x << " " << _msgPositionObs.position.y << " " <<  _msgPositionObs.position.z << std::endl;
+	sendObsPosition(false);
+}
+
+
+void MotionGenerator::subPositionTar(const geometry_msgs::Pose::ConstPtr& msg)
+{
+	_msgPositionTar = *msg;
+	_recievedTarPositionInput = true;
+	std::cout << "Recieved the position target : " << _msgPositionTar.position.x << " " << _msgPositionTar.position.y << " " <<  _msgPositionTar.position.z << std::endl;
 }
 
 
