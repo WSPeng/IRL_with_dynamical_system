@@ -300,7 +300,6 @@ end
 % Now compute the Hessian.
 if nargout >= 6
     
-    
     % First compute the Hessian of points to thrust.
     %{
     d2pdtdt = zeros(2*T,2*T,2*T);

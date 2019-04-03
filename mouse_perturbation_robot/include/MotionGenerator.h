@@ -85,6 +85,7 @@ class MotionGenerator
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
 
+    // passing the message (mouse)
     mouse_perturbation_robot::MouseMsgPassIRL _msgMouseIRL;
 
     // End effector state variables
@@ -174,6 +175,9 @@ class MotionGenerator
     double _rhosfSave [20][2];
     double init_sf;
     double init_rho;
+
+    int _delayInterval;
+    geometry_msgs::Pose _msgMouseI;
   public:
     // Class constructor
     MotionGenerator(ros::NodeHandle &n, double frequency);

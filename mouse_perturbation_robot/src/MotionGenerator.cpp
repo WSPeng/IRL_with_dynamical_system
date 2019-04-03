@@ -14,7 +14,8 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	ROS_INFO_STREAM("The motion generator node is created at: " << _n.getNamespace() << " with freq: " << frequency << "Hz");
 
 	// if the delay is introduced
-	_delayIntroduce = 1;
+	_delayIntroduce = 0;
+	_delayInterval = 100; //100*2 = 200ms
 
 	// 1 or 2 for obstacle number
 	_numObstacle = 1;
@@ -23,7 +24,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_boolSpacenav = 0; // in my PC, do not use the spacenav
 
 	// Recieve obstacle&target position from outside node OR use the position predefined.
-	_obsPositionInput = 1;
+	_obsPositionInput = 0;
 	_recievedObsPositionInput = false;
 	_recievedTarPositionInput = false;
 
@@ -375,8 +376,10 @@ void MotionGenerator::mouseControlledMotion()
 								_rhosfSave[_numOfDemo][1] = _obs._safetyFactor;
 							}
 							_numOfDemo++;
-							for(int i=0;i<_numObstacle;++i)
+							//for(int i=0;i<_numObstacle;++i)
+							for(int i=0;i<_numOfDemo;++i)
 							{
+								std::cout << "num of demo" << _numOfDemo << "\n";
 								std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
 								std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
 							}
@@ -480,15 +483,18 @@ void MotionGenerator::mouseControlledMotion()
 						sendObsPosition(true);//the sending is very frequent..
 					}
 					//else if (_recievedObsPositionInput)
-					if (_recievedObsPositionInput)
+					else
 					{
-						// use the position from input, but still using the difference!
-						_obs._x0 = _targetOffset.col(_previousTarget);
-						_obs._x0(2) += _msgPositionObs.position.z; //0.05f move the obstacle lower, 0.1
-						_obs._x0(1) += _msgPositionObs.position.y; //0.0
-						_obs._x0(0) += _msgPositionObs.position.x; //-0.1 +0.001
-						//sendObsPosition();
-						//_recievedObsPositionInput = false;
+						if (_recievedObsPositionInput)
+						{
+							// use the position from input, but still using the difference!
+							_obs._x0 = _targetOffset.col(_previousTarget);
+							_obs._x0(2) += _msgPositionObs.position.z; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) += _msgPositionObs.position.y; //0.0
+							_obs._x0(0) += _msgPositionObs.position.x; //-0.1 +0.001
+							//sendObsPosition();
+							//_recievedObsPositionInput = false;
+						}						
 					}
 
 					if (_numObstacle == 2)
@@ -574,6 +580,12 @@ void MotionGenerator::mouseControlledMotion()
 					//std::cerr << "error" << error(0)<<" "<<error(1)<<" "<<error(2) << std::endl;
 					//std::cerr << "error z: " << error(2) << std::endl;
 					//std::cerr << "vd z: " << _vd(2) << std::endl;
+
+					_msgMouseI.position.x = _mouseVelocity(0);
+    				_msgMouseI.position.y = _mouseVelocity(1);
+    				_msgMouseI.position.z = _mouseVelocity(2);
+    				// publish the mouse message to irl
+    				_msgMouseIRL.xyz.push_back(_msgMouseI);
 				}
 			}
 			else
@@ -671,9 +683,9 @@ void MotionGenerator::mouseControlledMotion()
 	}
 
 	// Bound desired velocity
-	if (_vd.norm()>0.2f)  // it was 0.3 before, 
+	if (_vd.norm()>0.16f)  // it was 0.3 before, 
 	{
-		_vd = _vd*0.2f/_vd.norm();
+		_vd = _vd*0.16f/_vd.norm();
 	}
 
 	// Desired quaternion to have the end effector looking down
@@ -799,12 +811,7 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
     	_mouseVelocity(2) = 0.0f;
     }
 
-    geometry_msgs::Pose _msgMouseI;
-    _msgMouseI.position.x = _mouseVelocity(0);
-    _msgMouseI.position.y = _mouseVelocity(1);
-    _msgMouseI.position.z = _mouseVelocity(2);
-    // publish the mouse message to irl
-    _msgMouseIRL.xyz.push_back(_msgMouseI);
+   
   }
 }
 
@@ -1131,7 +1138,7 @@ void MotionGenerator::sendObsPosition(bool if_obs)
 		_msgObs.position.y = _msgPositionObs.position.y;
 		_msgObs.position.z = _msgPositionObs.position.z;	
 	}
-	std::cout<< "obstacle "<<_msgObs.position.x <<" "<< _msgObs.position.y <<" "<< _msgObs.position.z << std::endl;	
+	//std::cout<< "sent the obstacle position"<<_msgObs.position.x <<" "<< _msgObs.position.y <<" "<< _msgObs.position.z << std::endl;	
 	_pubObsPosition.publish(_msgObs);
 }
 
@@ -1224,7 +1231,7 @@ void MotionGenerator::changeRhoEta(int indcator)
 					_obs._safetyFactor += 0.01/2;
 					_obs._rho += 0.1/2;
 				#else
-					_obs._safetyFactor += 0.01/4; // in binary feedback case.. 
+					_obs._safetyFactor += 0.01/4; // in binary feedback case.. originally value is 4.
 					_obs._rho += 0.1/4;
 				#endif
 
