@@ -150,6 +150,7 @@ bool MotionGenerator::init()
 		_subPositionObs = _n.subscribe("/position_post/obstacle_position", 1, &MotionGenerator::subPositionObs, this, ros::TransportHints().reliable().tcpNoDelay());
 		_subPositionTar = _n.subscribe("/position_post/target_position", 1, &MotionGenerator::subPositionTar, this, ros::TransportHints().reliable().tcpNoDelay());
 	}
+	_subMessageEEG = _n.subscribe("/eeg", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// Publisher definitions
 	_pubDesiredTwist = _n.advertise<geometry_msgs::Twist>("/lwr/joint_controllers/passive_ds_command_vel", 1);
@@ -166,7 +167,7 @@ bool MotionGenerator::init()
 	_dynRecServer.setCallback(_dynRecCallback);
 
 	// Open file to save data
-	_outputFile.open ("src/mouse_perturbation_robot/informationKUKA.txt");
+	_outputFile.open ("/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
 	_outputFile << "NEW EXPERIMENT\n";
 	
 	// Catch CTRL+C event with the callback provided
@@ -244,6 +245,11 @@ void MotionGenerator::run()
 
 			// Log data
 			logData();
+			if(!_ifsendArduino)
+			{
+				_eventLogger = 1;
+				_ifsendArduino = 1;
+			}
 
 			// Publish data to topics
 			publishData(); // publish the data to controller. 
@@ -445,6 +451,13 @@ void MotionGenerator::mouseControlledMotion()
 				float distance = (_xd-_x).norm();
 				//--
 
+				//If during the motion, and eeg send message 1, then ..
+				if(_msgEGG == 1 && distance > TARGET_TOLERANCE)
+				{
+					std::cout << "reveive eeg message" << std::endl;
+					_mouseVelocity(1) = -1.0f;
+				}
+
 				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0.
 				{
 					changeRhoEta(0);
@@ -461,11 +474,11 @@ void MotionGenerator::mouseControlledMotion()
 						_ifsendArduino = 0;
 					}
 				}
-				else
-				{
+				//else
+				//{
 					//std::cout << "_safetyFactor not changing " << _obs._safetyFactor << "\n";
 					//std::cout << "_rho not changing " << _obs._rho << "\n";
-				}
+				//}
 				//======================================================================================
 
 				//if (_currentTarget==Target::A)
@@ -552,7 +565,7 @@ void MotionGenerator::mouseControlledMotion()
 					// Random change in trajectory parameters
 					if (_previousTarget != _currentTarget)
 					{
-						_eventLogger = 15;
+						//_eventLogger = 15;
 						_trialCount++;
 						if (_switchingTrajectories and (float)std::rand()/RAND_MAX>0.25)
 						{
@@ -619,11 +632,6 @@ void MotionGenerator::mouseControlledMotion()
 			if(_useArduino)
 			{
 				sendValueArduino(_eventLogger);
-				if(!_ifsendArduino)
-				{
-					_eventLogger = 1;
-					_ifsendArduino = 1;
-				}
 			}
 
 			// Check for end of clean motion phase
@@ -1101,7 +1109,7 @@ void MotionGenerator::initArduino()
 void MotionGenerator::sendValueArduino(uint8_t value)
 {
   write(farduino,&value,1);
-  std::cout << "Arduino message: " << (int)value << std::endl;
+  //std::cout << "Arduino message: " << (int)value << std::endl;
   if (value>0)
   {
     trigger_begin = ros::Time::now();
@@ -1191,6 +1199,14 @@ void MotionGenerator::subPositionTar(const geometry_msgs::Pose::ConstPtr& msg)
 }
 
 
+void MotionGenerator::subMessageEEG(const std_msgs::Char::ConstPtr& msg)
+{
+	_msgMessageEEG = *msg;
+	//_msgEGG = (int)msg->data;
+	_msgEGG = (int)_msgMessageEEG.data;
+}
+
+
 void MotionGenerator::changeRhoEta(int indcator)
 {
 	if (_numObstacle == 2)
@@ -1262,8 +1278,8 @@ void MotionGenerator::changeRhoEta(int indcator)
 					_obs._safetyFactor += 0.01/2;
 					_obs._rho += 0.1/2;
 				#else
-					_obs._safetyFactor += 0.01/4; // in binary feedback case.. originally value is 4.
-					_obs._rho += 0.1/4;
+					_obs._safetyFactor += 0.01/2; // in binary feedback case.. originally value is 4.
+					_obs._rho += 0.1/2;
 				#endif
 
 				if (_obs._safetyFactor >= MAX_ETA)

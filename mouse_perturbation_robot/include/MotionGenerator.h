@@ -11,6 +11,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
+#include "std_msgs/Char.h"
 #include "geometry_msgs/Pose.h"
 #include <geometry_msgs/PoseArray.h>
 #include "geometry_msgs/Twist.h"
@@ -66,6 +67,8 @@ class MotionGenerator
     ros::Subscriber _subIRL;                // Subscribe to the parameter generating node
     ros::Subscriber _subPositionObs;        // Subscribe to the obstacle position
     ros::Subscriber _subPositionTar;        // Subscribe to the target position
+    ros::Subscriber _subMessageEEG;         
+
 
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
@@ -150,7 +153,8 @@ class MotionGenerator
     ros::Time trigger_begin;
 
     int _ifsendArduino;
-    
+    int _msgEGG;
+
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance
     std::mutex _mutex;            // Mutex variable
@@ -180,6 +184,8 @@ class MotionGenerator
 
     int _delayInterval;
     geometry_msgs::Pose _msgMouseI;
+
+    std_msgs::Char _msgMessageEEG;
   public:
     // Class constructor
     MotionGenerator(ros::NodeHandle &n, double frequency);
@@ -260,6 +266,8 @@ class MotionGenerator
 
     // reveive the target position
     void subPositionTar(const geometry_msgs::Pose::ConstPtr& msg);
+
+    void subMessageEEG(const std_msgs::Char::ConstPtr&& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);
