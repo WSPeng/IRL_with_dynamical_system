@@ -137,7 +137,8 @@ if gradient_descent
     if mdp_data.num_obs == 2
         GRID_BOUND = [0.8, 3.7, 0.9, 1.19];
     else
-        GRID_BOUND = [2.0, 7.5, 1.0, 1.5];
+%         GRID_BOUND = [2.0, 7.5, 1.0, 1.5];
+        GRID_BOUND = [2.0, 6.5, 1.0, 1.4];
     end
 
     STEPS = 3;
@@ -342,7 +343,8 @@ function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
     r = + trajectoryreward_part(u, s, mdp_data, mdp, reward);
     
     if mdp_data.num_obs ~= 2
-        d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
+%         d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
+        d = [rho - 0.0, -rho + 7.5, sf - 0.9, -sf + 1.5];
         for i = 1:length(d)
             if d(i)<0
                 d(i) = 0;

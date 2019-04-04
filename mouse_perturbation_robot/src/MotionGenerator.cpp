@@ -41,6 +41,8 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
+	_ifsendArduino = 1;
+
 	if (_numObstacle == 2)
 	{
 		//obstacle definition 1 
@@ -113,7 +115,7 @@ bool MotionGenerator::init()
 	_perturbation = false;
 	_mouseControlledMotion = true;
 	_mouseInUse = false;
-	_useArduino = false;
+	_useArduino = true;
 	_perturbationFlag = false;
 	_switchingTrajectories = false;  //to be configured in dynamic reconfigure GUI
 	_errorButtonPressed = false;
@@ -434,13 +436,30 @@ void MotionGenerator::mouseControlledMotion()
 					}
 				}
 				//======================================================================================
+				
+				//--
+				// Compute desired target position
+				_xd = _x0+_targetOffset.col(_currentTarget);
+
+				// Compute distance to target
+				float distance = (_xd-_x).norm();
+				//--
+
 				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0.
 				{
 					changeRhoEta(0);
+
 				}
-				else if (_mouseVelocity(1)<0.0f)
+				else if (_mouseVelocity(1)<0.0f) // pressing
 				{
 					changeRhoEta(1);
+					
+					if(distance > TARGET_TOLERANCE)
+					{
+						_eventLogger = 3;
+						//sendValueArduino(3);
+						_ifsendArduino = 0;
+					}
 				}
 				else
 				{
@@ -449,14 +468,14 @@ void MotionGenerator::mouseControlledMotion()
 				}
 				//======================================================================================
 
-				if (_currentTarget==Target::A)
-				{
-					_eventLogger |= 1 << 1;
-				}
-				else
-				{
-					_eventLogger |= 1 << 2;
-				}
+				//if (_currentTarget==Target::A)
+				//{
+				//	_eventLogger |= 1 << 1;
+				//}
+				//else
+				//{
+				//	_eventLogger |= 1 << 2;
+				//}
 
 				// If new target, updates previous one and compute new motion and perturbation direction.
 				// Also updates the relative location of the obstacle
@@ -518,14 +537,17 @@ void MotionGenerator::mouseControlledMotion()
 
 				}
 
+				//--
 				// Compute desired target position
-				_xd = _x0+_targetOffset.col(_currentTarget);
+				//_xd = _x0+_targetOffset.col(_currentTarget);
 
 				// Compute distance to target
-				float distance = (_xd-_x).norm();
+				//float distance = (_xd-_x).norm();
 				if(distance < TARGET_TOLERANCE)
 				{
 					// Target is reached
+					// make the eventlogger is 0 between two motions
+					_eventLogger = 0;
 
 					// Random change in trajectory parameters
 					if (_previousTarget != _currentTarget)
@@ -593,9 +615,15 @@ void MotionGenerator::mouseControlledMotion()
 
 			}
 
+			//if(_useArduino &&_ifsendArduino)
 			if(_useArduino)
 			{
 				sendValueArduino(_eventLogger);
+				if(!_ifsendArduino)
+				{
+					_eventLogger = 1;
+					_ifsendArduino = 1;
+				}
 			}
 
 			// Check for end of clean motion phase
@@ -779,21 +807,22 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
     if(fabs(relX)>MIN_XY_REL)
     {
 		_mouseVelocity(0) = relX;
-    	_eventLogger |= 1 << 3;
+    	//_eventLogger |= 1 << 3;
+    	_eventLogger = 1;
       	_mouseInUse = true;
     }
     else
     {
     	_mouseVelocity(0) = 0.0f;
-    	_eventLogger &= ~(1 << 3);
+    	//_eventLogger &= ~(1 << 3);
     }
 
     // enable the y direction velocity
     if(fabs(relY)>MIN_Y_REL)
     {
     	_mouseVelocity(1) = relY;
-    	//eventLogger
-       _mouseInUse = true;
+    	
+    	_mouseInUse = true;
     }
     else
     {
@@ -846,6 +875,8 @@ void MotionGenerator::logData()
 {
 	_outputFile << ros::Time::now() << " " << _x(0) << " " << _x(1) << " " << _x(2) << " " << (int)(_perturbationFlag) << " " << (int)(_switchingTrajectories) << " " 
 	<< _obs._p(0) << " " << _obs._safetyFactor << " " << _obs._rho << " " << (int)(_errorButtonPressed) << " " << (int)_eventLogger << std::endl;
+
+	//_errorButtonPressed?
 
 	// if (_errorButtonPressed and _errorButtonCounter > 14)
 	// {
@@ -1070,7 +1101,7 @@ void MotionGenerator::initArduino()
 void MotionGenerator::sendValueArduino(uint8_t value)
 {
   write(farduino,&value,1);
-  // std::cout << "Arduino message: " << (int)value << std::endl;
+  std::cout << "Arduino message: " << (int)value << std::endl;
   if (value>0)
   {
     trigger_begin = ros::Time::now();

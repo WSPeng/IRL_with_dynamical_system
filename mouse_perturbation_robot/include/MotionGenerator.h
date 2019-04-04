@@ -148,6 +148,8 @@ class MotionGenerator
     int farduino;
     bool trigger_raised;
     ros::Time trigger_begin;
+
+    int _ifsendArduino;
     
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance

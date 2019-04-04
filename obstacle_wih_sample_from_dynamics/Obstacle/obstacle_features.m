@@ -159,7 +159,7 @@ elseif strcmp(mdp_params.feature_type,'obs')&& mdp_params.fixed_pattern == 3
 %       width = linspace(0.3, 2.0, 16);
   width = linspace(0.1, 1.5, 10);
 %    axis1 = [0.5, 0.8, 1];
-    axis1 = [0.6, 0.8 1.0, 1.2];
+    axis1 = [0.6, 0.8 1.0];
     for k = 1:length(axis1)
         for i = 1:length(width)
             index = (k-1)*length(width) + i;
