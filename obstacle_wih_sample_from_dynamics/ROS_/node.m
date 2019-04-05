@@ -119,6 +119,9 @@ while 1
         states_tbl = states_r(index, :);
         % use the trajectory for learning
         states_{j} = states_tbl;
+        if length(states_) > 5
+           states_ = states_(2:end);
+        end
     else 
         T = length(states);
         states_ = states;
