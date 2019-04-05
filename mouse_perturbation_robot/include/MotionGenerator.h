@@ -11,7 +11,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
-#include "std_msgs/Char.h"
+#include "std_msgs/String.h"
 #include "geometry_msgs/Pose.h"
 #include <geometry_msgs/PoseArray.h>
 #include "geometry_msgs/Twist.h"
@@ -177,6 +177,7 @@ class MotionGenerator
 
     int _numObstacle;
     int _numOfDemo;
+    int _numOfDemoCounter;
 
     double _rhosfSave [20][2];
     double init_sf;
@@ -185,7 +186,10 @@ class MotionGenerator
     int _delayInterval;
     geometry_msgs::Pose _msgMouseI;
 
-    std_msgs::Char _msgMessageEEG;
+    std_msgs::String _msgMessageEEG;
+
+    bool _randomInsteadIRL;
+
   public:
     // Class constructor
     MotionGenerator(ros::NodeHandle &n, double frequency);
@@ -267,7 +271,8 @@ class MotionGenerator
     // reveive the target position
     void subPositionTar(const geometry_msgs::Pose::ConstPtr& msg);
 
-    void subMessageEEG(const std_msgs::Char::ConstPtr&& msg);
+    // 
+    void subMessageEEG(const std_msgs::String::ConstPtr& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);

@@ -21,7 +21,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_numObstacle = 1;
 
 	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-	_boolSpacenav = 0; // in my PC, do not use the spacenav
+	_boolSpacenav = 1; // in my PC, do not use the spacenav
 
 	// Recieve obstacle&target position from outside node OR use the position predefined.
 	_obsPositionInput = 0;
@@ -42,6 +42,8 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
 	_ifsendArduino = 1;
+
+	_randomInsteadIRL = false;
 
 	if (_numObstacle == 2)
 	{
@@ -136,6 +138,7 @@ bool MotionGenerator::init()
 	_perturbationDirection.normalize();
 
 	_msg_para_up.data = 1.0f;
+	_numOfDemoCounter = 0;
 
 	// Subscriber definitions
 	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
@@ -167,7 +170,7 @@ bool MotionGenerator::init()
 	_dynRecServer.setCallback(_dynRecCallback);
 
 	// Open file to save data
-	_outputFile.open ("/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	_outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
 	_outputFile << "NEW EXPERIMENT\n";
 	
 	// Catch CTRL+C event with the callback provided
@@ -387,9 +390,9 @@ void MotionGenerator::mouseControlledMotion()
 							//for(int i=0;i<_numObstacle;++i)
 							for(int i=0;i<_numOfDemo;++i)
 							{
-								std::cout << "num of demo" << _numOfDemo << "\n";
-								std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
-								std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
+								std::cout << "num of successful demo: " << _numOfDemo << "\n";
+								//std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
+								//std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
 							}
 						}
 						#ifndef BINARY_INPUT
@@ -407,26 +410,30 @@ void MotionGenerator::mouseControlledMotion()
 					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))// start the next motion
 					{
 						#ifdef BINARY_INPUT
-						if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true.
+						if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true. not pressed then go into this loop...
 						{
 							// use the previous set of parameters rho and sf
 							_updateIRLParameter = false;
-							std::cout << "Use the previous set of parameters " << "\n";
-							
-							// use the early set of parameters
-							std::cout<<"Return to the previous set of parameters"<< "\n";
-							if (_numOfDemo>=1)
+							//std::cout << "Use the previous set of parameters " << "\n";
+
+							if (_randomInsteadIRL)
+							{
+								// move to random generating mode
+								_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
+								_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
+							}
+
+							if (_numOfDemo>=1 && !_randomInsteadIRL)
 							{
 								_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
 								_obs._rho = _rhosfSave[_numOfDemo-1][0];
-								std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
-								std::cout<<"rho \n" <<_obs._rho << "\n";
+								std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
+								std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
 							}
 
-							std::cout << "Cleaning the trjaectory ===== " << "\n";
+							//std::cout << "Cleaning the trjaectory ===== " << "\n";
 							_msgRealPoseArray.poses.clear();
-
-
 						}
 						//else _updateIRLParameter = true;
 						#endif
@@ -567,6 +574,7 @@ void MotionGenerator::mouseControlledMotion()
 					{
 						//_eventLogger = 15;
 						_trialCount++;
+						std::cout << "The number of trials : " << _trialCount << std::endl;
 						if (_switchingTrajectories and (float)std::rand()/RAND_MAX>0.25)
 						{
 							_msg_para_up.data = 1.0f;
@@ -719,9 +727,9 @@ void MotionGenerator::mouseControlledMotion()
 	}
 
 	// Bound desired velocity
-	if (_vd.norm()>0.16f)  // it was 0.3 before, 
+	if (_vd.norm()>0.3f)  // it was 0.3 before, 
 	{
-		_vd = _vd*0.16f/_vd.norm();
+		_vd = _vd*0.3f/_vd.norm();
 	}
 
 	// Desired quaternion to have the end effector looking down
@@ -1199,11 +1207,12 @@ void MotionGenerator::subPositionTar(const geometry_msgs::Pose::ConstPtr& msg)
 }
 
 
-void MotionGenerator::subMessageEEG(const std_msgs::Char::ConstPtr& msg)
+void MotionGenerator::subMessageEEG(const std_msgs::String::ConstPtr& msg)
 {
 	_msgMessageEEG = *msg;
 	//_msgEGG = (int)msg->data;
-	_msgEGG = (int)_msgMessageEEG.data;
+	//_msgEGG = (int)_msgMessageEEG.data;
+	_msgEGG = std::stoi(_msgMessageEEG.data);
 }
 
 
