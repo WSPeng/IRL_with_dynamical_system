@@ -23,3 +23,5 @@ addpath new
 addpath ROS_
 
 addpath('/home/swei/Documents/IRL_with_dynamical_system/matlab_gen/msggen')
+
+%rosinit('128.178.145.170','Nodename','IRL_wsp')

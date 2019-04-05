@@ -344,7 +344,7 @@ function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
     
     if mdp_data.num_obs ~= 2
 %         d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
-        d = [rho - 0.0, -rho + 7.5, sf - 0.9, -sf + 1.5];
+        d = [rho - 0.0, -rho + 8.5, sf - 0.9, -sf + 1.55];
         for i = 1:length(d)
             if d(i)<0
                 d(i) = 0;
