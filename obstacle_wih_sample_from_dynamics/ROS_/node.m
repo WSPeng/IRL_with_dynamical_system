@@ -29,7 +29,11 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
 %        folderpath = "~//Downloads/Untitled Folder/";
 %         sub_mouse = robotics.ros.Subscriber(node1, ...
 %             '/mouse_message_update_to_irl', 'mouse_perturbation_robot/MouseMsgPassIRL');
+<<<<<<< HEAD
+    end
+=======
 %     end
+>>>>>>> f0cbbd302a2a491f2faaaa1051d6779f26016906
 
     states_ = cell(1,1);
 end
@@ -109,7 +113,7 @@ while 1
         % put the first point at 0,4.2
         dd = 4.2 - states_r(1,2);
         % two obs
-%         dd = 5 - states_r(1,2);
+%         dd = 5 - states_r(1, 2);
         states_r(:,2) = states_r(:,2) + dd;
         
         % sub sampleing

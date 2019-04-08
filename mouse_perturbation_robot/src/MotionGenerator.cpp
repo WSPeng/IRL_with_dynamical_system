@@ -388,12 +388,13 @@ void MotionGenerator::mouseControlledMotion()
 							}
 							_numOfDemo++;
 							//for(int i=0;i<_numObstacle;++i)
-							for(int i=0;i<_numOfDemo;++i)
-							{
+							//for(int i=0;i<_numOfDemo;++i)
+							//{
+							if(_randomInsteadIRL)
 								std::cout << "num of successful demo: " << _numOfDemo << "\n";
 								//std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
 								//std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
-							}
+							//}
 						}
 						#ifndef BINARY_INPUT
 						else if (_mouseVelocity(2)<0.0f) // if the node is lifted
@@ -424,12 +425,18 @@ void MotionGenerator::mouseControlledMotion()
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
 							}
 
-							if (_numOfDemo>=1 && !_randomInsteadIRL)
+							//if (_numOfDemo>=1 && !_randomInsteadIRL)
+							if (_numOfDemo>=0 && !_randomInsteadIRL)
 							{
-								_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
-								_obs._rho = _rhosfSave[_numOfDemo-1][0];
-								std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
-								std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
+								//_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
+								//_obs._rho = _rhosfSave[_numOfDemo-1][0];
+								_obs._safetyFactor = 0.9f;
+								_obs._rho = 0.9f;
+								//std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
+								//std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
+								std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
+								std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
+
 							}
 
 							//std::cout << "Cleaning the trjaectory ===== " << "\n";
@@ -461,7 +468,7 @@ void MotionGenerator::mouseControlledMotion()
 				//If during the motion, and eeg send message 1, then ..
 				if(_msgEGG == 1 && distance > TARGET_TOLERANCE)
 				{
-					std::cout << "reveive eeg message" << std::endl;
+					//std::cout << "reveive eeg message" << std::endl;
 					_mouseVelocity(1) = -1.0f;
 				}
 
@@ -573,8 +580,9 @@ void MotionGenerator::mouseControlledMotion()
 					if (_previousTarget != _currentTarget)
 					{
 						//_eventLogger = 15;
-						_trialCount++;
 						std::cout << "The number of trials : " << _trialCount << std::endl;
+						_trialCount++;
+
 						if (_switchingTrajectories and (float)std::rand()/RAND_MAX>0.25)
 						{
 							_msg_para_up.data = 1.0f;
@@ -1213,6 +1221,7 @@ void MotionGenerator::subMessageEEG(const std_msgs::String::ConstPtr& msg)
 	//_msgEGG = (int)msg->data;
 	//_msgEGG = (int)_msgMessageEEG.data;
 	_msgEGG = std::stoi(_msgMessageEEG.data);
+	std::cout << "reveived EEG data: " << _msgEGG << std::endl;
 }
 
 
@@ -1287,8 +1296,8 @@ void MotionGenerator::changeRhoEta(int indcator)
 					_obs._safetyFactor += 0.01/2;
 					_obs._rho += 0.1/2;
 				#else
-					_obs._safetyFactor += 0.01/2; // in binary feedback case.. originally value is 4.
-					_obs._rho += 0.1/2;
+					_obs._safetyFactor += 0.01/2*4; // in binary feedback case.. originally value is 4.
+					_obs._rho += 0.1/2*4;
 				#endif
 
 				if (_obs._safetyFactor >= MAX_ETA)
