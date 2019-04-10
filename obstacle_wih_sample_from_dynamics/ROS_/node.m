@@ -139,7 +139,7 @@ while 1
     disp(rho)
     disp(sf)
     
-    send(pub, msg);
+%     send(pub, msg);
 elapsedTime = toc
     j = j +1;
     pause(1)

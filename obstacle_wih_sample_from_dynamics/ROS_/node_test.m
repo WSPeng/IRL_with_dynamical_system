@@ -1,6 +1,5 @@
 % for building filtered input
 
-
 function node_test(sIn)
 
 for j = 1:length(sIn)

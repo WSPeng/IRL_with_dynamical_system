@@ -168,7 +168,7 @@ if gradient_descent
     % switching
     switching = true;
     
-%     draw_heat(T, s, mdp_data, mdp, reward)
+     draw_heat(T, s, mdp_data, mdp, reward)
     
     if mdp_data.num_obs ~= 3 % TODO
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
@@ -385,10 +385,12 @@ end
 function draw_heat(T, s, mdp_data, mdp, reward)
     % Visualize
     STEPS = 60;
-    x = linspace(0.01, 7.99, STEPS);
-    y = linspace(0.901, 1.599, STEPS);
-    % x = linspace(3, 7.5, STEPS);
-    % y = linspace(1.1, 1.5, STEPS);
+%     x = linspace(0.01, 7.99, STEPS);
+%     y = linspace(0.901, 1.599, STEPS);
+    x = linspace(0.01, 8.49, STEPS);
+    y = linspace(0.901, 1.549, STEPS);
+%     x = linspace(3, 7.5, STEPS);
+%     y = linspace(1.1, 1.5, STEPS);
     [X, Y] = meshgrid(x, y);
     pts = [X(:) Y(:)];
     R = zeros(STEPS*STEPS,1);

@@ -138,7 +138,7 @@ if gradient_descent
         GRID_BOUND = [0.8, 3.7, 0.9, 1.19];
     else
 %         GRID_BOUND = [2.0, 7.5, 1.0, 1.5];
-        GRID_BOUND = [2.0, 7.5, 1.0, 1.5];
+        GRID_BOUND = [2.0, 6.5, 1.0, 1.4];
     end
 
     STEPS = 3;
@@ -168,7 +168,7 @@ if gradient_descent
     % switching
     switching = true;
     
-%     draw_heat(T, s, mdp_data, mdp, reward)
+     draw_heat(T, s, mdp_data, mdp, reward)
     
     if mdp_data.num_obs ~= 3 % TODO
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
@@ -343,7 +343,8 @@ function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
     r = + trajectoryreward_part(u, s, mdp_data, mdp, reward);
     
     if mdp_data.num_obs ~= 2
-        d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
+%         d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
+        d = [rho - 0.0, -rho + 8.5, sf - 0.9, -sf + 1.55];
         for i = 1:length(d)
             if d(i)<0
                 d(i) = 0;
@@ -383,7 +384,7 @@ end
 
 function draw_heat(T, s, mdp_data, mdp, reward)
     % Visualize
-    STEPS = 60;
+    STEPS = 3;
     x = linspace(0.01, 7.99, STEPS);
     y = linspace(0.901, 1.599, STEPS);
     % x = linspace(3, 7.5, STEPS);
