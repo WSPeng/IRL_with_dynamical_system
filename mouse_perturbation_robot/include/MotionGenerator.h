@@ -42,6 +42,10 @@
 
 #define BINARY_INPUT
 
+#define PROTOCAL_DEBUG
+
+#define DELAY_INTRODUCE 100
+
 class MotionGenerator 
 {
     private:
@@ -194,6 +198,7 @@ class MotionGenerator
 
     bool _randomInsteadIRL;
     bool _iiwaInsteadLwr;
+    bool _indicatorRand;
 
   public:
     // Class constructor

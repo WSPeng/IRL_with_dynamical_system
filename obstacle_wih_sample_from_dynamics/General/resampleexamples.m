@@ -119,7 +119,7 @@ if gradient_descent
     initu = 0;
     rbest = -Inf;
     tolGrad = 1e-3;
-    maxiter = 30;
+    maxiter = 10;
     alpha = 1e-3;
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
@@ -168,7 +168,7 @@ if gradient_descent
     % switching
     switching = true;
     
-     draw_heat(T, s, mdp_data, mdp, reward)
+%      draw_heat(T, s, mdp_data, mdp, reward)
     
     if mdp_data.num_obs ~= 3 % TODO
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
