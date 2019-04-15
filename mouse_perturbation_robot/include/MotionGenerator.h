@@ -11,6 +11,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
+#include "std_msgs/Float64MultiArray.h"
 #include "std_msgs/String.h"
 #include "geometry_msgs/Pose.h"
 #include <geometry_msgs/PoseArray.h>
@@ -21,6 +22,7 @@
 #include "geometry_msgs/PointStamped.h" 
 #include <rosserial_mbed/Adc.h>
 #include "MouseInterface.h"
+#include "mouse_perturbation_robot/MouseMsg.h"
 #include "mouse_perturbation_robot/MouseMsgPassIRL.h"
 #include "DSObstacleAvoidance.h"
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
@@ -76,7 +78,8 @@ class MotionGenerator
     ros::Publisher _pubMouseMsgIRL;
     ros::Publisher _pubTarPosition;
     ros::Publisher _pubObsPosition;
-
+    ros::Publisher _pubCommand;
+    
     // Messages declaration
     geometry_msgs::Pose _msgRealPose;
     geometry_msgs::Pose _msgPositionObs;  // added for position input from another node obs
@@ -87,6 +90,7 @@ class MotionGenerator
     // Messages for trajectory
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
+    std_msgs::Float64MultiArray _msgCommand;
 
     // passing the message (mouse)
     mouse_perturbation_robot::MouseMsgPassIRL _msgMouseIRL;
@@ -189,6 +193,7 @@ class MotionGenerator
     std_msgs::String _msgMessageEEG;
 
     bool _randomInsteadIRL;
+    bool _iiwaInsteadLwr;
 
   public:
     // Class constructor

@@ -18,7 +18,7 @@ bool MouseInterface::init(std::string eventPath)
 {
 
   // Pulibsher definition
-  _pubMouseData = _n.advertise<mouse_perturbation_robot::MouseMsg>("mouse", 1);
+  _pubMouseData = _n.advertise<mouse_perturbation_robot::MouseMsg>("/mouse", 1);
 
   if((_fd = open(eventPath.c_str(), O_RDONLY)) == -1) 
   {

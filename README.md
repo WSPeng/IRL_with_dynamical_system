@@ -7,7 +7,7 @@ remember the ros program in this folder is not the updated one, the updated one 
 
 
 ### Prerequisites
-
+https://github.com/yias/motion_example.git
 
 
 ```

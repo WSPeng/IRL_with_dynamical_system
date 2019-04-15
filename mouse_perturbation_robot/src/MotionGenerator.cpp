@@ -21,7 +21,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_numObstacle = 1;
 
 	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-	_boolSpacenav = 1; // in my PC, do not use the spacenav
+	_boolSpacenav = 0; // in my PC, do not use the spacenav
 
 	// Recieve obstacle&target position from outside node OR use the position predefined.
 	_obsPositionInput = 0;
@@ -41,9 +41,14 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
-	_ifsendArduino = 1;
+	_ifsendArduino = 0;
+	_useArduino = false;
 
+	// random generate rho and sf at each end of trails
 	_randomInsteadIRL = false;
+
+	// if use iiwa instead of the lwr
+	_iiwaInsteadLwr = true;
 
 	if (_numObstacle == 2)
 	{
@@ -89,6 +94,8 @@ bool MotionGenerator::init()
   		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f; // 0.0f, 0.85f, 0.0f;
   	else
   		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
+  	if (_iiwaInsteadLwr)
+  		_targetOffset.col(Target::B) << 0.0f, -0.85f, 0.0f;
 
   	_targetOffset.col(Target::C) << -0.16f,0.25f,0.0f;
   	_targetOffset.col(Target::D) << -0.16f,-0.25f,0.0f;
@@ -117,7 +124,6 @@ bool MotionGenerator::init()
 	_perturbation = false;
 	_mouseControlledMotion = true;
 	_mouseInUse = false;
-	_useArduino = true;
 	_perturbationFlag = false;
 	_switchingTrajectories = false;  //to be configured in dynamic reconfigure GUI
 	_errorButtonPressed = false;
@@ -138,12 +144,27 @@ bool MotionGenerator::init()
 	_perturbationDirection.normalize();
 
 	_msg_para_up.data = 1.0f;
+	_msgCommand.layout.dim.resize(1);
+	_msgCommand.layout.data_offset = 0;
+	_msgCommand.layout.dim[0].size = 10;
+	_msgCommand.layout.dim[0].stride = 0;
+	_msgCommand.data.resize(10, 0.);
+	// resize(n, std_msgs::MultiArrayDimension())
 	_numOfDemoCounter = 0;
 
 	// Subscriber definitions
 	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
-	_subRealPose = _n.subscribe("/lwr/ee_pose", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
-	_subRealTwist = _n.subscribe("/lwr/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());
+	if (!_iiwaInsteadLwr)
+	{
+		_subRealPose = _n.subscribe("/lwr/ee_pose", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
+		_subRealTwist = _n.subscribe("/lwr/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());	
+	}
+	else
+	{
+		_subRealPose = _n.subscribe("/iiwa/ee_pose", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
+		_subRealTwist = _n.subscribe("/iiwa/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());			
+	}
+	
 	if(_boolSpacenav)
 		_subSpaceNav = _n.subscribe("/spacenav/joy", 1, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
 	
@@ -156,8 +177,16 @@ bool MotionGenerator::init()
 	_subMessageEEG = _n.subscribe("/eeg", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// Publisher definitions
-	_pubDesiredTwist = _n.advertise<geometry_msgs::Twist>("/lwr/joint_controllers/passive_ds_command_vel", 1);
-	_pubDesiredOrientation = _n.advertise<geometry_msgs::Quaternion>("/lwr/joint_controllers/passive_ds_command_orient", 1);
+	if (!_iiwaInsteadLwr)
+	{
+		_pubDesiredTwist = _n.advertise<geometry_msgs::Twist>("/lwr/joint_controllers/passive_ds_command_vel", 1);
+		_pubDesiredOrientation = _n.advertise<geometry_msgs::Quaternion>("/lwr/joint_controllers/passive_ds_command_orient", 1);		
+	}
+	else
+	{
+		_pubCommand = _n.advertise<std_msgs::Float64MultiArray>("/iiwa/DSImpedance/command", 1);
+	}
+
 	//_pubFeedBackToParameter = _n.advertise<std_msgs::Float32>("/motion_generator_to_parameter_update", 1);
 	_pubFeedBackToParameter = _n.advertise<geometry_msgs::PoseArray>("/motion_generator_to_parameter_update", 1);
 	if(_delayIntroduce)
@@ -362,6 +391,12 @@ void MotionGenerator::mouseControlledMotion()
 				_xd = _x0 + _targetOffset.col(_currentTarget);
 				
 				float distance1 = (_xd-_x).norm();
+				
+				std::cout << "distance 1 : " << distance1 << std::endl;
+				std::cout << "_x0 : " << _x0(0) << "|" << _x0(1) << "|" << _x0(2) <<std::endl;
+				std::cout << "_xd : " << _xd(0) << "|" << _xd(1) << "|" << _xd(2) <<std::endl;
+				std::cout << "_x : " << _x(0) << "|" << _x(1) << "|" << _x(2) <<std::endl;
+
 				if(distance1 < TARGET_TOLERANCE) // push the trajectory to the IRL node.
 				{
 					// If 1 motion is completed before  and haven't publish yet. call the publisher to pushlish traj
@@ -463,6 +498,7 @@ void MotionGenerator::mouseControlledMotion()
 
 				// Compute distance to target
 				float distance = (_xd-_x).norm();
+
 				//--
 
 				//If during the motion, and eeg send message 1, then ..
@@ -524,7 +560,10 @@ void MotionGenerator::mouseControlledMotion()
 						_obs._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
 						_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
 						_obs._x0(1) -= 0.0f; //0.0
-						_obs._x0(0) -= 0.1f; //-0.1 +0.001
+						if (_iiwaInsteadLwr)
+							_obs._x0(0) += 0.1f;
+						else
+							_obs._x0(0) -= 0.1f; //-0.1 +0.001
 
 						sendObsPosition(true);//the sending is very frequent..
 					}
@@ -582,7 +621,6 @@ void MotionGenerator::mouseControlledMotion()
 						//_eventLogger = 15;
 						std::cout << "The number of trials : " << _trialCount << std::endl;
 						_trialCount++;
-
 						if (_switchingTrajectories and (float)std::rand()/RAND_MAX>0.25)
 						{
 							_msg_para_up.data = 1.0f;
@@ -602,14 +640,17 @@ void MotionGenerator::mouseControlledMotion()
 				}
 
 				obsModulator.setObstacle(_obs, _obs2, _numObstacle);
+				//std::cout<<'?' << std::endl;
 				// Compute the gain matrix M = B*L*B'
 				// B is an orthogonal matrix containing the directions corrected
 				// L is a diagonal matrix defining the correction gains along the directions
 				Eigen::Matrix3f B,L;
-				B.col(0) = _motionDirection;
-				B.col(1) = _perturbationDirection;//swap
+				// B.col(0) = _motionDirection;
+				// B.col(1) = _perturbationDirection;//swap
+				B.col(0) = _perturbationDirection;
+				B.col(1) = _motionDirection;
 				B.col(2) << 0.0f,0.0f,1.0f;
-				//std::cout<<' '<<_perturbationDirection(0)<<_perturbationDirection(1)<<_perturbationDirection(2);
+				//std::cout<<" -- "<<_perturbationDirection(0)<<" - "<<_perturbationDirection(1)<<" - "<<_perturbationDirection(2)<<std::endl;
 				gains << 10.0f, 10.0f, 10.0f; //was 10 10 30
 
 				// Compute error and desired velocity
@@ -618,9 +659,9 @@ void MotionGenerator::mouseControlledMotion()
 				error = error; //  * 0.01f; -> unstable... which makes the gain small..
 				L = gains.asDiagonal();
 				_vd = B*L*B.transpose()*error;
+				std::cout << "vd : " << _vd(0) << "|" << _vd(1) << "|" << _vd(2) << std::endl;
 				_vd = obsModulator.obsModulationEllipsoid(_x, _vd, false, _numObstacle);
 				_xp = _x;
-
 				if (distance > TARGET_TOLERANCE)
 				{
 					//block_pose.position.x = _msgRealPose.position.x;
@@ -743,6 +784,7 @@ void MotionGenerator::mouseControlledMotion()
 	// Desired quaternion to have the end effector looking down
 	_qd << 0.0f, 0.0f, 1.0f, 0.0f;
 	//_qd << 0.0f, -0.7f, 0.05f, 0.7f;// if points in horizontal direction
+
 }
 
 
@@ -863,7 +905,7 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
     {
     	_mouseVelocity(2) = 0.0f;
     }
-
+    //std::cout << "----" << std::endl;
    
   }
 }
@@ -871,25 +913,51 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
 
 void MotionGenerator::publishData()
 {
+	//std::cout << "===" << std::endl;
 	_mutex.lock();
 
-	// Publish desired twist (passive ds controller)
-	_msgDesiredTwist.linear.x  = _vd(0);
-	_msgDesiredTwist.linear.y  = _vd(1);
-	_msgDesiredTwist.linear.z  = _vd(2);
-	_msgDesiredTwist.angular.x = _omegad(0);
-	_msgDesiredTwist.angular.y = _omegad(1);
-	_msgDesiredTwist.angular.z = _omegad(2);
+	if (!_iiwaInsteadLwr)
+	{
+		// Publish desired twist (passive ds controller)
+		_msgDesiredTwist.linear.x  = _vd(0);
+		_msgDesiredTwist.linear.y  = _vd(1);
+		_msgDesiredTwist.linear.z  = _vd(2);
+		_msgDesiredTwist.angular.x = _omegad(0);
+		_msgDesiredTwist.angular.y = _omegad(1);
+		_msgDesiredTwist.angular.z = _omegad(2);
 
-	_pubDesiredTwist.publish(_msgDesiredTwist);
+		_pubDesiredTwist.publish(_msgDesiredTwist);
 
-	// Publish desired orientation
-	_msgDesiredOrientation.w = _qd(0);
-	_msgDesiredOrientation.x = _qd(1);
-	_msgDesiredOrientation.y = _qd(2);
-	_msgDesiredOrientation.z = _qd(3);
+		// Publish desired orientation
+		_msgDesiredOrientation.w = _qd(0);
+		_msgDesiredOrientation.x = _qd(1);
+		_msgDesiredOrientation.y = _qd(2);
+		_msgDesiredOrientation.z = _qd(3);
 
-	_pubDesiredOrientation.publish(_msgDesiredOrientation);
+		_pubDesiredOrientation.publish(_msgDesiredOrientation);				
+	}
+	else
+	{
+		// _vd(0) = -1*_vd(0);
+		// _vd(1) = -1*_vd(1);
+		// Publish desired twist (passive ds controller)
+		for(int k = 0; k < 3; k++)
+		{
+			//std::cout << "k" << k << std::endl;		
+		    _msgCommand.data[k]  = _vd(k);
+		    _msgCommand.data[k+3]  = _omegad(k);
+		}
+		for(int k = 0; k < 4; k++)
+		{
+		    _msgCommand.data[k+6]  = _qd(k);
+		}
+		//for(int k=0;k<10;k++)
+			//std::cout<< _msgCommand.data[k] << " ";
+		//std::cout<<std::endl;
+		_pubCommand.publish(_msgCommand);
+	}
+
+	//std::cout << "===" << std::endl;
 
 	_mutex.unlock();
 }
@@ -945,6 +1013,9 @@ void MotionGenerator::updateRealPose(const geometry_msgs::Pose::ConstPtr& msg)
 		//obsModulator.setObstacle(_obs);
 		obsModulator.setObstacle(_obs,_obs2, _numObstacle);
 	}
+	//_x[0] = -_x[0];
+	//_x[1] = -_x[1];
+
 }
 
 
