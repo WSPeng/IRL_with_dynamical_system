@@ -21,7 +21,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_numObstacle = 1;
 
 	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-	_boolSpacenav = 0; // in my PC, do not use the spacenav
+	_boolSpacenav = 1; // in my PC, do not use the spacenav
 
 	// Recieve obstacle&target position from outside node OR use the position predefined.
 	_obsPositionInput = false;
@@ -1444,8 +1444,8 @@ void MotionGenerator::changeRhoEta(int indcator)
 					_obs._safetyFactor += 0.01/2;
 					_obs._rho += 0.1/2;
 				#else
-					_obs._safetyFactor += 0.01/2*4/16; // in binary feedback case.. originally value is 4.
-					_obs._rho += 0.1/2*4/16;
+					_obs._safetyFactor += 0.01/2*4; // in binary feedback case.. originally value is 4.
+					_obs._rho += 0.1/2*4;
 				#endif
 
 				if (_obs._safetyFactor >= MAX_ETA)

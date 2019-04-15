@@ -44,7 +44,7 @@
 
 #define PROTOCAL_DEBUG
 
-#define DELAY_INTRODUCE 100
+#define DELAY_INTRODUCE 10
 
 class MotionGenerator 
 {
