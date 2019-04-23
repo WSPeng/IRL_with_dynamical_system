@@ -23,6 +23,7 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
         msg = rosmessage('std_msgs/Float32MultiArray');
     end
     
+    % one more message record the mouse, which is unneccessary for now.
 %     if(~exist('sub_mouse','var'))
 %         folderpath = "~/catkin_ws/src";
 %         rosgenmsg(folderpath)
@@ -44,7 +45,7 @@ while 1
         if delayIntro
             scandat2 = receive(sub_mouse);
             disp('got trajctory (mouse)')
-            %unpack the mouse message
+            % unpack the mouse message
             msg_mouse = zeros(size(scandat2.Xyz,1),3);
             for i = 1:size(scandat2.Xyz,1)
                 msg_mouse(i,1) = scandat2.Xyz(i,1).Position.X;
@@ -53,31 +54,21 @@ while 1
             end    
         end
    tic
-        % x = scandata.Poses(1).Position.X; 
         % unpack pose data to trajectory in 2D
         T = length(scandata.Poses);
         states = zeros(T,2);
         for i = 1:T
             states(i,1) = scandata.Poses(i).Position.Y;
             states(i,2) = scandata.Poses(i).Position.Z;
-            
 %             states(i,1) = scandata.Poses(i).Position.X;
 %             states(i,2) = scandata.Poses(i).Position.Y;
 %             states(i,3) = scandata.Poses(i).Position.Z;
         end
 %         figure;plot(states(:,1), states(:,2))
-
 %         figure;plot3(states(:,1), states(:,2), states(:,3))
         
         % store
         save(['data_' num2str(j) '.mat'], 'states');
-        
-            % for i = 1:T
-        %     states(i,3) = scandata.Poses(i).Position.X;
-        %     states(i,1) = scandata.Poses(i).Position.Y;
-        %     states(i,2) = scandata.Poses(i).Position.Z;
-        % end
-        % plot(states(:,3), states(:,1), states(:,2))
 
         % resacle the states
         rangex = [min(states(:,1)) max(states(:,1))];
@@ -85,8 +76,6 @@ while 1
         a = [abs(rangex(1)), 0];
 
         % reverse x
-        
-        
         states_r = (states+repmat(a,length(states),1))./abs(rangex(2)-rangex(1)).*10;
 
         if (states_r(T,1) < states_r(1,1))
@@ -95,10 +84,9 @@ while 1
         end
 
         % states_r(:,2) = -states_r(:,2);
-        
 %         figure;plot(states_r(:,1),states_r(:,2))
         
-        % apply soft ReLU
+        % ReLU (since the robot arm end effector will overshoot to low height)
         softrelu = 0;
         if softrelu
             s = (states_r(:,2)-3.1)*10;
@@ -107,10 +95,10 @@ while 1
         end
         
         % put the first point at 0,4.2
-        dd = 4.2 - states_r(1,2);
+%         dd = 4.2 - states_r(1,2);
         % two obs
 %         dd = 5 - states_r(1,2);
-        states_r(:,2) = states_r(:,2) + dd;
+%         states_r(:,2) = states_r(:,2) + dd;
         
         % sub sampleing
         lll = 50; %50
@@ -127,8 +115,17 @@ while 1
         states_ = states;
     end
     
+    % split the trajectory to 2 parts .. 
+    lll = length(states{1});
+    states_reverse = cell(length(states_)*2,1);
+    for i = 1: length(states_)
+        states_reverse{i*2-1} = states_{i}(1:floor(lll/2),:);
+        states_reverse{i*2} = flip(states_{i}(floor(lll/2):end,:));
+%         states_reverse{i*2} = states_{i}(floor(lll/2):end,:);
+    end
     
-    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
+    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_reverse);
+%     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor
 
@@ -142,7 +139,7 @@ while 1
 %     send(pub, msg);
 elapsedTime = toc
     j = j +1;
-    pause(1)
+    pause(100000)
 
 end
 

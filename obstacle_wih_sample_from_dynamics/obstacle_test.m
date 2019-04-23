@@ -54,7 +54,7 @@ opt_sim.plot = true; %enabling the animation
 opt_sim.obstacle = []; %no obstacle is defined
 obs{1}.x0 = [5; 3.8];%4
 
-% obs{1}.tailEffect = false;
+% obs{1}.tailEffect = false; % the tail effect is turned off..
 
 if two_obstacles
     %obs{1}.a = [1.5; 2.8];
@@ -80,13 +80,15 @@ opt_sim.obstacle = obs;
 obs_params.opt_sim = opt_sim;
 
 % Prepare MDP parameters.
+% 'obs' stands for ... combination of RBFs
+% 'cartesian' stands for ... gaussian process
 mdp_cat_name = 'Examples';
 mdp_param_names = {'4','8','16','32','64'};
 mdp_params = {struct('sensors',2,...
                      'motors',2,...
                      'seed',0,...
                      'fixed_pattern',3,...
-                     'feature_type','cartesian',... 'cartesian' grid simple 'obs' 
+                     'feature_type','obs',... 'cartesian' grid simple 'obs'
                      'obs_params', obs_params,...
                      'rbf_features',2,...
                      'feature_radius',0.5,...

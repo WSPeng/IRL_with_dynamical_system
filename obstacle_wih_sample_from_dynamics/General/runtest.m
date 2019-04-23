@@ -24,7 +24,11 @@ example_samples = cell(1);
 if nargin > 5
     for i = 1:length(example_human)
         example_samples{i}.s = [0, 4.2];
-        tocal_u = [0, 4.2; example_human{i}];
+        if mod(i,2) == 1
+            tocal_u = [0, 4.2; example_human{i}];
+        elseif mod(i,2) == 0
+           tocal_u = [10, 4.2; example_human{i}];
+        end
         example_samples{i}.u = diff(tocal_u,1);
         example_samples{i}.initu = zeros(length(example_human{i}),2);
         % ee = example_human{i}(12:61,:);

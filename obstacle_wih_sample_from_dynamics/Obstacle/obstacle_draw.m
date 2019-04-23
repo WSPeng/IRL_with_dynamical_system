@@ -107,7 +107,10 @@ if ~isempty(example_samples)
         % pts = objectworldcontrol(mdp_data,test_samples{i}.s,test_samples{i}.u);
         %pts = [test_samples{i}.s; pts];
         pts = test_samples{i}.states;
-        pts = [test_samples{i}.s; pts]; % add the starting point for drawing
+        
+        % comment the next line to plot successfully when we segement the
+        % path into two parts
+%         pts = [test_samples{i}.s; pts]; % add the starting point for drawing
         col = [0.5 0.5 0.7];
         % Plot the points.
         plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14,'linewidth',1.5);

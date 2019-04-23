@@ -119,15 +119,16 @@ if gradient_descent
     initu = 0;
     rbest = -Inf;
     tolGrad = 1e-3;
-    maxiter = 10;
-    alpha = 1e-3;
+    maxiter = 100;
+    alpha = 1e-3; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
     d_rho = alpha;
     d_sf = alpha;
     
     % Plot
-    figure; clf; xlim([-0.5 8.5]); ylim([0.8 1.8]); hold on
+    figure; clf; xlim([-0.5 8.5]); ylim([0.8 1.8]);     hold on
+    %ylim([-0.5 8.5]);
     
     % init
     % rho = rand(1)*0.7 + 0.9;
@@ -157,19 +158,21 @@ if gradient_descent
     C = reshape(R, size(X,1), size(X,2));
     grid = C;
 
-    % the init rho and sf
+    % the init rho and sf with the lowest value
     [~, I] = min(grid(:));
     [I_row, I_col] = ind2sub(size(grid), I);
-    rho = rho_(I_row);
-    sf = sf_(I_col);
+    rho = rho_(I_col);
+    sf = sf_(I_row);
     rho1 = rho;
     sf1 = sf;
     
     % switching
     switching = true;
     
-%      draw_heat(T, s, mdp_data, mdp, reward)
+%     draw_heat(T, s, mdp_data, mdp, reward)
     
+    color_list = linspace(0, 1, maxiter+1);
+
     if mdp_data.num_obs ~= 3 % TODO
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
             u = [ones(T,1)*rho; ones(T,1)*sf];
@@ -190,17 +193,16 @@ if gradient_descent
 
             % truncate the gradient 
             truncate = 1e1; % it is large before multiply alpha
-            if g_rho > truncate
-                g_rho = truncate;
-            end
-            if g_sf > truncate
-                g_sf = truncate;
-            end
+            if g_rho > truncate, g_rho = truncate; end
+            if g_sf > truncate, g_sf = truncate; end
 
+            % amplify the gradient in the rho direction. 
+            g_rho = g_rho * 4;
+            
             % coordinate descent
     %         if abs(g_rho) > abs(g_sf)
             if switching
-                rho_new = rho - alpha*g_rho;
+                rho_new = rho - alpha*g_rho; % go to the inverse gradient direction
                 sf_new = sf;
                 switching = ~switching;
             else
@@ -242,16 +244,17 @@ if gradient_descent
             end
             %%%
 
-            plot([rho rho_new],[sf sf_new],'ko-')
+            plot([rho rho_new], [sf sf_new],'color',[color_list(niter+1) 0 0],'marker','o')
             refresh
 
             niter = niter + 1;
             dx = norm([rho_new-rho, sf-sf_new]);
 
+            % update the sf and rho values.. 
             sf = sf_new;
             rho = rho_new;
         end
-    elseif mdp_data.num_obs ~= 0
+    elseif mdp_data.num_obs ~= 0 % this part is neglected ... 
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
             u = [ones(T,1)*rho; ones(T,1)*sf; ones(T,1)*rho1; ones(T,1)*sf1];
             
@@ -268,13 +271,8 @@ if gradient_descent
 
             % truncate the gradient 
             truncate = 1e1; % it is large before multiply alpha
-            if g_rho > truncate
-                g_rho = truncate;
-            end
-            
-            if g_sf > truncate
-                g_sf = truncate;
-            end
+            if g_rho > truncate, g_rho = truncate; end
+            if g_sf > truncate, g_sf = truncate; end
 
             % coordinate descent
     %         if abs(g_rho) > abs(g_sf)
@@ -307,12 +305,14 @@ if gradient_descent
             end
             %%%
 
-            plot([rho rho_new],[sf sf_new],'ko-')
+            % plot([rho rho_new],[sf sf_new],'ko-')
+            plot([rho rho_new], [sf sf_new],'color',[1 0 0],'marker','o')
             refresh
 
             niter = niter + 1;
             dx = norm([rho_new-rho, sf-sf_new]);
 
+            % update the sf and rho values.. 
             sf = sf_new;
             rho = rho_new;
         end
@@ -338,9 +338,12 @@ end
 
 
 function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
-% remove the negative here, since already negative at trajectory reward
-% function. 
+%   remove the negative here, since already negative at trajectory reward
+%   function. 
     r = + trajectoryreward_part(u, s, mdp_data, mdp, reward);
+    
+    % a pre defined protocal to test gradient descent algorithm
+    % r = trajectory_part_pre_define(u);
     
     if mdp_data.num_obs ~= 2
 %         d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
@@ -352,7 +355,7 @@ function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
         end
         l1 = log(d(1)) + log(d(2));
         l2 = log(d(3)) + log(d(4)); 
-        r = r + 1/-1000 * (l1 + l2*3); 
+        r = r + 1/-1 * (l1 + l2*3); % make the coeffecient small -> leads to change in the plot? check it 
     else
         if nargin > 7
             d = [rho - 0.0, -rho + 4, sf - 0.9, -sf + 1.3, ...
@@ -384,7 +387,7 @@ end
 
 function draw_heat(T, s, mdp_data, mdp, reward)
     % Visualize
-    STEPS = 60;
+    STEPS = 60; % 60 is relative ok speed
 %     x = linspace(0.01, 7.99, STEPS);
 %     y = linspace(0.901, 1.599, STEPS);
     x = linspace(0.01, 8.49, STEPS);
@@ -408,6 +411,7 @@ function draw_heat(T, s, mdp_data, mdp, reward)
             plot_index = 0;
         end
     end
+    
     C = reshape(R, size(X,1), size(X,2));
     
     C = C - min(min(C));
