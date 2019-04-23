@@ -131,3 +131,14 @@ the obstacle definition in matlab should be larger?
 ## multiple machines
 /etc/hosts  
 add ip address and name.
+
+Something like that: 
+128.179.131.239 fumi-ThinkPad
+128.179.160.1 DESKTOP-TLGS8JE
+
+
+dialout
+'ls /dev/ttyACM*'
+'python python_client.py'
+'ent group dialout'
+'sudo adduser shupeng dialout'
