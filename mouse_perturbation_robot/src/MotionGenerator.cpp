@@ -17,9 +17,6 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_delayIntroduce = 0;
 	// _delayInterval = 100; //100*2 = 200ms
 
-	// 1 or 2 for obstacle number
-	_numObstacle = 1;
-
 	// Recieve obstacle&target position from outside node OR use the position predefined.
 	_obsPositionInput = false;
 	_recievedObsPositionInput = false;
@@ -363,7 +360,7 @@ void MotionGenerator::mouseControlledMotion()
 		case State::CLEAN_MOTION:
 		{
 			// Check if mouse is in use
-			// _mouseInUse = true;
+			// _mouseInUse = true; // uncomment to disable the returning
 			#ifndef PROTOCAL_DEBUG
 			_mouseInUse = true; // make the if statement alway ture -> never go back to the start point
 			_indicatorRand = true;
@@ -401,9 +398,9 @@ void MotionGenerator::mouseControlledMotion()
 					// If 1 motion is completed before  and haven't publish yet. call the publisher to pushlish traj
 					// which will decided by z direction velocity, (pressed, lifted, and no change)
 					//std::cout << "mouse vvv"<<std::endl;
-					if(fabs(_mouseVelocity(2))>=300.0f and !_ifSentTraj)
+					if(fabs(_mouseVelocity(2))>=300.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f && !_ifSentTraj )
 					{
-						if (_mouseVelocity(2)>0.0f) // if the node is pressed
+						if (_mouseVelocity(2)>0.0f) // if the node is pressed instead of lifted
 						{
 							_ifSentTraj = true;
 							sendMsgForParameterUpdate();
@@ -451,8 +448,8 @@ void MotionGenerator::mouseControlledMotion()
 							_updateIRLParameter = false;
 							//std::cout << "Use the previous set of parameters " << "\n";
 
-							//if (_randomInsteadIRL && _indicatorRand)
-							if ( _indicatorRand)
+							if (_randomInsteadIRL && _indicatorRand)
+							//if ( _indicatorRand)
 							{
 								_indicatorRand = false;
 								// move to random generating mode
@@ -507,12 +504,13 @@ void MotionGenerator::mouseControlledMotion()
 					_mouseVelocity(1) = -1.0f;
 				}
 
-				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0.
+				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0. positive value ===> push the mouse towards the user
 				{
 					changeRhoEta(0);
 
 				}
-				else if (_mouseVelocity(1)<0.0f) // pressing
+				//else if (_mouseVelocity(1)<150.0f || ( _mouseVelocity(1)<0.0f && _mouseVelocity(0)<100.0f || _mouseVelocity(0)>100.0f )) // pushing forward
+				else if (_mouseVelocity(1)<0.0f)
 				{
 					changeRhoEta(1);
 					
@@ -708,12 +706,14 @@ void MotionGenerator::mouseControlledMotion()
 						// _eventLogger = 15;
 						_trialCount++;
 						std::cout << "The number of trials : " << _trialCount << std::endl;
-						if (_switchingTrajectories and _randomInsteadIRL)
-						{
-							_obs._safetyFactor = 1.1f + 0.4f*(float)std::rand()/RAND_MAX;
-							_obs._rho = 1.1f + 7*(float)std::rand()/RAND_MAX;
-							ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);	
-						}
+						
+						// after return to the start point, we dont regenerate random parameters
+						// if (_switchingTrajectories and _randomInsteadIRL)
+						// {
+						// 	_obs._safetyFactor = 1.1f + 0.4f*(float)std::rand()/RAND_MAX;
+						// 	_obs._rho = 1.1f + 7*(float)std::rand()/RAND_MAX;
+						// 	ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);	
+						// }
 					}
 					else
 					{
@@ -918,53 +918,52 @@ void MotionGenerator::processMouseEvents() // process mouse events
 void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, bool newEvent)
 {
 	//std::cout<< "here ====="<<std::endl;
-  if(!newEvent) // No new event received
-  {
-    _mouseVelocity.setConstant(0.0f);
-  }
-  else
-  {
-  	_mouseInUse = false;
-  	// If absolute value higher than min mouse velocity threshold, the mouse is in use,
-  	// otherwise mouse velocity is set to zero
-    if(fabs(relX)>MIN_XY_REL)
-    {
-		_mouseVelocity(0) = relX;
-    	//_eventLogger |= 1 << 3;
-    	_eventLogger = 1;
-      	_mouseInUse = true;
-    }
-    else
-    {
-    	_mouseVelocity(0) = 0.0f;
-    	//_eventLogger &= ~(1 << 3);
-    }
+	if(!newEvent) // No new event received
+	{
+	_mouseVelocity.setConstant(0.0f);
+	}
+	else
+	{
+		_mouseInUse = false;
+		// If absolute value higher than min mouse velocity threshold, the mouse is in use,
+		// otherwise mouse velocity is set to zero
+		if(fabs(relX)>MIN_X_REL)
+		{
+			_mouseVelocity(0) = relX;
+			//_eventLogger |= 1 << 3;
+			_eventLogger = 1;
+		  	_mouseInUse = true;
+		}
+		else
+		{
+			_mouseVelocity(0) = 0.0f;
+			//_eventLogger &= ~(1 << 3);
+		}
 
-    // enable the y direction velocity
-    if(fabs(relY)>MIN_Y_REL)
-    {
-    	_mouseVelocity(1) = relY;
-    	
-    	_mouseInUse = true;
-    }
-    else
-    {
-    	_mouseVelocity(1) = 0.0f;
-    } 
+		// enable the y direction velocity
+		if((fabs(relY)>MIN_Y_REL && fabs(relX)>MIN_Y_REL) || fabs(relY)>MIN_X_REL)
+		{
+			_mouseVelocity(1) = relY;
+			
+			_mouseInUse = true;
+		}
+		else
+		{
+			_mouseVelocity(1) = 0.0f;
+		} 
 
-    // z direction velocity for publishing
-    if(fabs(relZ)>MIN_XY_REL)
-    {
-    	_mouseVelocity(2) = relZ;
-    	//eventLogger
-    }
-    else
-    {
-    	_mouseVelocity(2) = 0.0f;
-    }
-    //std::cout << "----" << std::endl;
-   
-  }
+		// z direction velocity for publishing
+		if(fabs(relZ)>MIN_Z_REL)
+		{
+			_mouseVelocity(2) = relZ;
+			//eventLogger
+		}
+		else
+		{
+			_mouseVelocity(2) = 0.0f;
+		}
+		//std::cout << "----" << std::endl;
+	}	
 }
 
 
@@ -1355,7 +1354,7 @@ void MotionGenerator::subMessageEEG(const std_msgs::String::ConstPtr& msg)
 
 void MotionGenerator::changeRhoEta(int indcator)
 {
-	if (_numObstacle == 2)
+	if (_numObstacle == 2)  // need debug for 2 obs case
 	{
 		// make change
 		if (indcator)
@@ -1428,16 +1427,13 @@ void MotionGenerator::changeRhoEta(int indcator)
 			if (_indexx >= DELAY_INTRODUCE)
 			{
 				_indexx = 0;
-			#else
-			{
 			#endif
-				
 				#ifndef BINARY_INPUT
 					_obs._safetyFactor += 0.01/2;
 					_obs._rho += 0.1/2;
 				#else
-					_obs._safetyFactor += 0.01; // in binary feedback case.. originally value is 4.
-					_obs._rho += 0.1;
+					_obs._safetyFactor += 0.01/2; // in binary feedback case.. originally value is 4.
+					_obs._rho += 0.1/2;
 				#endif
 
 				if (_obs._safetyFactor >= MAX_ETA)
@@ -1449,46 +1445,38 @@ void MotionGenerator::changeRhoEta(int indcator)
 					_obs._rho = MAX_RHO;
 				}
 
-				if (_numObstacle == 2)
-				{
-					_obs2._rho = _obs._rho;
-					_obs2._safetyFactor = _obs._safetyFactor;
-				}
 				std::cout << "_safetyFactor Increasing " << _obs._safetyFactor << "\n";
 				std::cout << "_rho Increasing " << _obs._rho << "\n";
+			#ifdef DELAY_INTRODUCE
 			}
+			#endif
 		}
 		else
 		{
 			#ifndef BINARY_INPUT
+
+			#ifdef DELAY_INTRODUCE
+			_indexy += 1;
+			if (_indexy >= DELAY_INTRODUCE)
 			{
-				#ifdef DELAY_INTRODUCE
-				_indexy += 1;
-				if (_indexy >= DELAY_INTRODUCE)
+				_indexy = 0;
+			#endif
+				_obs._safetyFactor -= 0.01;
+				_obs._rho -= 0.1;
+				if (_obs._safetyFactor <= MIN_ETA)
 				{
-					_indexy = 0;
-				#else
+					_obs._safetyFactor = MIN_ETA;
+				}
+				if (_obs._rho <= MIN_RHO)
 				{
-				#endif
-					_obs._safetyFactor -= 0.01;
-					_obs._rho -= 0.1;
-					if (_obs._safetyFactor <= MIN_ETA)
-					{
-						_obs._safetyFactor = MIN_ETA;
-					}
-					if (_obs._rho <= MIN_RHO)
-					{
-						_obs._rho = MIN_RHO;
-					}
-				if (_numObstacle == 2)
-					{
-						_obs2._rho = _obs._rho;
-						_obs2._safetyFactor = _obs._safetyFactor;
-					}
-					std::cout << "_safetyFactor Decreasing " << _obs._safetyFactor<<"\n";
-					std::cout << "_rho Decreasing " << _obs._rho << "\n";
-				}				
+					_obs._rho = MIN_RHO;
+				}
+				std::cout << "_safetyFactor Decreasing " << _obs._safetyFactor<<"\n";
+				std::cout << "_rho Decreasing " << _obs._rho << "\n";
+			#ifdef DELAY_INTRODUCE
 			}
+			#endif
+
 			#endif
 		}
 	}	

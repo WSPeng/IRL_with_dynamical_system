@@ -28,7 +28,10 @@
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
 
 #define MAX_XY_REL 350                    // Max mouse velocity [-]
-#define MIN_XY_REL 150                    // Min mouse velocity used as threshold [-]
+#define MIN_X_REL 150                    // Min mouse velocity used as threshold [-]
+#define MIN_Y_REL 100
+#define MIN_Z_REL 320                     // Set this threshold to be a large value
+
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity
 #define MAX_PERTURBATION_OFFSET 0.1f      // Max perturnation offset [m]
 #define MIN_PERTURBATION_OFFSET 0.05f     // Min perturbation offset [m]
@@ -38,13 +41,9 @@
 #define MIN_RHO 0.5f
 #define MAX_ETA 1.6f //2
 #define MIN_ETA 0.8f
-#define MIN_Y_REL 150
-
 #define BINARY_INPUT
 
 #define PROTOCAL_DEBUG
-
-
 
 // #define DELAY_INTRODUCE 10
 
@@ -54,6 +53,9 @@ class MotionGenerator
     private:
 
     //===========================================
+    // 1 or 2 for obstacle number
+    const int _numObstacle = 1;
+
     // random generate rho and sf at each end of trails
     const bool _randomInsteadIRL = true;
 
@@ -196,7 +198,6 @@ class MotionGenerator
     int _indexx;
     int _indexy;
 
-    int _numObstacle;
     int _numOfDemo;
     int _numOfDemoCounter;
 
