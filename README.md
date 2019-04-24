@@ -128,6 +128,10 @@ tailEffect should be off
 the obstacle definition in matlab should be larger?  
 
 
+in the header file "MotionGenerator.h", flag PROTOCAL_DEBUG is for debugging the EEG decoding, which means the end effector will return to the origin position if the user release the 3D mouse.  
+
+
+
 ## multiple machines
 /etc/hosts  
 add ip address and name.

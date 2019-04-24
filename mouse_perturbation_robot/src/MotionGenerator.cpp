@@ -41,8 +41,8 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
-	_ifsendArduino = 0;
-	_useArduino = false;
+	_ifsendArduino = 1;
+	_useArduino = true;
 
 	// random generate rho and sf at each end of trails
 	_randomInsteadIRL = true;
@@ -202,7 +202,7 @@ bool MotionGenerator::init()
 	_dynRecServer.setCallback(_dynRecCallback);
 
 	// Open file to save data
-	_outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	_outputFile.open ("/home/shupeng/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
 	_outputFile << "NEW EXPERIMENT\n";
 	
 	// Catch CTRL+C event with the callback provided
@@ -372,6 +372,7 @@ void MotionGenerator::mouseControlledMotion()
 		case State::CLEAN_MOTION:
 		{
 			// Check if mouse is in use
+			_mouseInUse = true;
 			#ifndef PROTOCAL_DEBUG
 			_mouseInUse = true; // make the if statement alway ture -> never go back to the start point
 			_indicatorRand = true;
@@ -459,7 +460,8 @@ void MotionGenerator::mouseControlledMotion()
 							_updateIRLParameter = false;
 							//std::cout << "Use the previous set of parameters " << "\n";
 
-							if (_randomInsteadIRL && _indicatorRand)
+							//if (_randomInsteadIRL && _indicatorRand)
+							if ( _indicatorRand)
 							{
 								_indicatorRand = false;
 								// move to random generating mode
@@ -469,18 +471,19 @@ void MotionGenerator::mouseControlledMotion()
 							}
 
 							//if (_numOfDemo>=1 && !_randomInsteadIRL)
-							if (_numOfDemo>=0 && !_randomInsteadIRL)
-							{
+							//if (_numOfDemo>=0 && !_randomInsteadIRL)
+							// if (!_randomInsteadIRL)
+							// {
 								//_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
 								//_obs._rho = _rhosfSave[_numOfDemo-1][0];
-								_obs._safetyFactor = 0.9f;
-								_obs._rho = 0.9f;
+								// _obs._safetyFactor = 0.9f;
+								// _obs._rho = 0.9f;
 								//std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
 								//std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
-								std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
-								std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
+								// std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
+								// std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
 
-							}
+							// }
 
 							//std::cout << "Cleaning the trjaectory ===== " << "\n";
 							_msgRealPoseArray.poses.clear();
@@ -698,15 +701,16 @@ void MotionGenerator::mouseControlledMotion()
 				// Compute distance to target
 				float distance = (_xd-_x).norm();
 
+				// _eventLogger = 0;
 				_eventLogger |= 1;
 
 				if (_previousTarget == Target::A)
-				{
-					_eventLogger |= 1 << 2;
-				}
-				else
-				{
-					_eventLogger |= 1 << 1;
+				 {
+				 	_eventLogger |= 1 << 2;
+				 }
+				 else
+				 {
+				 	_eventLogger |= 1 << 1;
 				}
 
 				if(distance < TARGET_TOLERANCE)
@@ -1444,8 +1448,8 @@ void MotionGenerator::changeRhoEta(int indcator)
 					_obs._safetyFactor += 0.01/2;
 					_obs._rho += 0.1/2;
 				#else
-					_obs._safetyFactor += 0.01/2*4; // in binary feedback case.. originally value is 4.
-					_obs._rho += 0.1/2*4;
+					_obs._safetyFactor += 0.01; // in binary feedback case.. originally value is 4.
+					_obs._rho += 0.1;
 				#endif
 
 				if (_obs._safetyFactor >= MAX_ETA)
