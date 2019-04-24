@@ -20,9 +20,6 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	// 1 or 2 for obstacle number
 	_numObstacle = 1;
 
-	// to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-	_boolSpacenav = 1; // in my PC, do not use the spacenav
-
 	// Recieve obstacle&target position from outside node OR use the position predefined.
 	_obsPositionInput = false;
 	_recievedObsPositionInput = false;
@@ -41,14 +38,8 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
-	_ifsendArduino = 1;
-	_useArduino = true;
-
-	// random generate rho and sf at each end of trails
-	_randomInsteadIRL = true;
-
-	// if use iiwa instead of the lwr
-	_iiwaInsteadLwr = false;
+	_ifsendArduino = 0; // 
+	_useArduino = false;
 
 	if (_numObstacle == 2)
 	{
@@ -372,7 +363,7 @@ void MotionGenerator::mouseControlledMotion()
 		case State::CLEAN_MOTION:
 		{
 			// Check if mouse is in use
-			_mouseInUse = true;
+			// _mouseInUse = true;
 			#ifndef PROTOCAL_DEBUG
 			_mouseInUse = true; // make the if statement alway ture -> never go back to the start point
 			_indicatorRand = true;
@@ -470,20 +461,17 @@ void MotionGenerator::mouseControlledMotion()
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
 							}
 
-							//if (_numOfDemo>=1 && !_randomInsteadIRL)
-							//if (_numOfDemo>=0 && !_randomInsteadIRL)
-							// if (!_randomInsteadIRL)
-							// {
-								//_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
-								//_obs._rho = _rhosfSave[_numOfDemo-1][0];
-								// _obs._safetyFactor = 0.9f;
-								// _obs._rho = 0.9f;
-								//std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
-								//std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
-								// std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
-								// std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
-
-							// }
+							if (_numOfDemo>=1 && !_randomInsteadIRL)
+							{
+								_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
+								_obs._rho = _rhosfSave[_numOfDemo-1][0];
+								_obs._safetyFactor = 0.9f;
+								_obs._rho = 0.9f;
+								std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
+								std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
+								std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
+								std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
+							}
 
 							//std::cout << "Cleaning the trjaectory ===== " << "\n";
 							_msgRealPoseArray.poses.clear();
@@ -1434,7 +1422,7 @@ void MotionGenerator::changeRhoEta(int indcator)
 	{
 		// make change
 		if (indcator)
-		{	
+		{
 			#ifdef DELAY_INTRODUCE
 			_indexx += 1;
 			if (_indexx >= DELAY_INTRODUCE)
@@ -1484,14 +1472,14 @@ void MotionGenerator::changeRhoEta(int indcator)
 				#endif
 					_obs._safetyFactor -= 0.01;
 					_obs._rho -= 0.1;
-				if (_obs._safetyFactor <= MIN_ETA)
-				{
-					_obs._safetyFactor = MIN_ETA;
-				}
-				if (_obs._rho <= MIN_RHO)
-				{
-					_obs._rho = MIN_RHO;
-				}
+					if (_obs._safetyFactor <= MIN_ETA)
+					{
+						_obs._safetyFactor = MIN_ETA;
+					}
+					if (_obs._rho <= MIN_RHO)
+					{
+						_obs._rho = MIN_RHO;
+					}
 				if (_numObstacle == 2)
 					{
 						_obs2._rho = _obs._rho;

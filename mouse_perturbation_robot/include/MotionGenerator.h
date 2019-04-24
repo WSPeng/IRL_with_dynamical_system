@@ -44,11 +44,25 @@
 
 #define PROTOCAL_DEBUG
 
+
+
 // #define DELAY_INTRODUCE 10
 
 class MotionGenerator 
 {
+
     private:
+
+    //===========================================
+    // random generate rho and sf at each end of trails
+    const bool _randomInsteadIRL = true;
+
+    // if use iiwa instead of the lwr
+    const bool _iiwaInsteadLwr = false;
+
+    // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
+    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
+    //===========================================
 
     // State phase enum
     // INIT: Initial phase where the user get used to what a clean motion is
@@ -147,7 +161,6 @@ class MotionGenerator
     bool _perturbationFlag;           // Flag to set whether random perturbations occur
     bool _switchingTrajectories;      // Flag to set whether the obstacle parameters can randomly change
     bool _errorButtonPressed;         // Monitor the keyboard
-    bool _boolSpacenav;               // to indicate in the lab PC or my PC
     bool _ifSentTraj;                 // 
     bool _updateIRLParameter;          // if update parameter from the IRL node, if not then use the one more previous parameter set. 
     bool _obsPositionInput;            // if the obstacle position is decided by the input or not
@@ -196,8 +209,6 @@ class MotionGenerator
 
     std_msgs::String _msgMessageEEG;
 
-    bool _randomInsteadIRL;
-    bool _iiwaInsteadLwr;
     bool _indicatorRand;
 
   public:

@@ -92,9 +92,9 @@ Check messages
 `$rosrun rqt_graph rqt_graph`
 
 Parametere setting in the robotarm PC:  
-damping eigen - 90/1000  
-damping eigen - 90/500  
-rot stiff - 11/50  
+damping eigen - 90/1000  (80 - walid)
+damping eigen - 90/500  (80 - walid)
+rot stiff - 11/50    (20 - walid)
 rot damping - 2/50  
 
 while in my PC, it should be 850 and 850 for damping eigen.
@@ -146,3 +146,9 @@ dialout
 'python python_client.py'
 'ent group dialout'
 'sudo adduser shupeng dialout'
+
+
+
+## another computer running the IRL algorithm
+
+rosinit('128.178.145.250','Nodename','IRL_wsp')
