@@ -120,7 +120,7 @@ if gradient_descent
     rbest = -Inf;
     tolGrad = 1e-3;
     maxiter = 100;
-    alpha = 0.1; % 1e-3
+    alpha = 1e-3; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
     d_rho = alpha;
@@ -192,12 +192,12 @@ if gradient_descent
             g_sf = (r_sf - r)/d_sf;
 
             % amplify the gradient in the rho direction. 
-            g_rho = g_rho * 10;
+            g_rho = g_rho * 4;
             
             % truncate the gradient 
-            truncate = 1e-1; % alpha multiplied afterwards
-            if abs(g_rho) > truncate*10, g_rho = truncate*10*sign(g_rho); end
-            if abs(g_sf) > truncate, g_sf = truncate*sign(g_sf); end
+            truncate = 1e1; % it is large before multiply alpha
+            if abs(g_rho) > truncate, g_rho = truncate*sign(g_rho); end
+            if abs(g_sf) > truncate, g_sf = truncate*sign(g_ad); end
            
             % coordinate descent
     %         if abs(g_rho) > abs(g_sf)
@@ -253,14 +253,6 @@ if gradient_descent
             % update the sf and rho values.. 
             sf = sf_new;
             rho = rho_new;
-            
-            %update the criterion
-%             gnorm = mean([abs(g_sf), abs(g_rho)]);
-            if switching
-                gnorm = abs(g_rho);
-            else
-                gnorm = abs(g_sf);
-            end
         end
     elseif mdp_data.num_obs ~= 0 % this part is neglected ... 
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))

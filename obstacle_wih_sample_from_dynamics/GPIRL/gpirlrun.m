@@ -131,7 +131,7 @@ wts(end) = auglagfindfeasible(@(wt)gpirlcost(wt,gp,infos_dyn,infos_pt),length(wt
 % Run Augmented Lagrangian optimization.
 tic;
 bestll = Inf;
-for r=1:algorithm_params.restarts
+for r=1:algorithm_params.restarts % which is 1
     if r > 1
         % Pick new u and new weight.
         u = rand(size(F_u,1),1);
@@ -139,7 +139,7 @@ for r=1:algorithm_params.restarts
     end
     % Pack the parameters.
     params = gpirlpack(gp,u,wts);
-    % Run the optimization.
+    % Run the optimization. --- THE optimization process
     params = auglag(@(wt)gpirlcost(wt,gp,infos_dyn,infos_pt),length(wts),params,options,verbosity);
     % Evaluate score.
     tparams = params;
