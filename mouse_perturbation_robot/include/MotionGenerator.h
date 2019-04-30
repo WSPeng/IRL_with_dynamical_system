@@ -28,8 +28,8 @@
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
 
 #define MAX_XY_REL 350                    // Max mouse velocity [-]
-#define MIN_X_REL 150                    // Min mouse velocity used as threshold [-]
-#define MIN_Y_REL 100
+#define MIN_X_REL 200                    // Min mouse velocity used as threshold [-]
+#define MIN_Y_REL 200
 #define MIN_Z_REL 320                     // Set this threshold to be a large value
 
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity

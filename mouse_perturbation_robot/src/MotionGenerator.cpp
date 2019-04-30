@@ -36,7 +36,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
 	_ifsendArduino = 0; // 
-	_useArduino = false;
+	_useArduino = true;
 
 	if (_numObstacle == 2)
 	{
@@ -190,7 +190,7 @@ bool MotionGenerator::init()
 	_dynRecServer.setCallback(_dynRecCallback);
 
 	// Open file to save data
-	_outputFile.open ("/home/shupeng/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	_outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
 	_outputFile << "NEW EXPERIMENT\n";
 	
 	// Catch CTRL+C event with the callback provided
@@ -363,7 +363,7 @@ void MotionGenerator::mouseControlledMotion()
 			// _mouseInUse = true; // uncomment to disable the returning
 			#ifndef PROTOCAL_DEBUG
 			_mouseInUse = true; // make the if statement alway ture -> never go back to the start point
-			_indicatorRand = true;
+			// _indicatorRand = true;
 			#endif		
 			if(_obsPositionInput && _recievedTarPositionInput)
 			{
