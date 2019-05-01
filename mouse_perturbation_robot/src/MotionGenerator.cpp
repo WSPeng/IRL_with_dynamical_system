@@ -35,8 +35,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
-	_ifsendArduino = 0; // 
-	_useArduino = true;
+	_ifsendArduino = 0; //
 
 	if (_numObstacle == 2)
 	{
@@ -453,8 +452,29 @@ void MotionGenerator::mouseControlledMotion()
 							{
 								_indicatorRand = false;
 								// move to random generating mode
-								_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
-								_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+								if(_randomWholeRange)
+								{
+									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
+									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;									
+								}
+								else
+								{
+									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
+									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
+
+									// _obs._safetyFactor = 1.1f + 0.1f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
+
+									// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
+
+									// _obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
+
+									// Higher std
+									_obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
+									_obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4														
+								}
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
 							}
 

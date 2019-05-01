@@ -43,7 +43,7 @@
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
 
-#define PROTOCAL_DEBUG
+// #define PROTOCAL_DEBUG
 
 // #define DELAY_INTRODUCE 10
 
@@ -63,7 +63,13 @@ class MotionGenerator
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
+    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav
+
+    //
+    const bool  _useArduino = false; 
+
+    // enable it when "evaluate" the algorithm
+    const bool _randomWholeRange = true;
     //===========================================
 
     // State phase enum
@@ -159,7 +165,6 @@ class MotionGenerator
     bool _perturbation;               // Monitor the execution of a perturbation phase
     bool _mouseControlledMotion;      // Monitor the use of mouse controlled motion
     bool _mouseInUse;                 // Monitor if the mouse is in use
-    bool _useArduino;                 // Monitor the use of the Arduino
     bool _perturbationFlag;           // Flag to set whether random perturbations occur
     bool _switchingTrajectories;      // Flag to set whether the obstacle parameters can randomly change
     bool _errorButtonPressed;         // Monitor the keyboard
