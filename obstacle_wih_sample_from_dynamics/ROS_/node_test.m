@@ -38,12 +38,17 @@ for j = 1:length(sIn)
         % put the first point at 0,4.2
     dd = 4.2 - states_r(1,2);
     states_r(:,2) = states_r(:,2) + dd;
-    
+          
     % sub sampleing
     index = linspace(50, T-50, 50);
     index = floor(index);
     states_tbl = states_r(index, :);
     
+    % split the trajectory to 2 parts .. 
+%     lll = length(states_tbl);
+%     threshold_h = 0.7;
+%     states_tbl = states_tbl(states_tbl(:,1) < max(states_tbl(:,1))*threshold_h, :);
+        
     % use the trajectory for learning
     
     states_{j} = states_tbl;

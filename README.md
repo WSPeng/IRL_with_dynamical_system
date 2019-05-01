@@ -109,15 +109,6 @@ start the mouse interface node
 start the motion generator node
 
 
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-
 ## Deployment
 
 Add additional notes about how to deploy this on a live system
@@ -146,6 +137,12 @@ dialout
 'python python_client.py'
 'ent group dialout'
 'sudo adduser shupeng dialout'
+
+
+reference links: 
+[The matlab page](https://www.mathworks.com/help/robotics/examples/connect-to-a-ros-network.html)
+[The list of checking](https://www.mathworks.com/matlabcentral/answers/196911-use-matlab-robotics-system-toolbox-to-receive-ros-message)
+[hosts](ftp://ftp.iitb.ac.in/LDP/en/solrhe/chap9sec95.html)
 
 
 

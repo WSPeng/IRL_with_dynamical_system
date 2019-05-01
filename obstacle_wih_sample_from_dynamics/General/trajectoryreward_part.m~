@@ -23,17 +23,16 @@ if subsample
         states = states(logi_index);
     else % one obstacle
 %         logi_index = states(:,2) > 4.3;
-        logi_index = states(:,1) > 0.35*max_x & states(:,1) < 0.65*max_x;
+        logi_index = states(:,1) > 0.3*max_x & states(:,1) < 0.8*max_x;
         %states = states(index, :);
         % val = val(index);
         states = states(logi_index,:);
     end
     % val = randsample(val, 50); % Random sampling is not good
-    num_resample = 15;
-    index = linspace(1, length(states), num_resample);
+    index = linspace(1, length(states), 50);
     index = floor(index);
     states = states(index,:);
-    u = u(1:num_resample,:);
+    u = u(1:50,:);
 end
 
 val = feval(strcat(reward.type,'evalreward'),reward,mdp_data,s,u,states,A,B,[]);

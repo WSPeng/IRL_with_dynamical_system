@@ -33,6 +33,7 @@ world = 'obstacle_';
 % Obstacle
 obs_params = {};
 obs_params.x0 = [0; 4.2];
+% obs_params.x0 = [0; 4];
 obs_params.xT = [];
 obs_params.fn_handle = @move_constant_v;
 
@@ -54,7 +55,7 @@ opt_sim.plot = true; %enabling the animation
 opt_sim.obstacle = []; %no obstacle is defined
 obs{1}.x0 = [5; 3.8];%4
 
-% obs{1}.tailEffect = false; % the tail effect is turned off..
+obs{1}.tailEffect = false; % the tail effect is turned off..
 
 if two_obstacles
     %obs{1}.a = [1.5; 2.8];
@@ -88,7 +89,7 @@ mdp_params = {struct('sensors',2,...
                      'motors',2,...
                      'seed',0,...
                      'fixed_pattern',3,...
-                     'feature_type','obs',... 'cartesian' grid simple 'obs'
+                     'feature_type','obs',... 'cartesian' grid simple 'obs' - EBFs
                      'obs_params', obs_params,...
                      'rbf_features',2,...
                      'feature_radius',0.5,...

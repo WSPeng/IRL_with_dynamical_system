@@ -1,6 +1,6 @@
 function node(states)
 
-delayIntro = false;
+delayIntro = false; % should be false
 
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
@@ -51,7 +51,7 @@ while 1
                 msg_mouse(i,1) = scandat2.Xyz(i,1).Position.X;
                 msg_mouse(i,2) = scandat2.Xyz(i,1).Position.Y;
                 msg_mouse(i,3) = scandat2.Xyz(i,1).Position.Z;
-            end    
+            end
         end
    tic
         % unpack pose data to trajectory in 2D
@@ -94,14 +94,14 @@ while 1
             states_r(:,2) = ss/10 + 4.2;% - 0.5;
         end
         
-        % put the first point at 0,4.2
-%         dd = 4.2 - states_r(1,2);
+%         put the first point at 0,4.2
+        dd = 4.2 - states_r(1,2);
         % two obs
 %         dd = 5 - states_r(1,2);
-%         states_r(:,2) = states_r(:,2) + dd;
+        states_r(:,2) = states_r(:,2) + dd;
         
         % sub sampleing
-        lll = 50; %50
+        lll = 50; % set the length to be 50
         index = linspace(lll, T-lll, 50);
         index = floor(index);
         states_tbl = states_r(index, :);
@@ -116,7 +116,7 @@ while 1
     end
     
     % split the trajectory to 2 parts .. 
-    lll = length(states{1});
+    lll = length(states_{1});
 %     states_reverse = cell(length(states_)*2,1);
     states_reverse = cell(length(states_),1);
     for i = 1: length(states_)
@@ -126,7 +126,11 @@ while 1
 %         states_reverse{i*2} = states_{i}(floor(lll/2):end,:);
 
         % only use the half trajectory
-        states_reverse{i} = states_{i}(1:floor(lll/4*3),:);        
+%         states_reverse{i} = states_{i}(1:floor(lll/4*2),:);      %3/4  
+        
+        % Filter the trajectory by horizontal coordinate
+        threshold_h = 0.7;
+        states_reverse{i} = states_{i}(states_{i}(:,1) < max(states_{i}(:,1))*threshold_h, :);
     end
     
     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_reverse);
@@ -144,7 +148,8 @@ while 1
 %     send(pub, msg);
 elapsedTime = toc
     j = j +1;
-    pause(100000)
-
+    if nargin >= 1
+        pause(100000)
+    end
 end
 

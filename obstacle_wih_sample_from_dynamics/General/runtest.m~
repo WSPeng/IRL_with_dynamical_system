@@ -26,7 +26,7 @@ if nargin > 5
         example_samples{i}.s = [0, 4.2];
         tocal_u = [0, 4.2; example_human{i}];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% if we use split the demonstrations
+% if we use split the demonstr
 %         if mod(i,2) == 1
 %             tocal_u = [0, 4.2; example_human{i}];
 %         elseif mod(i,2) == 0
