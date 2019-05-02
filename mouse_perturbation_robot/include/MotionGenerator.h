@@ -47,6 +47,8 @@
 
 // #define DELAY_INTRODUCE 10
 
+#define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG)
+
 class MotionGenerator 
 {
 

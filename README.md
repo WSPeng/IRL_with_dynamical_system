@@ -149,3 +149,7 @@ reference links:
 ## another computer running the IRL algorithm
 
 rosinit('128.178.145.250','Nodename','IRL_wsp')
+
+
+				_obs._safetyFactor = MAX_ETA;
+				_obs._rho = MIN_RHO;
