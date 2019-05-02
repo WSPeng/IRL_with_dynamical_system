@@ -150,6 +150,7 @@ reference links:
 
 rosinit('128.178.145.250','Nodename','IRL_wsp')
 
-
-				_obs._safetyFactor = MAX_ETA;
-				_obs._rho = MIN_RHO;
+matlab
+setenv('ROS_MASTER_URI', 'http://')
+getenv()
+setenv('ROS_IP','')

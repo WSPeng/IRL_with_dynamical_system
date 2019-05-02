@@ -65,10 +65,10 @@ class MotionGenerator
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav
+    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
 
     //
-    const bool  _useArduino = false; 
+    const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm
     const bool _randomWholeRange = true;
@@ -218,6 +218,9 @@ class MotionGenerator
     std_msgs::String _msgMessageEEG;
 
     bool _indicatorRand;
+
+    int _numOfErrorTrails;
+    int _numOfCorrectTrails;
 
   public:
     // Class constructor

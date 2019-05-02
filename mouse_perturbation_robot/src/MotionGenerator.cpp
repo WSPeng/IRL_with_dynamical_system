@@ -95,7 +95,7 @@ bool MotionGenerator::init()
   	_pauseDuration = 0.4f;
   	_commandLagDuration = 0.3f;
   	_reachedTime = 0.0f;
-  	_trialCount = 0;
+  	_trialCount = -1;
   	_perturbationCount = 0;
   	_lastMouseEvent = mouse_perturbation_robot::MouseMsg::M_NONE;
   	_errorButtonCounter = 0;
@@ -116,6 +116,8 @@ bool MotionGenerator::init()
 	_errorButtonPressed = false;
 	_firstSpacenavDataReceived = false;
 	_numOfDemo = 0;
+	_numOfErrorTrails = 0;
+	_numOfCorrectTrails = 0;
 
 	_state = State::INIT;
 	#ifdef PROTOCAL_DEBUG
@@ -474,16 +476,16 @@ void MotionGenerator::mouseControlledMotion()
 							_currentTarget = Target::B;
 						}
 
-						// if (_randomInsteadIRL && _indicatorRand && (_currentTarget == temporaryTarget))
-						if (_randomInsteadIRL && _indicatorRand )
+						if (_randomInsteadIRL && _indicatorRand && (_currentTarget != _previousTarget))
+						// if (_randomInsteadIRL && _indicatorRand )
 						{
-							std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget << std::endl;
+							// std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget << std::endl;
 							_indicatorRand = false;
 							// move to random generating mode
 							if(_randomWholeRange)
 							{
 								_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
-								_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;									
+								_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
 							}
 							else
 							{
@@ -515,9 +517,18 @@ void MotionGenerator::mouseControlledMotion()
 					if (_mouseVelocity(0)==0.0f &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO)  )
     				{
     					// ROS_INFO_STREAM("Incease the parameters");
+    					_numOfErrorTrails ++;
+    					_obs._safetyFactor = MAX_ETA;
+    					_obs._rho = MAX_RHO;
     					std::cout << "Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
-						_obs._safetyFactor = MAX_ETA;
-						_obs._rho = MAX_RHO;
+    					
+    					_eventLogger = 3;
+    					_ifsendArduino = 0;
+    				}
+    				else if(_mouseVelocity(0)==0.0f)
+    				{
+    					_eventLogger = 3;
+    					_ifsendArduino = 0;
     				}
 				}
 				#endif
@@ -653,7 +664,10 @@ void MotionGenerator::mouseControlledMotion()
 					{
 						//_eventLogger = 15;
 						_trialCount++;
-						std::cout << "The number of trials : " << _trialCount << std::endl;
+						_numOfCorrectTrails = _trialCount - _numOfErrorTrails;
+						std::cout << "The number of trials : " << _trialCount;
+						std::cout << " | Correct trails : " << _numOfCorrectTrails;
+						std::cout << " | Error trails : " <<  _numOfErrorTrails << std::endl; 
 						if (_switchingTrajectories) // ?
 						{
 							_msg_para_up.data = 1.0f;
