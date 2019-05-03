@@ -118,6 +118,7 @@ bool MotionGenerator::init()
 	_numOfDemo = 0;
 	_numOfErrorTrails = 0;
 	_numOfCorrectTrails = 0;
+	_msgEEG = 0;
 
 	_state = State::INIT;
 	#ifdef PROTOCAL_DEBUG
@@ -158,15 +159,19 @@ bool MotionGenerator::init()
 	}
 	
 	if(_boolSpacenav)
-		_subSpaceNav = _n.subscribe("/spacenav/joy", 1, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
+		_subSpaceNav = _n.subscribe("/spacenav/joy", 10, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
 	
+	#ifdef LISTEN_EEG
+		// _subBrainAct = _n.subscribe("/brain_decoder", 1, &MotionGenerator::updateBrainData, this, ros::TransportHints().reliable().tcpNoDelay());
+		_subMessageEEG = _n.subscribe("/eeg", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
+	#endif
+
 	_subIRL = _n.subscribe("/parameters_tuning", 1, &MotionGenerator::updateIRLParameter, this, ros::TransportHints().reliable().tcpNoDelay());
 	if(_obsPositionInput)
 	{
 		_subPositionObs = _n.subscribe("/position_post/obstacle_position", 1, &MotionGenerator::subPositionObs, this, ros::TransportHints().reliable().tcpNoDelay());
 		_subPositionTar = _n.subscribe("/position_post/target_position", 1, &MotionGenerator::subPositionTar, this, ros::TransportHints().reliable().tcpNoDelay());
 	}
-	_subMessageEEG = _n.subscribe("/eeg", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// Publisher definitions
 	if (!_iiwaInsteadLwr)
@@ -191,7 +196,8 @@ bool MotionGenerator::init()
 	_dynRecServer.setCallback(_dynRecCallback);
 
 	// Open file to save data
-	_outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	// _outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	_outputFile.open ("/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
 	_outputFile << "NEW EXPERIMENT\n";
 	
 	// Catch CTRL+C event with the callback provided
@@ -514,7 +520,11 @@ void MotionGenerator::mouseControlledMotion()
 				#ifdef PROTOCAL_RELEASE_INCREASE
 				if (distance1 > TARGET_TOLERANCE)
 				{
-					if (_mouseVelocity(0)==0.0f &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO)  )
+				#ifndef LISTEN_EEG
+					if (_mouseVelocity(0)==0.0f &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
+    			#else
+					if (_msgEEG == 1 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
+				#endif
     				{
     					// ROS_INFO_STREAM("Incease the parameters");
     					_numOfErrorTrails ++;
@@ -525,7 +535,11 @@ void MotionGenerator::mouseControlledMotion()
     					_eventLogger = 3;
     					_ifsendArduino = 0;
     				}
+    			#ifndef LISTEN_EEG
     				else if(_mouseVelocity(0)==0.0f)
+    			#else
+    				else if(_msgEEG == 1)
+    			#endif
     				{
     					_eventLogger = 3;
     					_ifsendArduino = 0;
@@ -543,11 +557,11 @@ void MotionGenerator::mouseControlledMotion()
 				//--
 
 				//If during the motion, and eeg send message 1, then ..
-				if(_msgEGG == 1 && distance > TARGET_TOLERANCE)
-				{
-					//std::cout << "reveive eeg message" << std::endl;
-					_mouseVelocity(1) = -1.0f;
-				}
+				// if(_msgEEG == 1 && distance > TARGET_TOLERANCE)
+				// {
+				// 	//std::cout << "reveive eeg message" << std::endl;
+				// 	_mouseVelocity(1) = -1.0f;
+				// }
 
 				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0. positive value ===> push the mouse towards the user
 				{
@@ -952,15 +966,16 @@ void MotionGenerator::processMouseEvents() // process mouse events
   // following working on the laboratory
   if(_boolSpacenav)
   {
-  	//std::cout<< "here ====="<< 0.0f <<std::endl;
-	//std::cout<< "here ====="<< _msgSpacenav <<std::endl;
+  	// std::cout<< "here ====="<< 0.0f <<std::endl;
+	// std::cout<< "here ====="<< _msgSpacenav <<std::endl;
   	processCursorEvent(-350.0f*_msgSpacenav.axes[1]/0.69f, -350.0f*_msgSpacenav.axes[0]/0.69f, -350.0f*_msgSpacenav.axes[2]/0.69f, true);
-    //std::cerr << _mouseVelocity.transpose() << std::endl;
+    // std::cerr << _mouseVelocity.transpose() << std::endl;
 	// std::cerr << "a" << std::endl;
   	// std::cerr << _msgSpacenav.axes[0] << " " << _msgSpacenav.axes[1] << " " << _msgSpacenav.axes[2] << std::endl;
   	// std::cerr << "b" << std::endl;
   }
   //--------
+
 }
 
 
@@ -1072,9 +1087,14 @@ void MotionGenerator::publishData()
 
 void MotionGenerator::logData()
 {
-	_outputFile << ros::Time::now() << " " << _x(0) << " " << _x(1) << " " << _x(2) << " " << (int)(_perturbationFlag) << " " << (int)(_switchingTrajectories) << " " 
-	<< _obs._p(0) << " " << _obs._safetyFactor << " " << _obs._rho << " " << (int)(_errorButtonPressed) << " " << (int)_eventLogger << std::endl;
-
+	_outputFile << ros::Time::now() << " " << _x(0) << " " << _x(1) << " " << _x(2) << " " << (int)(_perturbationFlag) << " " 
+	<< (int)(_switchingTrajectories) << " " << _obs._p(0) << " " << _obs._safetyFactor << " " << _obs._rho << " " 
+	<< (int)(_errorButtonPressed) << " " << (int)_eventLogger 
+	#ifdef LISTEN_EEG
+	<< " " << _msgEEG <<  " " << std::endl; // add a brain logger here
+	#else
+	<< std::endl;
+	#endif
 	//_errorButtonPressed?
 
 	// if (_errorButtonPressed and _errorButtonCounter > 14)
@@ -1152,7 +1172,7 @@ void MotionGenerator::updateSpacenavData(const sensor_msgs::Joy::ConstPtr& msg)
   	{
   		_firstSpacenavDataReceived = true;
   	}
-}
+}	
 
 
 void MotionGenerator::updateIRLParameter(const std_msgs::Float32MultiArray::ConstPtr& msg)
@@ -1396,10 +1416,10 @@ void MotionGenerator::subPositionTar(const geometry_msgs::Pose::ConstPtr& msg)
 void MotionGenerator::subMessageEEG(const std_msgs::String::ConstPtr& msg)
 {
 	_msgMessageEEG = *msg;
-	//_msgEGG = (int)msg->data;
-	//_msgEGG = (int)_msgMessageEEG.data;
-	_msgEGG = std::stoi(_msgMessageEEG.data);
-	std::cout << "reveived EEG data: " << _msgEGG << std::endl;
+	//_msgEEG = (int)msg->data;
+	//_msgEEG = (int)_msgMessageEEG.data;
+	_msgEEG = std::stoi(_msgMessageEEG.data);
+	std::cout << "reveived EEG data: " << _msgEEG << std::endl;
 }
 
 

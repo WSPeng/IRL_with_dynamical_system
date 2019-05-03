@@ -49,6 +49,8 @@
 
 #define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG)
 
+#define LISTEN_EEG // Test the brain activity decoder 
+
 class MotionGenerator 
 {
 
@@ -65,13 +67,14 @@ class MotionGenerator
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
+    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav
 
     //
-    const bool  _useArduino = true; 
+    const bool  _useArduino = false; 
 
     // enable it when "evaluate" the algorithm
     const bool _randomWholeRange = true;
+
     //===========================================
 
     // State phase enum
@@ -97,8 +100,7 @@ class MotionGenerator
     ros::Subscriber _subIRL;                // Subscribe to the parameter generating node
     ros::Subscriber _subPositionObs;        // Subscribe to the obstacle position
     ros::Subscriber _subPositionTar;        // Subscribe to the target position
-    ros::Subscriber _subMessageEEG;         
-
+    ros::Subscriber _subMessageEEG;         // EEG
 
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
@@ -158,6 +160,7 @@ class MotionGenerator
     uint8_t _lastMouseEvent;                          // Last mouse event
     uint8_t _errorButtonCounter;                      // Counter for persistence of key press
     uint8_t _eventLogger;                             // Stores event messages sent to arduino
+    uint8_t _brainLogger;                             // Sending the result of brain decoding
 
     //Booleans
     bool _firstRealPoseReceived;      // Monitor the first robot pose update
@@ -183,7 +186,7 @@ class MotionGenerator
     ros::Time trigger_begin;
 
     int _ifsendArduino;
-    int _msgEGG;
+    int _msgEEG;                      // The binary EEG signal
 
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance
@@ -266,6 +269,7 @@ class MotionGenerator
     // Callback to update mouse data
     void updateMouseData(const mouse_perturbation_robot::MouseMsg::ConstPtr& msg);
 
+    // Callback to update the mouse data by use the space navigator
     void updateSpacenavData(const sensor_msgs::Joy::ConstPtr& msg);
 
     // Callback to update the parameter rho and safety factor
@@ -303,7 +307,7 @@ class MotionGenerator
     // reveive the target position
     void subPositionTar(const geometry_msgs::Pose::ConstPtr& msg);
 
-    // 
+    // EEG signal
     void subMessageEEG(const std_msgs::String::ConstPtr& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
