@@ -114,27 +114,8 @@ while 1
         T = length(states);
         states_ = states;
     end
-    
-    % split the trajectory to 2 parts .. 
-    lll = length(states_{1});
-%     states_reverse = cell(length(states_)*2,1);
-    states_reverse = cell(length(states_),1);
-    for i = 1: length(states_)
-%         states_reverse{i*2-1} = states_{i}(1:floor(lll/2),:);
-%         states_reverse{i*2} = flip(states_{i}(floor(lll/2):end,:)); %
-%         flip the matrix 
-%         states_reverse{i*2} = states_{i}(floor(lll/2):end,:);
 
-        % only use the half trajectory
-%         states_reverse{i} = states_{i}(1:floor(lll/4*2),:);      %3/4  
-        
-        % Filter the trajectory by horizontal coordinate
-        threshold_h = 0.7;
-        states_reverse{i} = states_{i}(states_{i}(:,1) < max(states_{i}(:,1))*threshold_h, :);
-    end
-    
-    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_reverse);
-%     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
+    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor
 
@@ -146,7 +127,8 @@ while 1
     disp(sf)
     
 %     send(pub, msg);
-elapsedTime = toc
+    elapsedTime = toc
+    
     j = j +1;
     if nargin >= 1
         pause(100000)

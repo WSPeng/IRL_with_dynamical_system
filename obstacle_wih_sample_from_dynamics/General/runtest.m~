@@ -37,9 +37,7 @@ if nargin > 5
         % Or too close to the obstacle 
         threshold_v = 4.5;
         index2 = example_human{i}(:,2) > threshold_v;
-        nn = ceil(length(example_human{i})/2);
-        index2 = index2 | logical([ones(nn,1); 
-                 zeros(length(example_human{i})-nn,1)]);
+        index2 = index2 | logical(cedil(length(example_human{i})/2) )
         index_ = index1 & index2;
         
         states_reverse{i} = example_human{i}(index_, :);

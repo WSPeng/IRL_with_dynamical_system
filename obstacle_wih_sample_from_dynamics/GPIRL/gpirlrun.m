@@ -117,7 +117,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % add discounting factor in the infos_pt.
 % infos_pt{i}
-base_discounting = 1;
+base_discounting = 0.1;
 for i = 1:length(infos_pt)
     infos_pt{i}.discount = base_discounting^(length(infos_pt)-i);
 end

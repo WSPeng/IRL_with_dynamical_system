@@ -33,7 +33,6 @@ world = 'obstacle_';
 % Obstacle
 obs_params = {};
 obs_params.x0 = [0; 4.2];
-% obs_params.x0 = [0; 4];
 obs_params.xT = [];
 obs_params.fn_handle = @move_constant_v;
 
@@ -128,7 +127,7 @@ save([test_file_name '_' num2str(a) '_' num2str(s) '_' num2str(r) '.mat'],...
     'mdp_params','mdp_cat_name','mdp_param_names',...
     'algorithms','names','colors','order','restarts','test_result');
 
-visualize(test_result)
+visualize(test_result, example_human)
 
 if nargout > 0
     uu = test_result.irl_result.example_samples{1,1}.u(1,:);
