@@ -33,6 +33,8 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
 %     end
 
     states_ = cell(1,1);
+    
+    save_sf_rho = zeros(2,1);
 end
 
 j = 1;
@@ -66,7 +68,12 @@ while 1
         end
 %         figure;plot(states(:,1), states(:,2))
 %         figure;plot3(states(:,1), states(:,2), states(:,3))
-        
+
+        % Raise error when empty data received
+        if isempty(states)
+            error('Empty demonstration provided.')
+        end
+
         % store
         save(['data_' num2str(j) '.mat'], 'states');
 
@@ -125,6 +132,8 @@ while 1
     disp('sending')
     disp(rho)
     disp(sf)
+    
+    save_sf_rho(:,j) = [sf; rho];
     
 %     send(pub, msg);
     elapsedTime = toc

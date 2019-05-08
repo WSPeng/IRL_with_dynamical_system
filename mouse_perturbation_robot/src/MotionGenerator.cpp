@@ -35,8 +35,6 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 	//std::cerr << "ons ?" << _numObstacle << std::endl;
 
-	_ifsendArduino = 0; //
-
 	if (_numObstacle == 2)
 	{
 		//obstacle definition 1 
@@ -191,6 +189,8 @@ bool MotionGenerator::init()
 	_pubTarPosition = _n.advertise<geometry_msgs::Pose>("/send_position_target_marker", 1);
 	_pubObsPosition = _n.advertise<geometry_msgs::Pose>("/send_position_obstacle_marker", 1);
 
+	_pubDebugTrigger = _n.advertise<std_msgs::Int8>("/trigger_debug", 1);
+
 	// Dynamic reconfigure definition
 	_dynRecCallback = boost::bind(&MotionGenerator::dynamicReconfigureCallback, this, _1, _2);
 	_dynRecServer.setCallback(_dynRecCallback);
@@ -275,11 +275,6 @@ void MotionGenerator::run()
 
 			// Log data
 			logData();
-			if(!_ifsendArduino)
-			{
-				_eventLogger = 1;
-				_ifsendArduino = 1;
-			}
 
 			// Publish data to topics
 			publishData(); // publish the data to controller. 
@@ -498,14 +493,17 @@ void MotionGenerator::mouseControlledMotion()
 								// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
 								// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
 
-								// _obs._safetyFactor = 1.1f + 0.1f*(float)std::rand()/RAND_MAX;
+								// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
 								// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
+								// larger range
+								_obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
+								_obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
 
 								// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
 								// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
 
-								_obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
-								_obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
+								// _obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
+								// _obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
 
 								// Higher std
 								// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
@@ -520,31 +518,26 @@ void MotionGenerator::mouseControlledMotion()
 				#ifdef PROTOCAL_RELEASE_INCREASE
 				if (distance1 > TARGET_TOLERANCE)
 				{
-				#ifndef LISTEN_EEG
+					#ifndef LISTEN_EEG
 					if (_mouseVelocity(0)==0.0f &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
-    			#else
+    				#else
 					if (_msgEEG == 1 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
-				#endif
-    				{
-    					// ROS_INFO_STREAM("Incease the parameters");
+    				#endif
+				    {
     					_numOfErrorTrails ++;
     					_obs._safetyFactor = MAX_ETA;
     					_obs._rho = MAX_RHO;
     					std::cout << "Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
-    					
-    					_eventLogger = 3;
-    					_ifsendArduino = 0;
     				}
-    			#ifndef LISTEN_EEG
-    				else if(_mouseVelocity(0)==0.0f)
-    			#else
-    				else if(_msgEEG == 1)
-    			#endif
+
+    				if (_mouseVelocity(0) == 0.0f)
+    					_eventLogger |= (1 << 1);
+    				}
+
+    				if (_msgEEG == 1)
     				{
-    					_eventLogger = 3;
-    					_ifsendArduino = 0;
+    					_eventLogger |= (1 << 2);
     				}
-				}
 				#endif
 
 				//--
@@ -575,9 +568,8 @@ void MotionGenerator::mouseControlledMotion()
 					
 					if(distance > TARGET_TOLERANCE)
 					{
-						_eventLogger = 3;
+						// _eventLogger = 3; // will be changed if we use the y direction of the mouse
 						//sendValueArduino(3);
-						_ifsendArduino = 0;
 					}
 				}
 				//else
@@ -670,8 +662,7 @@ void MotionGenerator::mouseControlledMotion()
 				if(distance < TARGET_TOLERANCE)
 				{
 					// Target is reached
-					// make the eventlogger is 0 between two motions
-					_eventLogger = 0;
+					_eventLogger &= ~(1 << 0);
 
 					// Random change in trajectory parameters
 					if (_previousTarget != _currentTarget)
@@ -690,7 +681,7 @@ void MotionGenerator::mouseControlledMotion()
 					}
 					else
 					{
-						_eventLogger = 0;
+						// _eventLogger = 0;
 					}
 
 					_previousTarget = _currentTarget;
@@ -739,6 +730,8 @@ void MotionGenerator::mouseControlledMotion()
     				_msgMouseI.position.z = _mouseVelocity(2);
     				// publish the mouse message to irl
     				_msgMouseIRL.xyz.push_back(_msgMouseI);
+
+    				_eventLogger |= (1 << 0); // 1 during motion
 				}
 			}
 			else
@@ -750,16 +743,15 @@ void MotionGenerator::mouseControlledMotion()
 				// Compute distance to target
 				float distance = (_xd-_x).norm();
 
-				// _eventLogger = 0;
-				_eventLogger |= 1;
+				// _eventLogger |= 1; // no logger is specified in current release protocal
 
 				if (_previousTarget == Target::A)
 				 {
-				 	_eventLogger |= 1 << 2;
+				 	// _eventLogger |= 1 << 2;
 				 }
 				 else
 				 {
-				 	_eventLogger |= 1 << 1;
+				 	// _eventLogger |= 1 << 1;
 				}
 
 				if(distance < TARGET_TOLERANCE)
@@ -805,7 +797,6 @@ void MotionGenerator::mouseControlledMotion()
 				_vd = obsModulator.obsModulationEllipsoid(_x, _vd, false, _numObstacle);
 			}
 
-			//if(_useArduino &&_ifsendArduino)
 			if(_useArduino)
 			{
 				sendValueArduino(_eventLogger);
@@ -994,14 +985,13 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
 		if(fabs(relX)>MIN_X_REL)
 		{
 			_mouseVelocity(0) = relX;
-			//_eventLogger |= 1 << 3;
-			_eventLogger = 1;
+			_eventLogger &= ~(1 << 1); // second bit = 0 if pushing
 		  	_mouseInUse = true;
 		}
 		else
 		{
 			_mouseVelocity(0) = 0.0f;
-			//_eventLogger &= ~(1 << 3);
+			// _eventLogger &= 1 << 1;
 		}
 
 		#ifndef PROTOCAL_RELEASE_INCREASE
@@ -1017,6 +1007,9 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
 			_mouseVelocity(1) = 0.0f;
 		} 
 
+		// To test the IRL...
+		#endif
+
 		// z direction velocity for publishing
 		if(fabs(relZ)>MIN_Z_REL)
 		{
@@ -1028,7 +1021,7 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
 			_mouseVelocity(2) = 0.0f;
 		}
 		//std::cout << "----" << std::endl;
-		#endif
+		// #endif
 	}	
 }
 
@@ -1322,8 +1315,11 @@ void MotionGenerator::initArduino()
 
 void MotionGenerator::sendValueArduino(uint8_t value)
 {
-  write(farduino,&value,1);
+  write(farduino, &value, 1);
   //std::cout << "Arduino message: " << (int)value << std::endl;
+  _eventLoggerP.data = _eventLogger;
+  _pubDebugTrigger.publish(_eventLoggerP);
+
   if (value>0)
   {
     trigger_begin = ros::Time::now();
@@ -1420,6 +1416,10 @@ void MotionGenerator::subMessageEEG(const std_msgs::String::ConstPtr& msg)
 	//_msgEEG = (int)_msgMessageEEG.data;
 	_msgEEG = std::stoi(_msgMessageEEG.data);
 	std::cout << "reveived EEG data: " << _msgEEG << std::endl;
+	if (_msgEEG == 1)
+		_eventLogger |= (1 << 2);
+	else if (_msgEEG == 0)
+		_eventLogger &= ~(1 << 2);
 }
 
 

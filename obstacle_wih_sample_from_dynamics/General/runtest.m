@@ -35,7 +35,7 @@ if nargin > 5
         threshold_h = 0.7;
         index1 = example_human{i}(:,1) < max(example_human{i}(:,1))*threshold_h;
         % Or too close to the obstacle 
-        threshold_v = 4.5;
+        threshold_v = 4.8;
         index2 = example_human{i}(:,2) > threshold_v;
         nn = ceil(length(example_human{i})/2);
         index2 = index2 | logical([ones(nn,1); 

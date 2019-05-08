@@ -26,7 +26,7 @@ if subsample
         logi_index = states(:,1) > 0.35*max_x & states(:,1) < 0.65*max_x;
         
         % add contraint in vertical direction
-        logi_index_v = states(:,2) > 0.45;
+        logi_index_v = states(:,2) > 0.48;
         logi_index = logi_index & logi_index_v;
         %states = states(index, :);
         states = states(logi_index,:);

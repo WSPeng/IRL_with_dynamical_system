@@ -36,11 +36,13 @@ end
 % feval(strcat(test_result.mdp,'draw'),test_result.irl_result.reward,...
 %     test_result.irl_result.example_samples,test_result.irl_result.test_samples,test_result.mdp_params,test_result.mdp_data);
 
+% ===============
 % plot the original demonstrations (before cutting) % to comment for
 % plotting the real demonstrations 
-% for i = 1:length(example_human)
-%     test_result.example_samples{i}.states = example_human{i};
-% end
+for i = 1:length(example_human)
+    test_result.example_samples{i}.states = example_human{i};
+end
+% ===============
 
 feval(strcat(test_result.mdp,'draw'),test_result.irl_result.reward,...
     test_result.irl_result.example_samples, test_result.example_samples, test_result.mdp_params,...

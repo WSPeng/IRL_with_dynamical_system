@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "ros/ros.h"
+#include "std_msgs/Int8.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Float64MultiArray.h"
@@ -47,9 +48,9 @@
 
 // #define DELAY_INTRODUCE 10
 
-#define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG)
+#define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG) (Experiment)
 
-#define LISTEN_EEG // Test the brain activity decoder 
+// #define LISTEN_EEG // Test the brain activity decoder 
 
 class MotionGenerator 
 {
@@ -61,7 +62,7 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = true;
+    const bool _randomInsteadIRL = false;
 
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;
@@ -69,8 +70,8 @@ class MotionGenerator
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
     const bool _boolSpacenav = 0; // in my PC, do not use the spacenav
 
-    //
-    const bool  _useArduino = false; 
+    // 
+    const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm
     const bool _randomWholeRange = true;
@@ -109,6 +110,7 @@ class MotionGenerator
     ros::Publisher _pubTarPosition;
     ros::Publisher _pubObsPosition;
     ros::Publisher _pubCommand;
+    ros::Publisher _pubDebugTrigger;
     
     // Messages declaration
     geometry_msgs::Pose _msgRealPose;
@@ -159,8 +161,10 @@ class MotionGenerator
     uint32_t _perturbationCount;                      // Number of perturbation phases accomplished [-]
     uint8_t _lastMouseEvent;                          // Last mouse event
     uint8_t _errorButtonCounter;                      // Counter for persistence of key press
-    uint8_t _eventLogger;                             // Stores event messages sent to arduino
+    //uint8_t _eventLogger;                             // Stores event messages sent to arduino
+    int _eventLogger;
     uint8_t _brainLogger;                             // Sending the result of brain decoding
+    std_msgs::Int8 _eventLoggerP;
 
     //Booleans
     bool _firstRealPoseReceived;      // Monitor the first robot pose update
@@ -185,7 +189,6 @@ class MotionGenerator
     bool trigger_raised;
     ros::Time trigger_begin;
 
-    int _ifsendArduino;
     int _msgEEG;                      // The binary EEG signal
 
     // Other variables
