@@ -196,8 +196,8 @@ bool MotionGenerator::init()
 	_dynRecServer.setCallback(_dynRecCallback);
 
 	// Open file to save data
-	// _outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
-	_outputFile.open ("/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	_outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	// _outputFile.open ("/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
 	_outputFile << "NEW EXPERIMENT\n";
 	
 	// Catch CTRL+C event with the callback provided
@@ -684,6 +684,8 @@ void MotionGenerator::mouseControlledMotion()
 						// _eventLogger = 0;
 					}
 
+					_eventLogger &= ~(1 << 1);
+
 					_previousTarget = _currentTarget;
 
 					// Update target
@@ -774,6 +776,8 @@ void MotionGenerator::mouseControlledMotion()
 					{
 						_eventLogger = 0;
 					}
+
+					_eventLogger &= ~(1 << 1);
 
 					_currentTarget = _previousTarget;
 					// Update target
