@@ -127,6 +127,8 @@ bool MotionGenerator::init()
 	_currentTarget = Target::A;
 	#endif
 
+	temp_counter = 0;	
+
 	Eigen::Vector3f temp;
 	temp << 0.0f,0.0f,1.0f;
 	_motionDirection = _targetOffset.col(_currentTarget)-_targetOffset.col(_previousTarget);
@@ -383,6 +385,7 @@ void MotionGenerator::mouseControlledMotion()
 				}
 				// Save current target
 				temporaryTarget = _previousTarget;
+				temporaryTarget = _currentTarget;
 
 				// add code to make only change direction in two target positions=======================
 				_xd = _x0 + _targetOffset.col(_currentTarget);
@@ -441,35 +444,8 @@ void MotionGenerator::mouseControlledMotion()
 					}
 
 					// Update target from mouse input
-					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)) && temp_counter==0 )// start the next motion
+					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))// start the next motion
 					{
-						#ifdef BINARY_INPUT
-						if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true. not pressed then go into this loop...
-						{
-							// use the previous set of parameters rho and sf
-							_updateIRLParameter = false;
-							//std::cout << "Use the previous set of parameters " << "\n";
-
-							if (_numOfDemo>=1 && !_randomInsteadIRL)
-							{
-								_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
-								_obs._rho = _rhosfSave[_numOfDemo-1][0];
-								_obs._safetyFactor = 0.9f;
-								_obs._rho = 0.9f;
-								// std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
-								// std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
-								std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
-								std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
-							}
-
-							//std::cout << "Cleaning the trjaectory ===== " << "\n";
-							_msgRealPoseArray.poses.clear();
-						}
-						//else _updateIRLParameter = true;
-						#endif
-
-						_ifSentTraj = false;
-						
 						if(_mouseVelocity(0)>0.0f) // positice or negative for direction.
 						{
 							_currentTarget = Target::A;
@@ -478,47 +454,81 @@ void MotionGenerator::mouseControlledMotion()
 						{
 							_currentTarget = Target::B;
 						}
+						// std::cout << "==current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
 
-						if (_randomInsteadIRL && _indicatorRand && (_currentTarget != _previousTarget))
-						// if (_randomInsteadIRL && _indicatorRand )
+						//if((_currentTarget != _previousTarget))
+						if((_currentTarget != temporaryTarget))
 						{
-							// std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget << std::endl;
-							_indicatorRand = false;
-							// move to random generating mode
-							if(_randomWholeRange)
+							std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
+							#ifdef BINARY_INPUT
+							if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true. not pressed then go into this loop...
 							{
-								_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
-								_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+								// use the previous set of parameters rho and sf
+								_updateIRLParameter = false;
+								// std::cout << "Use the previous set of parameters " << "\n";
+
+								if (_numOfDemo>=1 && !_randomInsteadIRL)
+								{
+									_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
+									_obs._rho = _rhosfSave[_numOfDemo-1][0];
+									_obs._safetyFactor = 0.9f;
+									_obs._rho = 0.9f;
+									// std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
+									// std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
+									std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
+									std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
+								}
+
+								//std::cout << "Cleaning the trjaectory ===== " << "\n";
+								_msgRealPoseArray.poses.clear();
+							
+								_ifSentTraj = false;
 							}
-							else
+							//else _updateIRLParameter = true;
+							#endif
+							
+							if (_randomInsteadIRL && _indicatorRand )
+							// if (_randomInsteadIRL && _indicatorRand )
 							{
-								// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
-								// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
+								_indicatorRand = false;
+								// move to random generating mode
+								if(_randomWholeRange)
+								{
+									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
+									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+								}
+								else
+								{
+									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
+									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
 
-								// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
-								// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
-								// larger range
-								_obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
-								_obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
+									// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
+									// larger range
+									_obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
+									_obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
 
-								// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
-								// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
+									// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
 
-								// _obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
-								// _obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
+									// _obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
 
-								// Higher std
-								// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
-								// _obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4														
-							}
-							ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
+									// Higher std
+									// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
+									// _obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4														
+								}
+								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
+							}							
+							temp_counter++;
+							_ifSentTraj = false;
 						}
-						temp_counter++;
 					}
 					else
 					{
 						temp_counter = 0;
 					}
+					// std::cout << "temp ounter" << temp_counter << std::endl;
 				}
 				
 				//======================================================================================
@@ -567,7 +577,6 @@ void MotionGenerator::mouseControlledMotion()
 				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0. positive value ===> push the mouse towards the user
 				{
 					changeRhoEta(0);
-
 				}
 				//else if (_mouseVelocity(1)<150.0f || ( _mouseVelocity(1)<0.0f && _mouseVelocity(0)<100.0f || _mouseVelocity(0)>100.0f )) // pushing forward
 				else if (_mouseVelocity(1)<0.0f)
@@ -586,15 +595,6 @@ void MotionGenerator::mouseControlledMotion()
 					//std::cout << "_rho not changing " << _obs._rho << "\n";
 				//}
 				//======================================================================================
-
-				//if (_currentTarget==Target::A)
-				//{
-				//	_eventLogger |= 1 << 1;
-				//}
-				//else
-				//{
-				//	_eventLogger |= 1 << 2;
-				//}
 
 				// If new target, updates previous one and compute new motion and perturbation direction.
 				// Also updates the relative location of the obstacle

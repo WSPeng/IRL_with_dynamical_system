@@ -62,7 +62,7 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = false;
+    const bool _randomInsteadIRL = true;
 
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;
@@ -227,6 +227,7 @@ class MotionGenerator
 
     int _numOfErrorTrails;
     int _numOfCorrectTrails;
+    int temp_counter;
 
   public:
     // Class constructor
