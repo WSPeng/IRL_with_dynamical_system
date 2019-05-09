@@ -441,7 +441,7 @@ void MotionGenerator::mouseControlledMotion()
 					}
 
 					// Update target from mouse input
-					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))// start the next motion
+					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)) && temp_counter==0 )// start the next motion
 					{
 						#ifdef BINARY_INPUT
 						if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true. not pressed then go into this loop...
@@ -456,8 +456,8 @@ void MotionGenerator::mouseControlledMotion()
 								_obs._rho = _rhosfSave[_numOfDemo-1][0];
 								_obs._safetyFactor = 0.9f;
 								_obs._rho = 0.9f;
-								std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
-								std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
+								// std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
+								// std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
 								std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
 								std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
 							}
@@ -467,7 +467,9 @@ void MotionGenerator::mouseControlledMotion()
 						}
 						//else _updateIRLParameter = true;
 						#endif
+
 						_ifSentTraj = false;
+						
 						if(_mouseVelocity(0)>0.0f) // positice or negative for direction.
 						{
 							_currentTarget = Target::A;
@@ -511,8 +513,14 @@ void MotionGenerator::mouseControlledMotion()
 							}
 							ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
 						}
+						temp_counter++;
+					}
+					else
+					{
+						temp_counter = 0;
 					}
 				}
+				
 				//======================================================================================
 				
 				#ifdef PROTOCAL_RELEASE_INCREASE

@@ -2,8 +2,9 @@
 function [example_samples,test_samples, reward] = resampleexamples(mdp_data, mdp, reward,...
                             true_reward, test_params, old_examples, old_tests, verbose)
 
-% the reward is learned reward - 
-                        
+BOUND_SF = [0.9, 1.6];
+BOUND_RHO = [0, 9.0];
+% the reward is learned reward -                 
 with_dynamics = false;
 gradient_descent = true;
 proximal = false;
@@ -138,8 +139,8 @@ if gradient_descent
     if mdp_data.num_obs == 2
         GRID_BOUND = [0.8, 3.7, 0.9, 1.19];
     else
-%         GRID_BOUND = [2.0, 7.5, 1.0, 1.5];
-        GRID_BOUND = [2.0, 6.5, 1.0, 1.4];
+        GRID_BOUND = [2.0, 7.5, 1.0, 1.5];
+%         GRID_BOUND = [2.0, 6.5, 1.0, 1.4];
     end
 
     STEPS = 3;
@@ -231,15 +232,15 @@ if gradient_descent
                 end
             else
                 % constraints
-                if sf_new < 0.9
-                    sf_new = 0.9 + 1e-2;
-                elseif sf_new > 1.6
-                    sf_new = 1.6 - 1e-2;
+                if sf_new < BOUND_SF(1)
+                    sf_new = BOUND_SF(1) + 1e-2;
+                elseif sf_new > BOUND_SF(2)
+                    sf_new = BOUND_SF(2) - 1e-2;
                 end
-                if rho_new < 0.0
-                    rho_new = 0.0 + 1e-2;
-                elseif rho_new > 8.0
-                    rho_new = 8.0 + 1e-2;
+                if rho_new < BOUND_RHO(1)
+                    rho_new = BOUND_RHO(1) + 1e-2;
+                elseif rho_new > BOUND_RHO(2)
+                    rho_new = BOUND_RHO(2) + 1e-2;
                 end
             end
             %%%
@@ -355,7 +356,7 @@ function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
     
     if mdp_data.num_obs ~= 2
 %         d = [rho - 0.0, -rho + 8, sf - 0.9, -sf + 1.6];
-        d = [rho - 0.0, -rho + 8.5, sf - 0.9, -sf + 1.55];
+        d = [rho - BOUND_RHO(1), -rho + BOUND_RHO(2), sf - BOUND_SF(1), -sf + BOUND_SF(2)];
         for i = 1:length(d)
             if d(i)<0
                 d(i) = 0;
@@ -398,8 +399,8 @@ function draw_heat(T, s, mdp_data, mdp, reward)
     STEPS = 60; % 60 is relative ok speed
 %     x = linspace(0.01, 7.99, STEPS);
 %     y = linspace(0.901, 1.599, STEPS);
-    x = linspace(0.01, 8.49, STEPS);
-    y = linspace(0.901, 1.549, STEPS);
+    x = linspace(BOUND_RHO(1) + 0.01, BOUND_RHO(2) - 0.01, STEPS);
+    y = linspace(BOUND_SF(1) + 0.01, BOUND_SF(2) - 0.01, STEPS);
 %     x = linspace(3, 7.5, STEPS);
 %     y = linspace(1.1, 1.5, STEPS);
     [X, Y] = meshgrid(x, y);
