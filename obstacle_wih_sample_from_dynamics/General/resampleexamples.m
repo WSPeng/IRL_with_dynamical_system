@@ -121,7 +121,7 @@ if gradient_descent
     rbest = -Inf;
     tolGrad = 1e-3;
     maxiter = 30;
-    alpha = 0.1; % 1e-3
+    alpha = 0.1/3/2; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
     d_rho = alpha;
@@ -154,7 +154,7 @@ if gradient_descent
         rho = pts(i,1);
         sf = pts(i,2);
         u = [ones(T,1)*rho; ones(T,1)*sf];
-        R(i,1) = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf);
+        R(i,1) = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, BOUND_SF, BOUND_RHO);
     end
     C = reshape(R, size(X,1), size(X,2));
     grid = C;
@@ -170,7 +170,7 @@ if gradient_descent
     % switching
     switching = true;
     
-%     draw_heat(T, s, mdp_data, mdp, reward)
+%     draw_heat(T, s, mdp_data, mdp, reward, BOUND_SF, BOUND_RHO)
     
     color_list = linspace(0, 1, maxiter+1);
 
@@ -179,24 +179,24 @@ if gradient_descent
             u = [ones(T,1)*rho; ones(T,1)*sf];
 
     %         r = -trajectoryreward(u, s, mdp_data, mdp, reward);
-            r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf);
+            r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, BOUND_SF, BOUND_RHO);
 
             % finite difference to calculate the grad
             u_rho = [ones(T,1)*(rho+d_rho); ones(T,1)*sf];
     %         r_rho = -trajectoryreward(u_rho, s, mdp_data, mdp, reward);
-            r_rho = re_with_bound(u_rho, s, mdp_data, mdp, reward, rho+d_rho, sf);
+            r_rho = re_with_bound(u_rho, s, mdp_data, mdp, reward, rho+d_rho, sf, BOUND_SF, BOUND_RHO);
             g_rho = (r_rho - r)/d_rho;
 
             u_sf = [ones(T,1)*rho; ones(T,1)*(sf+d_sf)];
     %         r_sf = -trajectoryreward(u_sf, s, mdp_data, mdp, reward);
-            r_sf = re_with_bound(u_sf, s, mdp_data, mdp, reward, rho, sf+d_sf);
+            r_sf = re_with_bound(u_sf, s, mdp_data, mdp, reward, rho, sf+d_sf, BOUND_SF, BOUND_RHO);
             g_sf = (r_sf - r)/d_sf;
 
             % amplify the gradient in the rho direction. 
             g_rho = g_rho * 10;
             
             % truncate the gradient 
-            truncate = 1e-1; % alpha multiplied afterwards
+            truncate = 20e-1; % alpha multiplied afterwards
             if abs(g_rho) > truncate*10, g_rho = truncate*10*sign(g_rho); end
             if abs(g_sf) > truncate, g_sf = truncate*sign(g_sf); end
            
@@ -267,15 +267,15 @@ if gradient_descent
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
             u = [ones(T,1)*rho; ones(T,1)*sf; ones(T,1)*rho1; ones(T,1)*sf1];
             
-            r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho1, sf1);
+            r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho1, sf1, BOUND_SF, BOUND_RHO);
 
             % finite difference to calculate the grad
-            u_rho = [ones(T,1)*(rho+d_rho); ones(T,1)*sf; ones(T,1)*rho1; ones(T,1)*sf1];
+            u_rho = [ones(T,1)*(rho+d_rho); ones(T,1)*sf; ones(T,1)*rho1; ones(T,1)*sf1, BOUND_SF, BOUND_RHO];
             r_rho = re_with_bound(u_rho, s, mdp_data, mdp, reward, rho+d_rho, sf);
             g_rho = (r_rho - r)/d_rho;
 
             u_sf = [ones(T,1)*rho; ones(T,1)*(sf+d_sf); ones(T,1)*rho1; ones(T,1)*sf1];
-            r_sf = re_with_bound(u_sf, s, mdp_data, mdp, reward, rho, sf+d_sf);
+            r_sf = re_with_bound(u_sf, s, mdp_data, mdp, reward, rho, sf+d_sf, BOUND_SF, BOUND_RHO);
             g_sf = (r_sf - r)/d_sf;
 
             % truncate the gradient 
@@ -346,7 +346,7 @@ end
 end
 
 
-function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, rho2, sf2)
+function r = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, BOUND_SF, BOUND_RHO, rho2, sf2)
 %   remove the negative here, since already negative at trajectory reward
 %   function. 
     r = + trajectoryreward_part(u, s, mdp_data, mdp, reward);
@@ -394,7 +394,7 @@ function [d1, d2] = count_index(index, STEPS)
 end
 
 
-function draw_heat(T, s, mdp_data, mdp, reward)
+function draw_heat(T, s, mdp_data, mdp, reward, BOUND_SF, BOUND_RHO)
     % Visualize
     STEPS = 60; % 60 is relative ok speed
 %     x = linspace(0.01, 7.99, STEPS);
@@ -413,7 +413,7 @@ function draw_heat(T, s, mdp_data, mdp, reward)
         rho = pts(i,1);
         sf = pts(i,2);
         u = [ones(T,1)*rho; ones(T,1)*sf];
-        R(i,1) = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf);
+        R(i,1) = re_with_bound(u, s, mdp_data, mdp, reward, rho, sf, BOUND_SF, BOUND_RHO);
         plot_index = plot_index+1;
         if plot_index>100
             disp(i)

@@ -47,7 +47,7 @@ C = C - min(min(C));
 if max(max(C))~=0
 	C = C/max(max(C));
     C = C*64;
-	image(x, y, C);
+	fig = image(x, y, C);
 end
 
 % Draw feature positions. % seems like only rbf rectangular
@@ -99,7 +99,7 @@ if ~isempty(example_samples)
         % Plot starting point.
         %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
-        plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
+        fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
     end
     if ~paper_quality
     for i=1:length(test_samples)
@@ -121,6 +121,12 @@ if ~isempty(example_samples)
     end
     end
 end
+
+my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
+my_title = strcat(my_title_pre, '.jpg');
+my_title_fig = strcat(my_title_pre, '.fig');
+saveas(gcf, my_title)
+savefig(my_title_fig)
 
 % Finished.
 hold off;

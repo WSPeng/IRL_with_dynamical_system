@@ -127,7 +127,7 @@ bool MotionGenerator::init()
 	_currentTarget = Target::A;
 	#endif
 
-	temp_counter = 0;	
+	temp_counter_test = 0;	
 
 	Eigen::Vector3f temp;
 	temp << 0.0f,0.0f,1.0f;
@@ -197,11 +197,17 @@ bool MotionGenerator::init()
 	_dynRecCallback = boost::bind(&MotionGenerator::dynamicReconfigureCallback, this, _1, _2);
 	_dynRecServer.setCallback(_dynRecCallback);
 
-	// Open file to save data
-	_outputFile.open ("/home/jason/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
-	// _outputFile.open ("/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA.txt");
+	time_t now = time(0);
+	struct tm tstruct = *localtime(&now);
+
+	float f = tstruct.tm_hour + tstruct.tm_min / 60.0 + tstruct.tm_sec / 3600.0;
+	std::cout << f << std::endl; // prints 10.1025 at 10:06:09
+
+	std::string filename;
+	filename =  "/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA" + std::to_string(f) + ".txt"; //swei
+	_outputFile.open(filename.c_str());
 	_outputFile << "NEW EXPERIMENT\n";
-	
+
 	// Catch CTRL+C event with the callback provided
 	signal(SIGINT,MotionGenerator::stopNodeCallback);
 
@@ -505,8 +511,8 @@ void MotionGenerator::mouseControlledMotion()
 									// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
 									// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
 									// larger range
-									_obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
-									_obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
+									// _obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
 
 									// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
 									// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
@@ -516,7 +522,14 @@ void MotionGenerator::mouseControlledMotion()
 
 									// Higher std
 									// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
-									// _obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4														
+									// _obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
+
+									float rhoo[3] = {1, 1.4, 1.43};
+									float sff[3] = {2, 6, 6.1};
+									_obs._safetyFactor = sff[temp_counter_test];
+									_obs._rho = rhoo[temp_counter_test];
+									temp_counter_test++;
+
 								}
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
 							}							

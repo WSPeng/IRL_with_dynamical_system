@@ -5,7 +5,8 @@ delayIntro = false; % should be false
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
     if(~exist('node1','var'))
-        node1 = robotics.ros.Node('/irl_parameter_update1','128.178.145.170');
+%         node1 = robotics.ros.Node('/irl_parameter_update1','128.178.145.170');
+        node1 = robotics.ros.Node('/irl_parameter_update1');
     end
 
     % matlab function for publishing
@@ -35,6 +36,7 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
     states_ = cell(1,1);
     
     save_sf_rho = zeros(2,1);
+    save_time_elapsed = zeros(1,1);
 end
 
 j = 1;
@@ -140,6 +142,8 @@ while 1
     end
     
     elapsedTime = toc
+    
+    save_time_elapsed(1,j) = elapsedTime;
     
     j = j +1;
     if nargin >= 1

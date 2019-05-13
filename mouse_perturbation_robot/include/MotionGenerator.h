@@ -40,7 +40,7 @@
 #define NB_TARGETS 4                      // Number of targets [-]
 #define MAX_RHO 8.0f //8
 #define MIN_RHO 0.5f
-#define MAX_ETA 1.6f //2
+#define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
 
@@ -68,7 +68,7 @@ class MotionGenerator
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
+    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav
 
     // 
     const bool  _useArduino = true; 
@@ -190,6 +190,7 @@ class MotionGenerator
     ros::Time trigger_begin;
 
     int _msgEEG;                      // The binary EEG signal
+    int temp_counter_test;
 
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance

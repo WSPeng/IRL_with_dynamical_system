@@ -38,7 +38,7 @@ obs_params.fn_handle = @move_constant_v;
 
 % obs{1}.a = [1.2 1.2;0.4 1];
 %obs{1}.a = [1;1];
-obs{1}.a = [1.2;1.44]; % 1.15 1.42
+obs{1}.a = [1.06; 1.27]; % 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
 % obs{1}.p = [2 1;1 1];
 obs{1}.p = [1;1];
 % obs{1}.partition = [-pi 0;0 pi];
