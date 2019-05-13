@@ -122,7 +122,8 @@ if ~isempty(example_samples)
     end
 end
 
-my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
+% my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
+my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
 my_title = strcat(my_title_pre, '.jpg');
 my_title_fig = strcat(my_title_pre, '.fig');
 saveas(gcf, my_title)

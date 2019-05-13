@@ -524,14 +524,17 @@ void MotionGenerator::mouseControlledMotion()
 									// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
 									// _obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
 
-									float rhoo[3] = {1, 1.4, 1.43};
-									float sff[3] = {2, 6, 6.1};
+									// float rhoo[3] = {2, 6, 6.1};
+									// float sff[3] = {1, 1.4, 1.43};
+									float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
+									float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
+
 									_obs._safetyFactor = sff[temp_counter_test];
 									_obs._rho = rhoo[temp_counter_test];
 									temp_counter_test++;
 
 								}
-								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);
+								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
 							}							
 							temp_counter++;
 							_ifSentTraj = false;
