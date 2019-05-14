@@ -6,7 +6,7 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
     % create a ros node
     if(~exist('node1','var'))
 %         node1 = robotics.ros.Node('/irl_parameter_update1','128.178.145.170');
-        node1 = robotics.ros.Node('/irl_parameter_update3');
+        node1 = robotics.ros.Node('/irl_parameter_update1');
     end
 
     % matlab function for publishing
