@@ -48,6 +48,8 @@
 
 // #define DELAY_INTRODUCE 10
 
+#define DELAY_COUNT
+
 #define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG) (Experiment)
 
 // #define LISTEN_EEG // Test the brain activity decoder 
@@ -62,19 +64,19 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = true;
+    const bool _randomInsteadIRL = false;
 
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav
+    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
 
     // 
     const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm
-    const bool _randomWholeRange = false;
+    const bool _randomWholeRange = true;
 
     //===========================================
 
@@ -229,6 +231,9 @@ class MotionGenerator
     int _numOfErrorTrails;
     int _numOfCorrectTrails;
     int temp_counter;
+
+    bool _start_delay_count;
+    int delay_count;
 
   public:
     // Class constructor

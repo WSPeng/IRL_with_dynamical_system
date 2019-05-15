@@ -118,6 +118,9 @@ bool MotionGenerator::init()
 	_numOfCorrectTrails = 0;
 	_msgEEG = 0;
 
+	_start_delay_count = false;
+	delay_count = 0;
+
 	_state = State::INIT;
 	#ifdef PROTOCAL_DEBUG
 	_previousTarget = Target::A;
@@ -557,13 +560,18 @@ void MotionGenerator::mouseControlledMotion()
     				#else
 					if (_msgEEG == 1 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
     				#endif
+					#ifndef DELAY_COUNT
 				    {
     					_numOfErrorTrails ++;
     					_obs._safetyFactor = MAX_ETA;
     					_obs._rho = MAX_RHO;
     					std::cout << "Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
     				}
-
+    				#else
+    				{
+    					_start_delay_count = true;
+    				}
+    				#endif
     				if (_mouseVelocity(0) == 0.0f)
     					_eventLogger |= (1 << 1);
     				}
@@ -572,6 +580,21 @@ void MotionGenerator::mouseControlledMotion()
     				{
     					_eventLogger |= (1 << 2);
     				}
+				
+    			#ifdef DELAY_COUNT
+    			if (_start_delay_count )
+    				delay_count ++ ;
+    			if (delay_count > 500 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
+    			{
+    				_numOfErrorTrails ++;
+					_obs._safetyFactor = MAX_ETA;
+					_obs._rho = MAX_RHO;
+					std::cout << "DELAY Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
+					_start_delay_count = false;
+					delay_count = 0;
+    			}
+   				#endif
+
 				#endif
 
 				//--
