@@ -169,7 +169,7 @@ if gradient_descent
     
     % switching
     switching = true;
-    
+%     
 %     draw_heat(T, s, mdp_data, mdp, reward, BOUND_SF, BOUND_RHO)
     
     color_list = linspace(0, 1, maxiter+1);
@@ -396,7 +396,7 @@ end
 
 function draw_heat(T, s, mdp_data, mdp, reward, BOUND_SF, BOUND_RHO)
     % Visualize
-    STEPS = 60; % 60 is relative ok speed
+    STEPS = 80; % 60 is relative ok speed
 %     x = linspace(0.01, 7.99, STEPS);
 %     y = linspace(0.901, 1.599, STEPS);
     x = linspace(BOUND_RHO(1) + 0.01, BOUND_RHO(2) - 0.01, STEPS);

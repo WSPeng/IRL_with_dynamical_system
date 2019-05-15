@@ -240,6 +240,7 @@ void MouseInterface::readFootMouse()
           {
             _relReceived = true;
           }
+
         }
         else if(_ie.code == REL_Y)
         {

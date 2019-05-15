@@ -117,13 +117,16 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % add discounting factor in the infos_pt.
 % infos_pt{i}
-base_discounting = 0.1;
+base_discounting = 1;
 for i = 1:length(infos_pt)
     infos_pt{i}.discount = base_discounting^(length(infos_pt)-i);
 end
 
+weight_vector = [1, 0.01, 0.01, 0.01];
+for i = 1:length(weight_vector)
+    infos_pt{i}.discount = weight_vector(i);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 % Pick weight on regularization term to ensure the objective is defined.
 wts(end) = auglagfindfeasible(@(wt)gpirlcost(wt,gp,infos_dyn,infos_pt),length(wts),gpirlpack(gp,u,wts));

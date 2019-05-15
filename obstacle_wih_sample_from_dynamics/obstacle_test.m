@@ -38,10 +38,11 @@ obs_params.fn_handle = @move_constant_v;
 
 % obs{1}.a = [1.2 1.2;0.4 1];
 %obs{1}.a = [1;1];
-obs{1}.a = [1.4; 1.68]; % 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
+% obs{1}.a = [1.06; 1.27];
+% obs{1}.a = [1.4; 1.68]; % 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
 % [1.06; 1.27]; the optimal trajectory is bit high in real test
 % [1.2; 1.44 ]; still a bit high
-% obs{1}.a = [1.3; 1.56];
+obs{1}.a = [1.3; 1.56];
 
 % obs{1}.p = [2 1;1 1];
 obs{1}.p = [1;1];
@@ -56,8 +57,8 @@ opt_sim.i_max = 10; %maximum number of iterations
 opt_sim.tol = 0.05; %convergence tolerance
 opt_sim.plot = true; %enabling the animation
 opt_sim.obstacle = []; %no obstacle is defined
-% obs{1}.x0 = [5; 3.8];%4
-obs{1}.x0 = [5; 4];
+obs{1}.x0 = [5; 3.8];%4
+% obs{1}.x0 = [5; 4];
 
 obs{1}.tailEffect = false; % the tail effect is turned off..
 

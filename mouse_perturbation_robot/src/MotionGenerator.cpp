@@ -505,8 +505,8 @@ void MotionGenerator::mouseControlledMotion()
 								}
 								else
 								{
-									_obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
-									_obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
+									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
+									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
 
 									// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
 									// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
@@ -526,10 +526,9 @@ void MotionGenerator::mouseControlledMotion()
 
 									// float rhoo[3] = {2, 6, 6.1};
 									// float sff[3] = {1, 1.4, 1.43};
-									// float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
-									// float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
-									float rhoo[8] = {2.5, 4.1,  1.5, 5.5, 6.2,   2,   6.5, 6.8};
-									float sff[8] = {1,    1.43, 1.3, 1.1, 1.025, 1.12, 1.48, 1.5};
+									float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
+									float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
+
 									_obs._safetyFactor = sff[temp_counter_test];
 									_obs._rho = rhoo[temp_counter_test];
 									temp_counter_test++;
