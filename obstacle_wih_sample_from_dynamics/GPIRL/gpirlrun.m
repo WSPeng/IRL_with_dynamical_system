@@ -123,10 +123,12 @@ for i = 1:length(infos_pt)
 end
 
 % weight_vector = [1, 0.7, 0.5, 0.1];
-weight_vector = [1, 0.05, 0.01, 0.01];
-for i = 1:length(weight_vector)
-    infos_pt{i}.discount = weight_vector(i);
-end
+% weight_vector = [1, 0.05, 0.01, 0.01];
+
+% weight_vector = [1, 0.9, 0.1, 0.1];
+% for i = 1:length(weight_vector)
+%     infos_pt{i}.discount = weight_vector(i);
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Pick weight on regularization term to ensure the objective is defined.
