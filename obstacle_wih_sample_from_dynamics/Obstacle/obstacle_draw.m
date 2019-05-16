@@ -112,8 +112,9 @@ if ~isempty(example_samples)
         % path into two parts
 %         pts = [test_samples{i}.s; pts]; % add the starting point for drawing
         col = [0.5 0.5 0.7];
+        color_list = linspace(0, 1, length(test_samples)+1);
         % Plot the points.
-        plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14,'linewidth',1.5);
+        plot(pts(:,1),pts(:,end),'-','color',[color_list(i),0.5,0.7],'marker','.','markersize',14,'linewidth',1.5);
         % Plot starting point.
         %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
