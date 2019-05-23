@@ -1,6 +1,6 @@
 % Run IRL test with specified algorithm and example.
 function test_result = runtest(algorithm,algorithm_params,...
-    mdp,mdp_params,test_params, example_human)
+    mdp,mdp_params,test_params, example_human, weight_input)
 
 % test_result - structure that contains results of the test
 % algorithm - string specifying the IRL algorithm to use
@@ -46,7 +46,13 @@ if nargin > 5
     end
     
     example_human = states_reverse;
+     
+    % remove the demonstration more than 5 
+    if length(example_human) > 5
+        example_human = example_human(length(example_human)-5+1:length(example_human),1);
+    end
     
+    % Also embed the weight into example_human ...    
     for i = 1:length(example_human)
         example_samples{i}.s = [0, 4.2];
         tocal_u = [0, 4.2; example_human{i}];
@@ -64,6 +70,7 @@ if nargin > 5
         example_samples{i}.states = example_human{i};
         example_samples{i}.states_draw = example_human{i};
         example_samples{i}.r = 0;
+        example_samples{i}.w = weight_input(i);
         test_samples = [];
     end
 else
@@ -77,8 +84,8 @@ end
 % algorithm_params.grid_action_quad = test_params.action_quad;
 
 % Run IRL algorithm.
-irl_result = feval(strcat(algorithm,'run'),algorithm_params,mdp,mdp_data,...
-    features_pt,features_dyn,example_samples,test_params.verbosity);
+irl_result = feval(strcat(algorithm,'run'), algorithm_params, mdp, mdp_data,...
+    features_pt, features_dyn, example_samples, test_params.verbosity);
 
 % Evaluate IRL result by resynthesizing trajectories.
 % irl_result.example_samples = example_samples;

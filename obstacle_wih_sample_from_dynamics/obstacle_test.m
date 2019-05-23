@@ -1,6 +1,6 @@
 % Run example tests on objectworld with fixed "flower petal" reward.
 function [rho, sf] = obstacle_test(a, s, r, example_optimal, test_file_name, ...
-    example_human)
+    example_human, weight_input)
 % two_examples --- example_optimal
 two_obstacles = 0;
 % 4 algorithm, 5 tests, 8 restarts
@@ -125,7 +125,8 @@ end
 % Run single test.
 if nargin > 5
     test_result = runtest(algorithms{a},algorithm_params{a},...
-                          world,mdp_params{s},test_params{s}, example_human); % the thrid one corresponding to the MDP
+                          world,mdp_params{s},test_params{s},...
+                          example_human, weight_input); % the thrid one corresponding to the MDP
 else
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s});

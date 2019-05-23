@@ -9,12 +9,18 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
         node1 = robotics.ros.Node('/irl_parameter_update1');
     end
 
-    % matlab function for publishing
+    % matlab function for subscribing
     if(~exist('sub','var'))
         sub = robotics.ros.Subscriber(node1, ...
             '/motion_generator_to_parameter_update', 'geometry_msgs/PoseArray');
     end
 
+    if(~exist('sub_weight','var'))
+        sub_weight = robotics.ros.Subscriber(node1, ...
+            '/motion_generator_to_parameter_update_weight', 'std_msgs/Float32');
+    end    
+    
+     % matlab function for publish
     if(~exist('pub','var'))
         pub = robotics.ros.Publisher(node1, ...
             '/parameters_tuning', 'std_msgs/Float32MultiArray');
@@ -41,11 +47,14 @@ end
 
 j = 1;
 % need to inverse the x 
+weight_input = ones(1,1);
 
 while 1
     if nargin < 1
         scandata = receive(sub);
         disp('got trajctory')
+        % scanweight = receive(sub_weight);
+        % disp('got weight')
         if delayIntro
             scandat2 = receive(sub_mouse);
             disp('got trajctory (mouse)')
@@ -70,7 +79,14 @@ while 1
         end
 %         figure;plot(states(:,1), states(:,2))
 %         figure;plot3(states(:,1), states(:,2), states(:,3))
-
+                
+%        weight_input(i,1) = scanweight.data;
+        if scandata.Header.FrameId == ""
+            weight_input(j,1) = 1;
+        else
+            weight_input(j,1) = str2double(scandata.Header.FrameId);
+        end
+            
         % Raise error when empty data received
         if isempty(states)
             error('Empty demonstration provided.')
@@ -122,9 +138,10 @@ while 1
     else 
         T = length(states);
         states_ = states;
+        weight_input = ones(T,1);
     end
 
-    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_);
+    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor
 

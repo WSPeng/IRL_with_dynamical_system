@@ -117,9 +117,7 @@ bool MotionGenerator::init()
 	_numOfErrorTrails = 0;
 	_numOfCorrectTrails = 0;
 	_msgEEG = 0;
-
-	_start_delay_count = false;
-	delay_count = 0;
+	_ifWeightEEGReveive = false;
 
 	_state = State::INIT;
 	#ifdef PROTOCAL_DEBUG
@@ -175,6 +173,7 @@ bool MotionGenerator::init()
 		_subPositionObs = _n.subscribe("/position_post/obstacle_position", 1, &MotionGenerator::subPositionObs, this, ros::TransportHints().reliable().tcpNoDelay());
 		_subPositionTar = _n.subscribe("/position_post/target_position", 1, &MotionGenerator::subPositionTar, this, ros::TransportHints().reliable().tcpNoDelay());
 	}
+	_subMessageWeight = _n.subscribe("/eeg/weight", 1, &MotionGenerator::subMessageWeight, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// Publisher definitions
 	if (!_iiwaInsteadLwr)
@@ -189,6 +188,8 @@ bool MotionGenerator::init()
 
 	//_pubFeedBackToParameter = _n.advertise<std_msgs::Float32>("/motion_generator_to_parameter_update", 1);
 	_pubFeedBackToParameter = _n.advertise<geometry_msgs::PoseArray>("/motion_generator_to_parameter_update", 1);
+	_pubWeights = _n.advertise<std_msgs::Float32>("/motion_generator_to_parameter_update_weight", 1);
+
 	if(_delayIntroduce)
 		_pubMouseMsgIRL = _n.advertise<mouse_perturbation_robot::MouseMsgPassIRL>("/mouse_message_update_to_irl", 1);
 	_pubTarPosition = _n.advertise<geometry_msgs::Pose>("/send_position_target_marker", 1);
@@ -412,6 +413,9 @@ void MotionGenerator::mouseControlledMotion()
 					// If 1 motion is completed before  and haven't publish yet. call the publisher to pushlish traj
 					// which will decided by z direction velocity, (pressed, lifted, and no change)
 					//std::cout << "mouse vvv"<<std::endl;
+
+					_eventLogger &= ~(1 << 2);
+
 					if(fabs(_mouseVelocity(2))>=300.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f && !_ifSentTraj )
 					{
 						if (_mouseVelocity(2)>0.0f) // if the node is pressed instead of lifted
@@ -468,7 +472,7 @@ void MotionGenerator::mouseControlledMotion()
 						//if((_currentTarget != _previousTarget))
 						if((_currentTarget != temporaryTarget))
 						{
-							std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
+							std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << " if sent traj " << _ifSentTraj << std::endl;
 							#ifdef BINARY_INPUT
 							if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true. not pressed then go into this loop...
 							{
@@ -476,7 +480,8 @@ void MotionGenerator::mouseControlledMotion()
 								_updateIRLParameter = false;
 								// std::cout << "Use the previous set of parameters " << "\n";
 
-								if (_numOfDemo>=1 && !_randomInsteadIRL)
+								// if (_numOfDemo>=1 && !_randomInsteadIRL)
+								if (_trialCount>=1 && !_randomInsteadIRL)
 								{
 									_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
 									_obs._rho = _rhosfSave[_numOfDemo-1][0];
@@ -560,18 +565,13 @@ void MotionGenerator::mouseControlledMotion()
     				#else
 					if (_msgEEG == 1 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
     				#endif
-					#ifndef DELAY_COUNT
 				    {
     					_numOfErrorTrails ++;
     					_obs._safetyFactor = MAX_ETA;
     					_obs._rho = MAX_RHO;
     					std::cout << "Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
     				}
-    				#else
-    				{
-    					_start_delay_count = true;
-    				}
-    				#endif
+
     				if (_mouseVelocity(0) == 0.0f)
     					_eventLogger |= (1 << 1);
     				}
@@ -580,21 +580,6 @@ void MotionGenerator::mouseControlledMotion()
     				{
     					_eventLogger |= (1 << 2);
     				}
-				
-    			#ifdef DELAY_COUNT
-    			if (_start_delay_count )
-    				delay_count ++ ;
-    			if (delay_count > 500 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
-    			{
-    				_numOfErrorTrails ++;
-					_obs._safetyFactor = MAX_ETA;
-					_obs._rho = MAX_RHO;
-					std::cout << "DELAY Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
-					_start_delay_count = false;
-					delay_count = 0;
-    			}
-   				#endif
-
 				#endif
 
 				//--
@@ -1399,8 +1384,18 @@ void MotionGenerator::sendValueArduino(uint8_t value)
 
 void MotionGenerator::sendMsgForParameterUpdate()
 {
+	// std::string s = std::to_string(1.1);
+	// _msgRealPoseArray.header.frame_id = s;
+
 	_pubFeedBackToParameter.publish(_msgRealPoseArray);
 	std::cout << "Publishing the trjaectory ===== " << "\n";
+	// publish the weight
+	if (_ifWeightEEGReveive)
+	{
+		_pubWeights.publish(_msgWeight);
+		_ifWeightEEGReveive = false;
+	}
+
 
 	if(_delayIntroduce)
 	{
@@ -1471,6 +1466,17 @@ void MotionGenerator::subMessageEEG(const std_msgs::String::ConstPtr& msg)
 		_eventLogger |= (1 << 2);
 	else if (_msgEEG == 0)
 		_eventLogger &= ~(1 << 2);
+}
+
+
+void MotionGenerator::subMessageWeight(const std_msgs::String::ConstPtr& msg)
+{
+	std_msgs::String msgMessage;
+	msgMessage = *msg;
+	_msgWeight.data = std::stod(msgMessage.data);
+	_ifWeightEEGReveive = true;
+	_msgRealPoseArray.header.frame_id = msgMessage.data; // frame_id is string
+
 }
 
 

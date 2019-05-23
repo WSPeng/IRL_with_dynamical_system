@@ -1,6 +1,6 @@
 % Run the approximate GPIRL algorithm.
-function irl_result = gpirlrun(algorithm_params,mdp,mdp_data,features_pt,...
-    features_dyn,example_samples,verbosity)
+function irl_result = gpirlrun(algorithm_params, mdp, mdp_data, features_pt,...
+    features_dyn, example_samples, verbosity)
 
 % Get algorithm parameters.
 algorithm_params = gpirldefaultparams(algorithm_params);
@@ -129,6 +129,11 @@ end
 % for i = 1:length(weight_vector)
 %     infos_pt{i}.discount = weight_vector(i);
 % end
+
+% use the weight input from EEG side
+for i = 1:length(example_samples)
+    infos_pt{i}.discount = example_samples{i}.w;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Pick weight on regularization term to ensure the objective is defined.

@@ -7,6 +7,7 @@
 #include <vector>
 #include "Eigen/Eigen"
 #include <iostream>
+#include <string.h>
 
 #include "ros/ros.h"
 #include "std_msgs/Int8.h"
@@ -48,8 +49,6 @@
 
 // #define DELAY_INTRODUCE 10
 
-#define DELAY_COUNT
-
 #define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG) (Experiment)
 
 // #define LISTEN_EEG // Test the brain activity decoder 
@@ -58,7 +57,6 @@ class MotionGenerator
 {
 
     private:
-
     //===========================================
     // 1 or 2 for obstacle number
     const int _numObstacle = 1;
@@ -70,13 +68,13 @@ class MotionGenerator
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav
+    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
 
-    // 
+    // arduino
     const bool  _useArduino = true; 
 
-    // enable it when "evaluate" the algorithm
-    const bool _randomWholeRange = true;
+    // enable it when "evaluate" the algorithm [random in the large range of rho and sf]
+    const bool _randomWholeRange = false;
 
     //===========================================
 
@@ -104,6 +102,7 @@ class MotionGenerator
     ros::Subscriber _subPositionObs;        // Subscribe to the obstacle position
     ros::Subscriber _subPositionTar;        // Subscribe to the target position
     ros::Subscriber _subMessageEEG;         // EEG
+    ros::Subscriber _subMessageWeight;      // Sub the weight from EEG side
 
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
@@ -113,6 +112,7 @@ class MotionGenerator
     ros::Publisher _pubObsPosition;
     ros::Publisher _pubCommand;
     ros::Publisher _pubDebugTrigger;
+    ros::Publisher _pubWeights;
     
     // Messages declaration
     geometry_msgs::Pose _msgRealPose;
@@ -125,6 +125,7 @@ class MotionGenerator
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
     std_msgs::Float64MultiArray _msgCommand;
+    std_msgs::Float32 _msgWeight;
 
     // passing the message (mouse)
     mouse_perturbation_robot::MouseMsgPassIRL _msgMouseIRL;
@@ -180,11 +181,12 @@ class MotionGenerator
     bool _switchingTrajectories;      // Flag to set whether the obstacle parameters can randomly change
     bool _errorButtonPressed;         // Monitor the keyboard
     bool _ifSentTraj;                 // 
-    bool _updateIRLParameter;          // if update parameter from the IRL node, if not then use the one more previous parameter set. 
-    bool _obsPositionInput;            // if the obstacle position is decided by the input or not
+    bool _updateIRLParameter;         // if update parameter from the IRL node, if not then use the one more previous parameter set. 
+    bool _obsPositionInput;           // if the obstacle position is decided by the input or not
     bool _recievedObsPositionInput;   // if the obstacle and target position is modified by the other node
     bool _recievedTarPositionInput;
     bool _delayIntroduce;             // if the delay is introduced
+    bool _ifWeightEEGReveive;         // 
 
     // Arduino related variables
     int farduino;
@@ -231,9 +233,6 @@ class MotionGenerator
     int _numOfErrorTrails;
     int _numOfCorrectTrails;
     int temp_counter;
-
-    bool _start_delay_count;
-    int delay_count;
 
   public:
     // Class constructor
@@ -319,6 +318,9 @@ class MotionGenerator
 
     // EEG signal
     void subMessageEEG(const std_msgs::String::ConstPtr& msg);
+
+    // The posterior probability 
+    void subMessageWeight(const std_msgs::String::ConstPtr& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);
