@@ -48,9 +48,9 @@ if nargin > 5
     example_human = states_reverse;
      
     % remove the demonstration more than 5 
-    if length(example_human) > 5
-        example_human = example_human(length(example_human)-5+1:length(example_human),1);
-    end
+%     if length(example_human) > 5
+%         example_human = example_human(length(example_human)-5+1:length(example_human),1);
+%     end
     
     % Also embed the weight into example_human ...    
     for i = 1:length(example_human)

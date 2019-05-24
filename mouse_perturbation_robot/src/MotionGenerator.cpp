@@ -118,6 +118,8 @@ bool MotionGenerator::init()
 	_numOfCorrectTrails = 0;
 	_msgEEG = 0;
 	_ifWeightEEGReveive = false;
+	_msgEEGOpti = 0;
+	_boolReverseMsgEEGOpti = false;
 
 	_state = State::INIT;
 	#ifdef PROTOCAL_DEBUG
@@ -164,8 +166,11 @@ bool MotionGenerator::init()
 	
 	#ifdef LISTEN_EEG
 		// _subBrainAct = _n.subscribe("/brain_decoder", 1, &MotionGenerator::updateBrainData, this, ros::TransportHints().reliable().tcpNoDelay());
-		_subMessageEEG = _n.subscribe("/eeg", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
+		_subMessageEEG = _n.subscribe("/eeg_trigger", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
 	#endif
+
+	// to test only use EEG to replace the mouse motion in z direction
+	_subMessageEEGOpti = _n.subscribe("/eeg_label", 1, &MotionGenerator::subMessageEEGOpti, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	_subIRL = _n.subscribe("/parameters_tuning", 1, &MotionGenerator::updateIRLParameter, this, ros::TransportHints().reliable().tcpNoDelay());
 	if(_obsPositionInput)
@@ -173,7 +178,7 @@ bool MotionGenerator::init()
 		_subPositionObs = _n.subscribe("/position_post/obstacle_position", 1, &MotionGenerator::subPositionObs, this, ros::TransportHints().reliable().tcpNoDelay());
 		_subPositionTar = _n.subscribe("/position_post/target_position", 1, &MotionGenerator::subPositionTar, this, ros::TransportHints().reliable().tcpNoDelay());
 	}
-	_subMessageWeight = _n.subscribe("/eeg/weight", 1, &MotionGenerator::subMessageWeight, this, ros::TransportHints().reliable().tcpNoDelay());
+	_subMessageWeight = _n.subscribe("/eeg_weight", 1, &MotionGenerator::subMessageWeight, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// Publisher definitions
 	if (!_iiwaInsteadLwr)
@@ -208,7 +213,8 @@ bool MotionGenerator::init()
 	std::cout << f << std::endl; // prints 10.1025 at 10:06:09
 
 	std::string filename;
-	filename =  "/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA" + std::to_string(f) + ".txt"; //swei
+	// filename =  "/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA" + std::to_string(f) + ".txt"; //swei
+	filename =  "/home/shupeng/catkin_ws/src/mouse_perturbation_robot/informationKUKA" + std::to_string(f) + ".txt"; //swei
 	_outputFile.open(filename.c_str());
 	_outputFile << "NEW EXPERIMENT\n";
 
@@ -416,9 +422,19 @@ void MotionGenerator::mouseControlledMotion()
 
 					_eventLogger &= ~(1 << 2);
 
+					#ifndef LISTEN_EEG_OPTI
 					if(fabs(_mouseVelocity(2))>=300.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f && !_ifSentTraj )
+					#else
+					// if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj)
+					if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj && _ifWeightEEGReveive)
+					#endif
 					{
+						_ifWeightEEGReveive = false;
+						#ifndef LISTEN_EEG_OPTI
 						if (_mouseVelocity(2)>0.0f) // if the node is pressed instead of lifted
+						#else
+						if( _msgEEGOpti || ~_msgEEGOpti)
+						#endif
 						{
 							_ifSentTraj = true;
 							sendMsgForParameterUpdate();
@@ -444,6 +460,9 @@ void MotionGenerator::mouseControlledMotion()
 								//std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
 								//std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
 							//}
+							#ifdef LISTEN_EEG_OPTI
+							_msgEEGOpti = false;
+							#endif
 						}
 						#ifndef BINARY_INPUT
 						else if (_mouseVelocity(2)<0.0f) // if the node is lifted
@@ -472,7 +491,7 @@ void MotionGenerator::mouseControlledMotion()
 						//if((_currentTarget != _previousTarget))
 						if((_currentTarget != temporaryTarget))
 						{
-							std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << " if sent traj " << _ifSentTraj << std::endl;
+							// std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << " if sent traj " << _ifSentTraj << std::endl;
 							#ifdef BINARY_INPUT
 							if (!_ifSentTraj)// if the mouse is pressed, then ifSentTraj is true. not pressed then go into this loop...
 							{
@@ -497,6 +516,7 @@ void MotionGenerator::mouseControlledMotion()
 								_msgRealPoseArray.poses.clear();
 							
 								_ifSentTraj = false;
+								_msgEEG  = 0;
 							}
 							//else _updateIRLParameter = true;
 							#endif
@@ -534,13 +554,19 @@ void MotionGenerator::mouseControlledMotion()
 
 									// float rhoo[3] = {2, 6, 6.1};
 									// float sff[3] = {1, 1.4, 1.43};
-									float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
-									float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
+									// float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
+									// float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
+									// _obs._safetyFactor = sff[temp_counter_test];
+									// _obs._rho = rhoo[temp_counter_test];
+									// temp_counter_test++;
 
-									_obs._safetyFactor = sff[temp_counter_test];
-									_obs._rho = rhoo[temp_counter_test];
-									temp_counter_test++;
+									// The smaller rectangular area 0.9-1.4 1-6 
+									_obs._safetyFactor = 0.9f + 0.5f*(float)std::rand()/RAND_MAX;
+									_obs._rho = 1.0f + 5.0f*(float)std::rand()/RAND_MAX;		
 
+									// Some manual weights
+									// double distance_center = ((5.0f - _obs._rho)^2 + (1.25f - _obs._safetyFactor)^2)/(4.0f^2+0.5f^2);
+									// _msgRealPoseArray.header.frame_id = 
 								}
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
 							}							
@@ -574,7 +600,9 @@ void MotionGenerator::mouseControlledMotion()
 
     				if (_mouseVelocity(0) == 0.0f)
     					_eventLogger |= (1 << 1);
-    				}
+
+    				_msgEEG == 0;
+    			}
 
     				if (_msgEEG == 1)
     				{
@@ -1206,13 +1234,13 @@ void MotionGenerator::updateSpacenavData(const sensor_msgs::Joy::ConstPtr& msg)
 
 void MotionGenerator::updateIRLParameter(const std_msgs::Float32MultiArray::ConstPtr& msg)
 {
-	std::cout<<"updating \n ";
+	std::cout<<"updating ::  ";
 	if(_updateIRLParameter)
 	{
 		_obs._safetyFactor = msg -> data[1];
 		_obs._rho = msg -> data[0];
-		std::cout<<"saftey factor \n"<<_obs._safetyFactor << "\n";
-		std::cout<<"rho \n" <<_obs._rho << "\n";
+		std::cout<<"saftey factor : "<<_obs._safetyFactor << " | ";
+		std::cout<<"rho : " <<_obs._rho << "\n";
 	}
 }
 
@@ -1388,7 +1416,7 @@ void MotionGenerator::sendMsgForParameterUpdate()
 	// _msgRealPoseArray.header.frame_id = s;
 
 	_pubFeedBackToParameter.publish(_msgRealPoseArray);
-	std::cout << "Publishing the trjaectory ===== " << "\n";
+	std::cout << "Publishing the trjaectory =====>" << "\n";
 	// publish the weight
 	if (_ifWeightEEGReveive)
 	{
@@ -1474,9 +1502,25 @@ void MotionGenerator::subMessageWeight(const std_msgs::String::ConstPtr& msg)
 	std_msgs::String msgMessage;
 	msgMessage = *msg;
 	_msgWeight.data = std::stod(msgMessage.data);
+	// _msgWeight.data = msgMessage.data;
 	_ifWeightEEGReveive = true;
 	_msgRealPoseArray.header.frame_id = msgMessage.data; // frame_id is string
+	std::cout << "Weight recieved = " <<  msgMessage.data << std::endl;
+	// _msgRealPoseArray.header.frame_id = 1.0 - msgMessage.data;
+}
 
+
+void MotionGenerator::subMessageEEGOpti(const std_msgs::String::ConstPtr& msg)
+{
+	_msgMessageEEGOpti = *msg;
+	_msgEEGOpti = std::stoi(_msgMessageEEGOpti.data);
+	std::cout << "_msgEEG opti is " << _msgEEGOpti << std::endl; 
+	// add a boolean condition to reverse the message from EEG
+	if (_boolReverseMsgEEGOpti)
+		_msgEEGOpti = ~ _msgEEGOpti;
+
+	if (_msgEEGOpti)
+		_boolReverseMsgEEGOpti = true;
 }
 
 

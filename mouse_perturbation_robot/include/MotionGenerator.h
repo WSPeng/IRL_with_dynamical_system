@@ -51,7 +51,9 @@
 
 #define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG) (Experiment)
 
-// #define LISTEN_EEG // Test the brain activity decoder 
+#define LISTEN_EEG // Test the brain activity decoder 
+
+// #define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
 
 class MotionGenerator 
 {
@@ -62,13 +64,13 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = false;
+    const bool _randomInsteadIRL = true;
 
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
+    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
 
     // arduino
     const bool  _useArduino = true; 
@@ -103,7 +105,8 @@ class MotionGenerator
     ros::Subscriber _subPositionTar;        // Subscribe to the target position
     ros::Subscriber _subMessageEEG;         // EEG
     ros::Subscriber _subMessageWeight;      // Sub the weight from EEG side
-
+    ros::Subscriber _subMessageEEGOpti;
+    
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
     ros::Publisher _pubFeedBackToParameter; // Publish feed back to rho and sf generator
@@ -187,6 +190,7 @@ class MotionGenerator
     bool _recievedTarPositionInput;
     bool _delayIntroduce;             // if the delay is introduced
     bool _ifWeightEEGReveive;         // 
+    bool _boolReverseMsgEEGOpti;      // 
 
     // Arduino related variables
     int farduino;
@@ -194,6 +198,7 @@ class MotionGenerator
     ros::Time trigger_begin;
 
     int _msgEEG;                      // The binary EEG signal
+    int _msgEEGOpti;
     int temp_counter_test;
 
     // Other variables
@@ -227,6 +232,7 @@ class MotionGenerator
     geometry_msgs::Pose _msgMouseI;
 
     std_msgs::String _msgMessageEEG;
+    std_msgs::String _msgMessageEEGOpti;
 
     bool _indicatorRand;
 
@@ -321,6 +327,8 @@ class MotionGenerator
 
     // The posterior probability 
     void subMessageWeight(const std_msgs::String::ConstPtr& msg);
+
+    void subMessageEEGOpti(const std_msgs::String::ConstPtr& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);

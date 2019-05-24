@@ -131,6 +131,10 @@ if gradient_descent
     figure; clf; xlim([-0.5 8.5]); ylim([0.8 1.8]);     hold on
     %ylim([-0.5 8.5]);
     
+    % plot the ecllipse region 
+    p = calculateEllipse(5, 1.25, 0.56, 0.07, 7.2);
+    plot(p(:,1), p(:,2), '.-')
+    
     % init
     % rho = rand(1)*0.7 + 0.9;
     % sf = rand(1)*8 + 0;
@@ -326,8 +330,6 @@ if gradient_descent
             rho = rho_new;
         end
     end
-    
-    
     
     ubest = u;
     niter = niter - 1;

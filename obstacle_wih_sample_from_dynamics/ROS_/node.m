@@ -15,10 +15,10 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
             '/motion_generator_to_parameter_update', 'geometry_msgs/PoseArray');
     end
 
-    if(~exist('sub_weight','var'))
-        sub_weight = robotics.ros.Subscriber(node1, ...
-            '/motion_generator_to_parameter_update_weight', 'std_msgs/Float32');
-    end    
+%     if(~exist('sub_weight','var'))
+%         sub_weight = robotics.ros.Subscriber(node1, ...
+%             '/motion_generator_to_parameter_update_weight', 'std_msgs/Float32');
+%     end    
     
      % matlab function for publish
     if(~exist('pub','var'))
@@ -84,7 +84,8 @@ while 1
         if scandata.Header.FrameId == ""
             weight_input(j,1) = 1;
         else
-            weight_input(j,1) = str2double(scandata.Header.FrameId);
+            weight_input(j,1) = 1 - str2double(scandata.Header.FrameId); % 1 - 
+            disp(['weight recieved : ', num2str(weight_input(j,1))])
         end
             
         % Raise error when empty data received
