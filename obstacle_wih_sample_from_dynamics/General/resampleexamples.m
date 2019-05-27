@@ -132,7 +132,8 @@ if gradient_descent
     %ylim([-0.5 8.5]);
     
     % plot the ecllipse region 
-    p = calculateEllipse(5, 1.25, 0.56, 0.07, 7.2);
+%     p = calculateEllipse(5, 1.25, 0.56, 0.07, 7.2);
+    p = calculateEllipse(6, 1.2, 0.24, 0.01, 7.2);
     plot(p(:,1), p(:,2), '.-')
     
     % init

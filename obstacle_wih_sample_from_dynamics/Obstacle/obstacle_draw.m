@@ -47,11 +47,11 @@ C = C - min(min(C));
 if max(max(C))~=0
 	C = C/max(max(C));
     C = C*64;
-% 	fig = image(x, y, C);
+	fig = image(x, y, C);
 end
 
 % Draw feature positions. % seems like only rbf rectangular
-% obstacle_drawfeature(reward,0.0,0.0,1.0,[],[]);
+obstacle_drawfeature(reward,0.0,0.0,1.0,[],[]);
 
 if strcmp(reward.type,'sum')
     max_r = -Inf;
@@ -95,11 +95,11 @@ if ~isempty(example_samples)
         else
             width_factor = 1;
         end
-%         plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
+        plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
         % Plot starting point.
         %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
-%         fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
+        fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
     end
     if ~paper_quality
     for i=1:length(test_samples)
