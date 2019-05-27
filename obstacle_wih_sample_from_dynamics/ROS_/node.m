@@ -1,4 +1,4 @@
-function node(states)
+function node(states, weight_in)
 
 delayIntro = false; % should be false
 
@@ -140,6 +140,9 @@ while 1
         T = length(states);
         states_ = states;
         weight_input = ones(T,1);
+        if nargin > 1
+            weight_input = weight_in;
+        end    
     end
 
     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);

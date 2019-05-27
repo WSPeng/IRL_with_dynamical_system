@@ -504,8 +504,8 @@ void MotionGenerator::mouseControlledMotion()
 								{
 									_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
 									_obs._rho = _rhosfSave[_numOfDemo-1][0];
-									_obs._safetyFactor = 0.9f;
-									_obs._rho = 0.9f;
+									_obs._safetyFactor = 1.0f; // 0.9
+									_obs._rho = 1.0f; //0.9
 									// std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
 									// std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
 									std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
