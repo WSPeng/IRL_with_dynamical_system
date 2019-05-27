@@ -536,8 +536,18 @@ void MotionGenerator::mouseControlledMotion()
 									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
 									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
 
+									// 1.2 and 5
 									// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
 									// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
+									//_obs._safetyFactor = 1.06f + 0.16f*(float)std::rand()/RAND_MAX;
+									//_obs._rho = 4.6f + 1.6*(float)std::rand()/RAND_MAX;
+									// _obs._safetyFactor = 1.08f + 0.16f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 4.8f + 1.6*(float)std::rand()/RAND_MAX;
+									// o.2 band
+									//_obs._rho = 4.6f + 1.6*(float)std::rand()/RAND_MAX;
+									// _obs._safetyFactor = 1.14f + 0.04f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 5.4f + 0.4*(float)std::rand()/RAND_MAX;
+
 									// larger range
 									// _obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
 									// _obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
@@ -566,7 +576,9 @@ void MotionGenerator::mouseControlledMotion()
 
 									// Some manual weights
 									// double distance_center = ((5.0f - _obs._rho)^2 + (1.25f - _obs._safetyFactor)^2)/(4.0f^2+0.5f^2);
-									// _msgRealPoseArray.header.frame_id = 
+									double distance_center = pow(5.0f - _obs._rho,2)/pow(4.0f,2)/2 + pow(1.15f - _obs._safetyFactor,2)/pow(0.25f,2)/2;
+									distance_center = sqrt(distance_center);
+									_msgRealPoseArray.header.frame_id = std::to_string(distance_center);
 								}
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
 							}							

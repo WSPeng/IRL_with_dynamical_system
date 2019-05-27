@@ -120,7 +120,7 @@ if gradient_descent
     initu = 0;
     rbest = -Inf;
     tolGrad = 1e-3;
-    maxiter = 30;
+    maxiter = 100;
     alpha = 0.1/3/2; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
@@ -133,7 +133,8 @@ if gradient_descent
     
     % plot the ecllipse region 
 %     p = calculateEllipse(5, 1.25, 0.56, 0.07, 7.2);
-    p = calculateEllipse(6, 1.2, 0.24, 0.01, 7.2);
+%     p = calculateEllipse(6, 1.2, 0.32, 0.015, 7.2);
+    p = calculateEllipse(5, 1.15, 0.32, 0.015, 7.2);
     plot(p(:,1), p(:,2), '.-')
     
     % init
