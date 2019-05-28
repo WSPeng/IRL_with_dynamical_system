@@ -566,19 +566,21 @@ void MotionGenerator::mouseControlledMotion()
 									// float sff[3] = {1, 1.4, 1.43};
 									// float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
 									// float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
-									// _obs._safetyFactor = sff[temp_counter_test];
-									// _obs._rho = rhoo[temp_counter_test];
-									// temp_counter_test++;
+									float rhoo[10] = {1.8, 1.85, 2.8, 3.3, 3.4, 4.5, 5.8, 6.2, 7.1, 7.3};
+									float sff[10] =  {0.95,1.41, 1.02,1.27,1.55,1.38,1.4,1.58,1.05,1.19 };
+									_obs._safetyFactor = sff[temp_counter_test];
+									_obs._rho = rhoo[temp_counter_test];
+									temp_counter_test++;
 
 									// The smaller rectangular area 0.9-1.4 1-6 
-									_obs._safetyFactor = 0.9f + 0.5f*(float)std::rand()/RAND_MAX;
-									_obs._rho = 1.0f + 5.0f*(float)std::rand()/RAND_MAX;		
+									// _obs._safetyFactor = 0.9f + 0.5f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 1.0f + 5.0f*(float)std::rand()/RAND_MAX;		
 
 									// Some manual weights
 									// double distance_center = ((5.0f - _obs._rho)^2 + (1.25f - _obs._safetyFactor)^2)/(4.0f^2+0.5f^2);
-									double distance_center = pow(5.0f - _obs._rho,2)/pow(4.0f,2)/2 + pow(1.15f - _obs._safetyFactor,2)/pow(0.25f,2)/2;
-									distance_center = sqrt(distance_center);
-									_msgRealPoseArray.header.frame_id = std::to_string(distance_center);
+									// double distance_center = pow(5.0f - _obs._rho,2)/pow(4.0f,2)/2 + pow(1.15f - _obs._safetyFactor,2)/pow(0.25f,2)/2;
+									// distance_center = sqrt(distance_center);
+									// _msgRealPoseArray.header.frame_id = std::to_string(distance_center);
 								}
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
 							}							
