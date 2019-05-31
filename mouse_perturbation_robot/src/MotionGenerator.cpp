@@ -180,6 +180,8 @@ bool MotionGenerator::init()
 	}
 	_subMessageWeight = _n.subscribe("/eeg_weight", 1, &MotionGenerator::subMessageWeight, this, ros::TransportHints().reliable().tcpNoDelay());
 
+	_subGripper = _n.subscribe("/gripper/in", 1,&MotionGenerator::subGripper, this, ros::TransportHints().reliable().tcpNoDelay());
+
 	// Publisher definitions
 	if (!_iiwaInsteadLwr)
 	{
@@ -201,6 +203,8 @@ bool MotionGenerator::init()
 	_pubObsPosition = _n.advertise<geometry_msgs::Pose>("/send_position_obstacle_marker", 1);
 
 	_pubDebugTrigger = _n.advertise<std_msgs::Int8>("/trigger_debug", 1);
+
+	_pubGripper = _n.advertise<std_msgs::Int8>("/gripper/out", 1);
 
 	// Dynamic reconfigure definition
 	_dynRecCallback = boost::bind(&MotionGenerator::dynamicReconfigureCallback, this, _1, _2);
@@ -566,8 +570,8 @@ void MotionGenerator::mouseControlledMotion()
 									// float sff[3] = {1, 1.4, 1.43};
 									// float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
 									// float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
-									float rhoo[10] = {1.8, 1.85, 2.8, 3.3, 3.4, 4.5, 5.8, 6.2, 7.1, 7.3};
-									float sff[10] =  {0.95,1.41, 1.02,1.27,1.55,1.38,1.4,1.58,1.05,1.19 };
+									float rhoo[10] = {1.8, 1.85, 2.8, 3.3, 3.4, 4.5,  5.8, 6.2, 7.1, 7.3};
+									float sff[10] =  {0.95,1.41, 1.02,1.27,1.55,1.38, 1.4,1.58,1.05,1.19 };
 									_obs._safetyFactor = sff[temp_counter_test];
 									_obs._rho = rhoo[temp_counter_test];
 									temp_counter_test++;

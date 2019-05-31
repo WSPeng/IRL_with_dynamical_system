@@ -70,7 +70,7 @@ class MotionGenerator
     const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
-    const bool _boolSpacenav = 1; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
+    const bool _boolSpacenav = 0; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
 
     // arduino
     const bool  _useArduino = true; 
@@ -106,6 +106,7 @@ class MotionGenerator
     ros::Subscriber _subMessageEEG;         // EEG
     ros::Subscriber _subMessageWeight;      // Sub the weight from EEG side
     ros::Subscriber _subMessageEEGOpti;
+    ros::Subscriber _subGripper;            // sub the gripper out
     
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
@@ -116,6 +117,7 @@ class MotionGenerator
     ros::Publisher _pubCommand;
     ros::Publisher _pubDebugTrigger;
     ros::Publisher _pubWeights;
+    ros::Publisher _pubGripper;             // pub the gripper in
     
     // Messages declaration
     geometry_msgs::Pose _msgRealPose;
