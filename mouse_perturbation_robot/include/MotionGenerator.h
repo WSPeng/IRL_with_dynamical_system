@@ -45,11 +45,11 @@
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
 
-// #define PROTOCAL_DEBUG
+// #define PROTOCAL_DEBUG // the hyper parameter is disabled in gripper
 
 // #define DELAY_INTRODUCE 10
 
-#define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG) (Experiment)
+#define PROTOCAL_RELEASE_INCREASE // the hyper parameter is disabled in gripper branch
 
 // #define LISTEN_EEG // Test the brain activity decoder 
 
@@ -76,7 +76,7 @@ class MotionGenerator
     const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm [random in the large range of rho and sf]
-    const bool _randomWholeRange = false;
+    const bool _randomWholeRange = true;
 
     //===========================================
 
@@ -235,6 +235,10 @@ class MotionGenerator
 
     std_msgs::String _msgMessageEEG;
     std_msgs::String _msgMessageEEGOpti;
+    std_msgs::Int8 _msgGripper;
+    std_msgs::Int8 _msgGripperSub;
+    int _intGripper;
+    int _intGripperSub;
 
     bool _indicatorRand;
 
@@ -331,6 +335,9 @@ class MotionGenerator
     void subMessageWeight(const std_msgs::String::ConstPtr& msg);
 
     void subMessageEEGOpti(const std_msgs::String::ConstPtr& msg);
+
+    // Gripper 
+    void subGripper(const std_msgs::Int8::ConstPtr& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);

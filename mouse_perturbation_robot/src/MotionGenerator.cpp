@@ -33,28 +33,6 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	_obs._bContour = false;
 	_obs._rho = init_rho;// was 1.1
 
-	//std::cerr << "ons ?" << _numObstacle << std::endl;
-
-	if (_numObstacle == 2)
-	{
-		//obstacle definition 1 
-		//_obs._a << 0.03f, 0.02f, 0.5f; // 0.5 0.1 0.12
-		_obs._a << 0.5f, 0.1f, 0.12f; // 0.12f, 0.1f, 0.5f
-		_obs._p.setConstant(1.0f);
-		_obs._safetyFactor = 1.0f;// was 1.1 // may 0.9f
-		_obs._tailEffect = false;
-		_obs._bContour = false;
-		_obs._rho = 1.0f;// was 1.1 // may 0.9f
-
-		//obstacle definition 2The motion generator is ready.The motion generator is ready.The motion generator is ready.
-		//_obs2._a << 0.20f, 0.07f, 0.5f; // 0.5 0.1 0.12
-		_obs2._a << 0.5f, 0.1f, 0.12f; //0.15f, 0.1f, 0.5f
-		_obs2._p.setConstant(1.0f);
-		_obs2._safetyFactor = 1.0f;// was 1.1
-		_obs2._tailEffect = false;
-		_obs2._bContour = false;
-		_obs2._rho = 1.0f;// was 1.1
-	}
 }
 
 
@@ -82,8 +60,12 @@ bool MotionGenerator::init()
   	if (_iiwaInsteadLwr)
   		_targetOffset.col(Target::B) << 0.0f, -0.85f, 0.0f;
 
-  	_targetOffset.col(Target::C) << -0.16f,0.25f,0.0f;
-  	_targetOffset.col(Target::D) << -0.16f,-0.25f,0.0f;
+  	_targetOffset.col(Target::C) << -0.16f, 0.25f, 0.0f;
+  	// _targetOffset.col(Target::D) << -0.16f, -0.25f, 0.0f;
+  	// _targetOffset.col(Target::C) << -0.16f, 0.85f, 0.0f;
+  	// _targetOffset.col(Target::D) << -0.16f, 0.0f, 0.0f;
+  	_targetOffset.col(Target::D) << -0.16f, 0.6f, 0.0f;
+
   	_perturbationOffset.setConstant(0.0f);
   	_phaseDuration = 0.0f;
   	_minCleanMotionDuration = 5.0f;
@@ -120,15 +102,12 @@ bool MotionGenerator::init()
 	_ifWeightEEGReveive = false;
 	_msgEEGOpti = 0;
 	_boolReverseMsgEEGOpti = false;
+	_intGripper = 0; 			// Gripper publish message
+	_intGripperSub = 0;			// Gripper sub
 
 	_state = State::INIT;
-	#ifdef PROTOCAL_DEBUG
-	_previousTarget = Target::A;
-	_currentTarget = Target::B;
-	#else
 	_previousTarget = Target::B;
-	_currentTarget = Target::A;
-	#endif
+	_currentTarget = Target::A;  // The current target should be A = 0 0 0
 
 	temp_counter_test = 0;	
 
@@ -182,6 +161,7 @@ bool MotionGenerator::init()
 
 	_subGripper = _n.subscribe("/gripper/in", 1,&MotionGenerator::subGripper, this, ros::TransportHints().reliable().tcpNoDelay());
 
+	// =====================
 	// Publisher definitions
 	if (!_iiwaInsteadLwr)
 	{
@@ -385,10 +365,8 @@ void MotionGenerator::mouseControlledMotion()
 		{
 			// Check if mouse is in use
 			// _mouseInUse = true; // uncomment to disable the returning
-			#ifndef PROTOCAL_DEBUG
 			_mouseInUse = true; // make the if statement alway ture -> never go back to the start point
 			// _indicatorRand = true;
-			#endif		
 			if(_obsPositionInput && _recievedTarPositionInput)
 			{
 				// I put the Target::B redeclaration here.
@@ -404,7 +382,6 @@ void MotionGenerator::mouseControlledMotion()
 					_lastMouseTime = ros::Time::now().toSec();
 				}
 				// Save current target
-				temporaryTarget = _previousTarget;
 				temporaryTarget = _currentTarget;
 
 				// add code to make only change direction in two target positions=======================
@@ -412,7 +389,7 @@ void MotionGenerator::mouseControlledMotion()
 				
 				float distance1 = (_xd-_x).norm();
 
-//debug for later use IIWA debug				
+				//debug for later use IIWA debug				
 				// std::cout << "distance 1 : " << distance1 << std::endl;
 				// std::cout << "_x0 : " << _x0(0) << "|" << _x0(1) << "|" << _x0(2) <<std::endl;
 				// std::cout << "_xd : " << _xd(0) << "|" << _xd(1) << "|" << _xd(2) <<std::endl;
@@ -480,20 +457,41 @@ void MotionGenerator::mouseControlledMotion()
 					}
 
 					// Update target from mouse input
-					if(fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))// start the next motion
+					if(fabs(_mouseVelocity(0))>0.0f || fabs(_mouseVelocity(1))>0.0f )// start the next motion (in both direction)
 					{
-						if(_mouseVelocity(0)>0.0f) // positice or negative for direction.
+						if(_mouseVelocity(0)>0.0f && fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1))) // positice or negative for direction.
 						{
-							_currentTarget = Target::A;
+							if (temporaryTarget == Target::B)
+								_currentTarget = Target::A;
+							else if (temporaryTarget == Target::D)
+								_currentTarget = Target::C;
 						}
-						else
+						else if(_mouseVelocity(0)<0.0f && fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))
 						{
-							_currentTarget = Target::B;
+							if (temporaryTarget == Target::A)
+								_currentTarget = Target::B;
+							else if (temporaryTarget == Target::C)
+								_currentTarget = Target::D;
+						}
+
+						if(_mouseVelocity(1)>0.0f && fabs(_mouseVelocity(1))>fabs(_mouseVelocity(0)))
+						{
+							if (temporaryTarget == Target::A)
+								_currentTarget = Target::C;
+							else if (temporaryTarget == Target::B)
+								_currentTarget = Target::D;
+						}
+						else if(_mouseVelocity(1)<0.0f && fabs(_mouseVelocity(1))>fabs(_mouseVelocity(0)))
+						{
+							if (temporaryTarget == Target::C)
+								_currentTarget = Target::A;
+							else if (temporaryTarget == Target::D)
+								_currentTarget = Target::B;
 						}
 						// std::cout << "==current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
 
 						//if((_currentTarget != _previousTarget))
-						if((_currentTarget != temporaryTarget))
+						if((_currentTarget != temporaryTarget)) // only enter once.. 
 						{
 							// std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << " if sent traj " << _ifSentTraj << std::endl;
 							#ifdef BINARY_INPUT
@@ -508,10 +506,8 @@ void MotionGenerator::mouseControlledMotion()
 								{
 									_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
 									_obs._rho = _rhosfSave[_numOfDemo-1][0];
-									_obs._safetyFactor = 1.0f; // 0.9
-									_obs._rho = 1.0f; //0.9
-									// std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
-									// std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
+									_obs._safetyFactor = 0.9f;
+									_obs._rho = 0.9f;
 									std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
 									std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
 								}
@@ -539,52 +535,6 @@ void MotionGenerator::mouseControlledMotion()
 								{
 									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
 									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
-
-									// 1.2 and 5
-									// _obs._safetyFactor = 1.1f + 0.2f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 5.0f + 2*(float)std::rand()/RAND_MAX;
-									//_obs._safetyFactor = 1.06f + 0.16f*(float)std::rand()/RAND_MAX;
-									//_obs._rho = 4.6f + 1.6*(float)std::rand()/RAND_MAX;
-									// _obs._safetyFactor = 1.08f + 0.16f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 4.8f + 1.6*(float)std::rand()/RAND_MAX;
-									// o.2 band
-									//_obs._rho = 4.6f + 1.6*(float)std::rand()/RAND_MAX;
-									// _obs._safetyFactor = 1.14f + 0.04f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 5.4f + 0.4*(float)std::rand()/RAND_MAX;
-
-									// larger range
-									// _obs._safetyFactor = 1.05f + 0.35f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 4.0f + 3.5*(float)std::rand()/RAND_MAX;								
-
-									// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
-
-									// _obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
-
-									// Higher std
-									// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
-									// _obs._rho = 2.0f + 4*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
-
-									// float rhoo[3] = {2, 6, 6.1};
-									// float sff[3] = {1, 1.4, 1.43};
-									// float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
-									// float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
-									float rhoo[10] = {1.8, 1.85, 2.8, 3.3, 3.4, 4.5,  5.8, 6.2, 7.1, 7.3};
-									float sff[10] =  {0.95,1.41, 1.02,1.27,1.55,1.38, 1.4,1.58,1.05,1.19 };
-									_obs._safetyFactor = sff[temp_counter_test];
-									_obs._rho = rhoo[temp_counter_test];
-									temp_counter_test++;
-
-									// The smaller rectangular area 0.9-1.4 1-6 
-									// _obs._safetyFactor = 0.9f + 0.5f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 1.0f + 5.0f*(float)std::rand()/RAND_MAX;		
-
-									// Some manual weights
-									// double distance_center = ((5.0f - _obs._rho)^2 + (1.25f - _obs._safetyFactor)^2)/(4.0f^2+0.5f^2);
-									// double distance_center = pow(5.0f - _obs._rho,2)/pow(4.0f,2)/2 + pow(1.15f - _obs._safetyFactor,2)/pow(0.25f,2)/2;
-									// distance_center = sqrt(distance_center);
-									// _msgRealPoseArray.header.frame_id = std::to_string(distance_center);
 								}
 								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
 							}							
@@ -601,11 +551,10 @@ void MotionGenerator::mouseControlledMotion()
 				
 				//======================================================================================
 				
-				#ifdef PROTOCAL_RELEASE_INCREASE
 				if (distance1 > TARGET_TOLERANCE)
 				{
 					#ifndef LISTEN_EEG
-					if (_mouseVelocity(0)==0.0f &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
+					if (_mouseVelocity(0)==0.0f && _mouseVelocity(1)==0.0f &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
     				#else
 					if (_msgEEG == 1 &&( _obs._safetyFactor != MAX_ETA || _obs._rho != MAX_RHO) )
     				#endif
@@ -616,17 +565,15 @@ void MotionGenerator::mouseControlledMotion()
     					std::cout << "Increase the parameters to highest value: saftey factor " << _obs._safetyFactor << " |rho " << _obs._rho << std::endl;
     				}
 
-    				if (_mouseVelocity(0) == 0.0f)
+    				if (_mouseVelocity(0) == 0.0f && _mouseVelocity(1)==0.0f)
     					_eventLogger |= (1 << 1);
 
     				_msgEEG == 0;
     			}
-
-    				if (_msgEEG == 1)
-    				{
-    					_eventLogger |= (1 << 2);
-    				}
-				#endif
+				if (_msgEEG == 1)
+				{
+					_eventLogger |= (1 << 2);
+				}
 
 				//--
 				// Compute desired target position
@@ -634,37 +581,6 @@ void MotionGenerator::mouseControlledMotion()
 
 				// Compute distance to target
 				float distance = (_xd-_x).norm();
-
-				//--
-
-				//If during the motion, and eeg send message 1, then ..
-				// if(_msgEEG == 1 && distance > TARGET_TOLERANCE)
-				// {
-				// 	//std::cout << "reveive eeg message" << std::endl;
-				// 	_mouseVelocity(1) = -1.0f;
-				// }
-
-				if(_mouseVelocity(1)>0.0f) // if not updated, mousevelocity(1) is 0. positive value ===> push the mouse towards the user
-				{
-					changeRhoEta(0);
-				}
-				//else if (_mouseVelocity(1)<150.0f || ( _mouseVelocity(1)<0.0f && _mouseVelocity(0)<100.0f || _mouseVelocity(0)>100.0f )) // pushing forward
-				else if (_mouseVelocity(1)<0.0f)
-				{
-					changeRhoEta(1);
-					
-					if(distance > TARGET_TOLERANCE)
-					{
-						// _eventLogger = 3; // will be changed if we use the y direction of the mouse
-						//sendValueArduino(3);
-					}
-				}
-				//else
-				//{
-					//std::cout << "_safetyFactor not changing " << _obs._safetyFactor << "\n";
-					//std::cout << "_rho not changing " << _obs._rho << "\n";
-				//}
-				//======================================================================================
 
 				// If new target, updates previous one and compute new motion and perturbation direction.
 				// Also updates the relative location of the obstacle
@@ -709,22 +625,6 @@ void MotionGenerator::mouseControlledMotion()
 							//_recievedObsPositionInput = false;
 						}						
 					}
-
-					if (_numObstacle == 2)
-					{
-						//_obs._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
-						_obs._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
-						_obs._x0(2) -= 0.055f; // Z
-						_obs._x0(1) -= 0.20f;
-						_obs._x0(0) -= 0.10f; // x coordinate 
-						
-						//_obs2._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
-						_obs2._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
-						_obs2._x0(2) += 0.05f;
-						_obs2._x0(1) += 0.20f;
-						_obs2._x0(0) -= 0.10f;// x coordinate 
-					}
-
 					//std::cerr << "x0 : " << _x0(0) << " " <<_x0(1)<<" "<<_x0(2)<< std::endl;
 					//std::cerr << _currentTarget << " " << temporaryTarget << " " << std::endl;
 					//std::cerr << "obs.x0: "<< _obs._x0(0) << " " << _obs._x0(1) << " " << _obs._x0(2) << std::endl;
@@ -742,7 +642,6 @@ void MotionGenerator::mouseControlledMotion()
 					// Target is reached
 					_eventLogger &= ~(1 << 0);
 
-					// Random change in trajectory parameters
 					if (_previousTarget != _currentTarget)
 					{
 						//_eventLogger = 15;
@@ -816,67 +715,7 @@ void MotionGenerator::mouseControlledMotion()
 			}
 			else
 			{
-				// Go to starting point & it is only used when 
-
-				// Compute desired target position
-				_xd = _x0 + _targetOffset.col(_previousTarget);
-				// Compute distance to target
-				float distance = (_xd-_x).norm();
-
-				// _eventLogger |= 1; // no logger is specified in current release protocal
-
-				if (_previousTarget == Target::A)
-				 {
-				 	// _eventLogger |= 1 << 2;
-				 }
-				 else
-				 {
-				 	// _eventLogger |= 1 << 1;
-				}
-
-				if(distance < TARGET_TOLERANCE)
-				{
-					if (_previousTarget != _currentTarget)
-					{
-						// _eventLogger = 15;
-						_trialCount++;
-						std::cout << "The number of trials : " << _trialCount << std::endl;
-						
-						// after return to the start point, we dont regenerate random parameters
-						// if (_switchingTrajectories and _randomInsteadIRL)
-						// {
-						// 	_obs._safetyFactor = 1.1f + 0.4f*(float)std::rand()/RAND_MAX;
-						// 	_obs._rho = 1.1f + 7*(float)std::rand()/RAND_MAX;
-						// 	ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << "Rho: " << _obs._rho);	
-						// }
-					}
-					else
-					{
-						_eventLogger = 0;
-					}
-
-					_eventLogger &= ~(1 << 1);
-
-					_currentTarget = _previousTarget;
-					// Update target
-					_reachedTime = ros::Time::now().toSec();
-					// _state = State::PAUSE;
-				}
-				
-				obsModulator.setObstacle(_obs, _obs2, _numObstacle);
-				// obsModulator.setObstacle(_obs);
-
-				Eigen::Matrix3f B,L;
-				B.col(0) = _motionDirection;
-				B.col(1) = _perturbationDirection;
-				B.col(2) << 0.0f,0.0f,1.0f;
-				gains << 10.0f, 10.0f, 30.0f;
-
-				// Compute error and desired velocity
-				error = _xd-_x;
-				L = gains.asDiagonal();
-				_vd = B*L*B.transpose()*error;
-				_vd = obsModulator.obsModulationEllipsoid(_x, _vd, false, _numObstacle);
+				// ... 
 			}
 
 			if(_useArduino)
@@ -1076,21 +915,17 @@ void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, boo
 			// _eventLogger &= 1 << 1;
 		}
 
-		#ifndef PROTOCAL_RELEASE_INCREASE
 		// enable the y direction velocity
-		if((fabs(relY)>MIN_Y_REL && fabs(relX)>MIN_Y_REL) || fabs(relY)>MIN_X_REL)
+		if((fabs(relY)>MIN_Y_REL && fabs(relX)>MIN_Y_REL) || fabs(relY)>MIN_X_REL) // ?
 		{
 			_mouseVelocity(1) = relY;
-			
+			// _eventLogger?
 			_mouseInUse = true;
 		}
 		else
 		{
 			_mouseVelocity(1) = 0.0f;
-		} 
-
-		// To test the IRL...
-		#endif
+		}
 
 		// z direction velocity for publishing
 		if(fabs(relZ)>MIN_Z_REL)
@@ -1542,72 +1377,14 @@ void MotionGenerator::subMessageEEGOpti(const std_msgs::String::ConstPtr& msg)
 }
 
 
+void MotionGenerator::subGripper(const std_msgs::Int8::ConstPtr& msg)
+{
+
+}
+
+
 void MotionGenerator::changeRhoEta(int indcator)
 {
-	if (_numObstacle == 2)  // need debug for 2 obs case
-	{
-		// make change
-		if (indcator)
-		{	
-			#ifdef DELAY_INTRODUCE
-			_indexx += 1;
-			if (_indexx >= DELAY_INTRODUCE)
-			{
-				_indexx = 0;
-			#else
-			{
-			#endif
-				_obs._safetyFactor += 0.01/2;
-				_obs._rho += 0.1/2;
-				if (_obs._safetyFactor >= MAX_ETA)
-				{
-					_obs._safetyFactor = MAX_ETA;
-				}
-				if (_obs._rho >= MAX_RHO)
-				{
-					_obs._rho = MAX_RHO;
-				}
-
-				//if (_numObstacle == 2)
-				//{
-				//	_obs2._rho = _obs._rho;
-				//	_obs2._safetyFactor = _obs._safetyFactor;
-				//}
-				std::cout << "_safetyFactor Increasing " << _obs._safetyFactor << "\n";
-				std::cout << "_rho Increasing " << _obs._rho << "\n";
-			}
-		}
-		else
-		{
-			#ifdef DELAY_INTRODUCE
-			_indexy += 1;
-			if (_indexy >= DELAY_INTRODUCE)
-			{
-				_indexy = 0;
-			#else
-			{
-			#endif
-				_obs._safetyFactor -= 0.01;
-				_obs._rho -= 0.1;
-				if (_obs._safetyFactor <= MIN_ETA)
-				{
-					_obs._safetyFactor = MIN_ETA;
-				}
-				if (_obs._rho <= MIN_RHO)
-				{
-					_obs._rho = MIN_RHO;
-				}
-				//if (_numObstacle == 2)
-				//	{
-				//		_obs2._rho = _obs._rho;
-				//		_obs2._safetyFactor = _obs._safetyFactor;
-				//	}
-				//	std::cout << "_safetyFactor Decreasing " << _obs._safetyFactor<<"\n";
-				//	std::cout << "_rho Decreasing " << _obs._rho << "\n";
-			}
-		}
-	}
-	else
 	{
 		// make change
 		if (indcator)
