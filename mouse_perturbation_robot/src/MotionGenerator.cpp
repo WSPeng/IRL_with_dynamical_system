@@ -159,6 +159,7 @@ bool MotionGenerator::init()
 	}
 	_subMessageWeight = _n.subscribe("/eeg_weight", 1, &MotionGenerator::subMessageWeight, this, ros::TransportHints().reliable().tcpNoDelay());
 
+	// Gripper 
 	_subGripper = _n.subscribe("/gripper/in", 1,&MotionGenerator::subGripper, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// =====================
@@ -184,6 +185,7 @@ bool MotionGenerator::init()
 
 	_pubDebugTrigger = _n.advertise<std_msgs::Int8>("/trigger_debug", 1);
 
+	// Gripper
 	_pubGripper = _n.advertise<std_msgs::Int8>("/gripper/out", 1);
 
 	// Dynamic reconfigure definition
@@ -1379,7 +1381,7 @@ void MotionGenerator::subMessageEEGOpti(const std_msgs::String::ConstPtr& msg)
 
 void MotionGenerator::subGripper(const std_msgs::Int8::ConstPtr& msg)
 {
-
+	
 }
 
 
