@@ -54,17 +54,17 @@ bool MotionGenerator::init()
   	_targetOffset.col(Target::A) << 0.0f, 0.0f, 0.0f;
   	// The target B is the target
   	if (!_obsPositionInput)
-  		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f; // 0.0f, 0.85f, 0.0f;
+  		_targetOffset.col(Target::B) << 0.0f, 0.78f, 0.0f; // 0.0f, 0.85f, 0.0f;
   	else
   		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
   	if (_iiwaInsteadLwr)
   		_targetOffset.col(Target::B) << 0.0f, -0.85f, 0.0f;
 
-  	_targetOffset.col(Target::C) << -0.16f, 0.25f, 0.0f;
+  	_targetOffset.col(Target::C) << -0.30f, 0.15f, 0.0f;
   	// _targetOffset.col(Target::D) << -0.16f, -0.25f, 0.0f;
   	// _targetOffset.col(Target::C) << -0.16f, 0.85f, 0.0f;
   	// _targetOffset.col(Target::D) << -0.16f, 0.0f, 0.0f;
-  	_targetOffset.col(Target::D) << -0.16f, 0.6f, 0.0f;
+  	_targetOffset.col(Target::D) << -0.30f, 0.63f, 0.0f;
 
   	_perturbationOffset.setConstant(0.0f);
   	_phaseDuration = 0.0f;
@@ -532,6 +532,9 @@ void MotionGenerator::mouseControlledMotion()
 								{
 									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
 									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+
+									_obs._safetyFactor = 1.2f;
+									_obs._rho = 4.0f;
 								}
 								else
 								{

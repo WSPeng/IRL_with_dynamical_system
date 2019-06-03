@@ -70,6 +70,10 @@ addpaths.m
 downward end effector 
 `$rosrun motion_example moveToDesiredJoints 42 45 0 -75 0 55 20` to solve the shaking problem  
 `$rosrun motion_example moveToDesiredJoints 43.1 53 0.15 -76 -0.1 53.5 20`  
+Four points  
+`$rosrun motion_example moveToDesiredJoints 50 34.7 1.73 -92.2 -1.94 52.8 42.2`    
+`$rosrun motion_example moveToDesiredJoints 44.5 34.7 1.73 -92.2 -1.94 52.8 42.2`    
+
 damping eigen - 90/1000  
 damping eigen - 90/500  
 rot stiff - 15/50  

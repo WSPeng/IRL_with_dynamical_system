@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   dynamic_reconfigure
+  grasp_interface
 )
 
 add_message_files(
