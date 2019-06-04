@@ -51,7 +51,3 @@ add_dependencies(motionGenerator ${PROJECT_NAME}_gencpp)
 add_executable(mouseInterface src/mouseInterface_node.cpp src/MouseInterface.cpp)
 target_link_libraries(mouseInterface ${catkin_LIBRARIES})
 add_dependencies(mouseInterface ${PROJECT_NAME}_gencpp)
-
-add_executable(Gripper_c src/gripper_c.cpp)
-# target_link_libraries(Gripper_c ${catkin_LIBRARIES})
-# add_dependencies(Gripper_c ${PROJECT_NAME}_gencpp)

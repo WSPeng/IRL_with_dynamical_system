@@ -159,3 +159,8 @@ matlab
 setenv('ROS_MASTER_URI', 'http://')
 getenv()
 setenv('ROS_IP','')
+
+
+## Gripper
+rosrun robotiq_c_model_control CModelTcpNode.py 192.168.1.11
+https://github.com/epfl-lasa/lasa-wiki/wiki/Robotiq-gripper

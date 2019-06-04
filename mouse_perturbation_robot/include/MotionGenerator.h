@@ -53,7 +53,7 @@
 
 // #define LISTEN_EEG // Test the brain activity decoder 
 
-// #define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
+#define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
 
 class MotionGenerator 
 {
@@ -193,6 +193,8 @@ class MotionGenerator
     bool _delayIntroduce;             // if the delay is introduced
     bool _ifWeightEEGReveive;         // 
     bool _boolReverseMsgEEGOpti;      // 
+    bool _boolGripperSend;
+
 
     // Arduino related variables
     int farduino;

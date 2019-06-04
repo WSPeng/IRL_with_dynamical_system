@@ -104,6 +104,7 @@ bool MotionGenerator::init()
 	_boolReverseMsgEEGOpti = false;
 	_intGripper = 0; 			// Gripper publish message
 	_intGripperSub = 0;			// Gripper sub
+	_boolGripperSend = 0;
 
 	_state = State::INIT;
 	_previousTarget = Target::B;
@@ -456,6 +457,24 @@ void MotionGenerator::mouseControlledMotion()
 							_updateIRLParameter = true;
 						}
 						#endif
+					}
+
+					// Press the open or close the 
+					if(fabs(_mouseVelocity(2))>=300.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f && _boolGripperSend)
+					{
+						// std::cout << _boolGripperSend << std::endl;
+						_boolGripperSend = 0;
+						if(_intGripper==0)
+							_intGripper = 1;
+						else
+							_intGripper = 0;
+						// ROS_INFO("pub gripper.");
+						_msgGripper.data = _intGripper;
+						_pubGripper.publish(_msgGripper);
+					}
+					else if (fabs(_mouseVelocity(2))<=100.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f)
+					{
+						_boolGripperSend = 1;
 					}
 
 					// Update target from mouse input
