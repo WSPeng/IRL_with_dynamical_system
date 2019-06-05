@@ -48,7 +48,7 @@ if nargin > 5
     example_human = states_reverse;
      
     % remove the demonstration more than 5 
-    len_max = 10;
+    len_max = 5;
     if length(example_human) > len_max
         example_human = example_human(length(example_human)-len_max+1:length(example_human),1);
     end

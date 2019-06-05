@@ -83,6 +83,7 @@ while 1
 %        weight_input(i,1) = scanweight.data;
         if scandata.Header.FrameId == ""
             weight_input(j,1) = 1;
+            disp('No weight specified.')
         else
             weight_input(j,1) = 1 - str2double(scandata.Header.FrameId); % 1 - 
             disp(['weight recieved : ', num2str(weight_input(j,1))])
@@ -145,6 +146,13 @@ while 1
         end    
     end
 
+    SIGMOID = 1;
+    if SIGMOID
+        % sigmoid
+        weight_input = weight_input*10;
+        weight_input = sigmoid(weight_input,5,2);
+    end
+    
     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor

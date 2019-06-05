@@ -395,6 +395,7 @@ void MotionGenerator::mouseControlledMotion()
 
 			if(_mouseInUse or currentTime - _lastMouseTime < _commandLagDuration)
 			{
+			
 				if (_mouseInUse)
 				{
 					_lastMouseTime = ros::Time::now().toSec();
@@ -426,7 +427,8 @@ void MotionGenerator::mouseControlledMotion()
 					if(fabs(_mouseVelocity(2))>=300.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f && !_ifSentTraj )
 					#else
 					// if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj)
-					if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj && _ifWeightEEGReveive)
+					_ifWeightEEGReveive = true;
+					if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj && _ifWeightEEGReveive) // no matter what eeg decoder, we always publish.
 					#endif
 					{
 						_ifWeightEEGReveive = false;
@@ -455,8 +457,8 @@ void MotionGenerator::mouseControlledMotion()
 							//for(int i=0;i<_numObstacle;++i)
 							//for(int i=0;i<_numOfDemo;++i)
 							//{
-							if(_randomInsteadIRL)
-								std::cout << "num of successful demo: " << _numOfDemo << "\n";
+							//if(_randomInsteadIRL)
+							//	std::cout << "num of successful demo: " << _numOfDemo << "\n";
 								//std::cout << "Saving rho is  " << _rhosfSave[i][0] << "\n";
 								//std::cout << "Saving safetyFactor is  " << _rhosfSave[i][1] << "\n";
 							//}
@@ -502,14 +504,13 @@ void MotionGenerator::mouseControlledMotion()
 								// if (_numOfDemo>=1 && !_randomInsteadIRL)
 								if (_trialCount>=1 && !_randomInsteadIRL)
 								{
-									_obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
-									_obs._rho = _rhosfSave[_numOfDemo-1][0];
-									_obs._safetyFactor = 1.0f; // 0.9
-									_obs._rho = 1.0f; //0.9
-									// std::cout<<" Use the previous set of saftey factor : "<<_obs._safetyFactor << "\n";
-									// std::cout<<" Use the previous set of rho : " <<_obs._rho << "\n";
-									std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
-									std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
+									// this part is commented in the experiment
+									// _obs._safetyFactor = _rhosfSave[_numOfDemo-1][1];
+									// _obs._rho = _rhosfSave[_numOfDemo-1][0];
+									// _obs._safetyFactor = 1.0f; // 0.9
+									// _obs._rho = 1.0f; //0.9
+									// std::cout<<" Use the small value of saftey factor : "<<_obs._safetyFactor ;//<< "\n";
+									// std::cout<<"      Use the small value of rho : " <<_obs._rho << "\n";
 								}
 
 								//std::cout << "Cleaning the trjaectory ===== " << "\n";
@@ -555,8 +556,8 @@ void MotionGenerator::mouseControlledMotion()
 									// _obs._safetyFactor = 1.3f + 0.1f*(float)std::rand()/RAND_MAX;
 									// _obs._rho = 6.0f + 2*(float)std::rand()/RAND_MAX;
 
-									// _obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
+									_obs._safetyFactor = 0.9f + 0.05f*(float)std::rand()/RAND_MAX;
+									_obs._rho = 1.0f + 	2*(float)std::rand()/RAND_MAX;				
 
 									// Higher std
 									// _obs._safetyFactor = 1.0f + 0.2f*(float)std::rand()/RAND_MAX; // 1.0 to 1.2 with center at 1.1
@@ -566,11 +567,11 @@ void MotionGenerator::mouseControlledMotion()
 									// float sff[3] = {1, 1.4, 1.43};
 									// float rhoo[8] = {2, 6.1, 1.9, 5.5,     6.2,   2,   6.5, 6.8};
 									// float sff[8] = {1, 1.43, 1.1, 1.431, 1.425, 1.12, 1.48, 1.5};
-									float rhoo[10] = {1.8, 1.85, 2.8, 3.3, 3.4, 4.5, 5.8, 6.2, 7.1, 7.3};
-									float sff[10] =  {0.95,1.41, 1.02,1.27,1.55,1.38,1.4,1.58,1.05,1.19 };
-									_obs._safetyFactor = sff[temp_counter_test];
-									_obs._rho = rhoo[temp_counter_test];
-									temp_counter_test++;
+									// float rhoo[10] = {1.8, 1.85, 2.8, 3.3, 3.4, 4.5, 5.8, 6.2, 7.1, 7.3};
+									// float sff[10] =  {0.95,1.41, 1.02,1.27,1.55,1.38,1.4,1.58,1.05,1.19 };
+									// _obs._safetyFactor = sff[temp_counter_test];
+									// _obs._rho = rhoo[temp_counter_test];
+									// temp_counter_test++;
 
 									// The smaller rectangular area 0.9-1.4 1-6 
 									// _obs._safetyFactor = 0.9f + 0.5f*(float)std::rand()/RAND_MAX;
@@ -766,6 +767,9 @@ void MotionGenerator::mouseControlledMotion()
 					_reachedTime = ros::Time::now().toSec();
 					// _state = State::PAUSE;
 				}
+
+				if (_trialCount>= NUM_LIMIT)
+					_randomInsteadIRL = false;
 
 				obsModulator.setObstacle(_obs, _obs2, _numObstacle);
 				//std::cout<<'?' << std::endl;

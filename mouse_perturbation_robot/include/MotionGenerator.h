@@ -44,6 +44,7 @@
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
+#define NUM_LIMIT 500000 // 6 --- use the first 5 as training ... then later five to test is converge..
 
 // #define PROTOCAL_DEBUG
 
@@ -53,6 +54,7 @@
 
 // #define LISTEN_EEG // Test the brain activity decoder 
 
+// [enable during subject testing]
 // #define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
 
 class MotionGenerator 
@@ -64,7 +66,8 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = true;
+    // const bool _randomInsteadIRL = true;
+    bool _randomInsteadIRL = true;
 
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;
@@ -76,7 +79,7 @@ class MotionGenerator
     const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm [random in the large range of rho and sf]
-    const bool _randomWholeRange = false;
+    const bool _randomWholeRange = true;
 
     //===========================================
 
