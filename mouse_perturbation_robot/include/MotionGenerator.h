@@ -213,6 +213,10 @@ class MotionGenerator
     Target _currentTarget;        // Current target
     Target _previousTarget;       // Previous target
     
+    int _currentAngle;
+    int _targtAngle;
+    int _previousAngle;
+
     std_msgs::Float32 _msg_para_up;
     Obstacle _obs;
     Obstacle _obs2;
@@ -343,6 +347,8 @@ class MotionGenerator
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);
+
+    void endEffectorAngleChange();
 
 };
 
