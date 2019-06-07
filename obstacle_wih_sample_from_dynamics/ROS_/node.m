@@ -2,6 +2,8 @@ function node(states, weight_in)
 
 delayIntro = false; % should be false
 
+folderName = 'result/eight_subject/Jun_6_02/testd2/';
+
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
     if(~exist('node1','var'))
@@ -86,16 +88,22 @@ while 1
             disp('No weight specified.')
         else
             weight_input(j,1) = 1 - str2double(scandata.Header.FrameId); % 1 - 
+            if weight_input(j,1) == 0
+                weight_input(j,1) = 0.0001;
+            end
             disp(['weight recieved : ', num2str(weight_input(j,1))])
         end
-            
+        
+        % save the weight
+        save([folderName 'weight_input.mat'], 'weight_input')
+        
         % Raise error when empty data received
         if isempty(states)
             error('Empty demonstration provided.')
         end
 
         % store
-        save(['data_' num2str(j) '.mat'], 'states');
+        save([folderName 'data_' num2str(j) '.mat'], 'states');
 
         % resacle the states
         rangex = [min(states(:,1)) max(states(:,1))];
@@ -149,11 +157,12 @@ while 1
     SIGMOID = 1;
     if SIGMOID
         % sigmoid
-        weight_input = weight_input*10;
-        weight_input = sigmoid(weight_input,5,2);
+        weight_input2 = weight_input*10;
+%         weight_input = sigmoid(weight_input,5,2);
+        weight_input2 = sigmoid(weight_input2,5,1);
     end
     
-    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
+    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName);
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor
 

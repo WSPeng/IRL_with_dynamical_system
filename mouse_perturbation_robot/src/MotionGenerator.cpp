@@ -427,7 +427,7 @@ void MotionGenerator::mouseControlledMotion()
 					if(fabs(_mouseVelocity(2))>=300.0f && fabs(_mouseVelocity(1))<=100.0f && fabs(_mouseVelocity(0))<=100.0f && !_ifSentTraj )
 					#else
 					// if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj)
-					_ifWeightEEGReveive = true;
+					// _ifWeightEEGReveive = true;
 					if( (_msgEEGOpti || ~_msgEEGOpti) && !_ifSentTraj && _ifWeightEEGReveive) // no matter what eeg decoder, we always publish.
 					#endif
 					{

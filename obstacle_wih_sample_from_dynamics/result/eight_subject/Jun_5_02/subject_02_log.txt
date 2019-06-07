@@ -1,0 +1,200 @@
+[ INFO] [1559737122.332795958]: The motion generator is ready.
+The number of trials : 0 | Correct trails : 0 | Error trails : 0
+[ INFO] [1559737166.920970021]: Switching Trajectory parameters. Safety Factor: 1.33322 Rho: 2.28312
+The number of trials : 1 | Correct trails : 1 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.21865 | rho : 2.69574
+[ INFO] [1559737187.006967966]: Switching Trajectory parameters. Safety Factor: 1.02021 Rho: 4.5658
+The number of trials : 2 | Correct trails : 2 | Error trails : 0
+Weight recieved = 0.22
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.26833 | rho : 3.27368
+[ INFO] [1559737217.448958583]: Switching Trajectory parameters. Safety Factor: 1.21656 Rho: 7.89505
+The number of trials : 3 | Correct trails : 3 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.21517 | rho : 4.10216
+[ INFO] [1559737263.705111531]: Switching Trajectory parameters. Safety Factor: 1.23292 Rho: 6.17813
+The number of trials : 4 | Correct trails : 4 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.19288 | rho : 5.00641
+[ INFO] [1559737312.601112949]: Switching Trajectory parameters. Safety Factor: 1.30132 Rho: 6.05552
+The number of trials : 5 | Correct trails : 5 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.29261 | rho : 6.62517
+The number of trials : 6 | Correct trails : 6 | Error trails : 0
+Weight recieved = 0.05
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.23921 | rho : 4.7599
+The number of trials : 7 | Correct trails : 7 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.22007 | rho : 7.21736
+The number of trials : 8 | Correct trails : 8 | Error trails : 0
+Weight recieved = 0.72
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.3221 | rho : 6.8759
+The number of trials : 9 | Correct trails : 9 | Error trails : 0
+Weight recieved = 0.76
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.3084 | rho : 6.75669
+The number of trials : 10 | Correct trails : 10 | Error trails : 0
+Weight recieved = 0.38
+Publishing the trjaectory =====>
+
+
+
+a 2
+
+
+The number of trials : 0 | Correct trails : 0 | Error trails : 0
+[ INFO] [1559737822.921090970]: Switching Trajectory parameters. Safety Factor: 1.462 Rho: 4.16785
+The number of trials : 1 | Correct trails : 1 | Error trails : 0
+Weight recieved = 0.30
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.23052 | rho : 5.80682
+[ INFO] [1559737851.000969105]: Switching Trajectory parameters. Safety Factor: 1.00355 Rho: 3.13394
+Increase the parameters to highest value: saftey factor 1.6 |rho 8
+The number of trials : 2 | Correct trails : 1 | Error trails : 1
+Weight recieved = 0.03
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.25551 | rho : 5.27257
+[ INFO] [1559737884.232966498]: Switching Trajectory parameters. Safety Factor: 1.44002 Rho: 7.03413
+The number of trials : 3 | Correct trails : 2 | Error trails : 1
+Weight recieved = 0.57
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.21491 | rho : 6.47108
+[ INFO] [1559737923.232970861]: Switching Trajectory parameters. Safety Factor: 1.06373 Rho: 7.41081
+The number of trials : 4 | Correct trails : 3 | Error trails : 1
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.24995 | rho : 5.13124
+[ INFO] [1559738015.256958808]: Switching Trajectory parameters. Safety Factor: 1.16303 Rho: 1.42712
+Increase the parameters to highest value: saftey factor 1.6 |rho 8
+The number of trials : 5 | Correct trails : 3 | Error trails : 2
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.26127 | rho : 6.4821
+The number of trials : 6 | Correct trails : 4 | Error trails : 2
+Weight recieved = 0.91
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.23573 | rho : 4.76142
+The number of trials : 7 | Correct trails : 5 | Error trails : 2
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.30965 | rho : 6.72472
+The number of trials : 8 | Correct trails : 6 | Error trails : 2
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.36357 | rho : 4.38725
+The number of trials : 9 | Correct trails : 7 | Error trails : 2
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.2471 | rho : 5.15594
+The number of trials : 10 | Correct trails : 8 | Error trails : 2
+Weight recieved = 0.71
+Publishing the trjaectory =====>
+
+
+
+b 1
+
+
+[ INFO] [1559738574.545854178]: The motion generator is ready.
+The number of trials : 0 | Correct trails : 0 | Error trails : 0
+[ INFO] [1559738599.185972699]: Switching Trajectory parameters. Safety Factor: 1.47661 Rho: 5.40249
+The number of trials : 1 | Correct trails : 1 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.2472 | rho : 7.07034
+[ INFO] [1559738628.233965158]: Switching Trajectory parameters. Safety Factor: 1.16837 Rho: 6.04079
+The number of trials : 2 | Correct trails : 2 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.24007 | rho : 6.7199
+[ INFO] [1559738659.913972397]: Switching Trajectory parameters. Safety Factor: 1.03582 Rho: 2.30597
+Increase the parameters to highest value: saftey factor 1.6 |rho 8
+The number of trials : 3 | Correct trails : 2 | Error trails : 1
+Weight recieved = 0.31
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.28854 | rho : 4.83161
+The number of trials : 4 | Correct trails : 3 | Error trails : 1
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.24019 | rho : 5.00157
+The number of trials : 5 | Correct trails : 4 | Error trails : 1
+Weight recieved = 0.04
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.27922 | rho : 5.24382
+The number of trials : 6 | Correct trails : 5 | Error trails : 1
+Weight recieved = 0.11
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.24243 | rho : 5.06826
+The number of trials : 7 | Correct trails : 6 | Error trails : 1
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.24293 | rho : 5.13162
+The number of trials : 8 | Correct trails : 7 | Error trails : 1
+Weight recieved = 0.29
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.2532 | rho : 5.60309
+The number of trials : 9 | Correct trails : 8 | Error trails : 1
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.25699 | rho : 5.62367
+The number of trials : 10 | Correct trails : 9 | Error trails : 1
+Weight recieved = 0.30
+Publishing the trjaectory =====>
+
+
+
+b 2
+
+
+[ INFO] [1559739148.852149242]: The motion generator is ready.
+The number of trials : 0 | Correct trails : 0 | Error trails : 0
+^[[A[ INFO] [1559739190.314281999]: Switching Trajectory parameters. Safety Factor: 1.2776 Rho: 6.91775
+The number of trials : 1 | Correct trails : 1 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.2994 | rho : 7.52269
+[ INFO] [1559739215.050392214]: Switching Trajectory parameters. Safety Factor: 1.03827 Rho: 6.94041
+The number of trials : 2 | Correct trails : 2 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.25075 | rho : 6.84549
+[ INFO] [1559739247.802392301]: Switching Trajectory parameters. Safety Factor: 1.41038 Rho: 7.36872
+The number of trials : 3 | Correct trails : 3 | Error trails : 0
+Weight recieved = 0.17
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.26921 | rho : 6.86382
+The number of trials : 4 | Correct trails : 4 | Error trails : 0
+Weight recieved = 0.25
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.32032 | rho : 6.83016
+The number of trials : 5 | Correct trails : 5 | Error trails : 0
+Weight recieved = 0.11
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.36352 | rho : 7.10342
+The number of trials : 6 | Correct trails : 6 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.28333 | rho : 7.54902
+The number of trials : 7 | Correct trails : 7 | Error trails : 0
+Weight recieved = 0.23
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.34261 | rho : 7.78453
+The number of trials : 8 | Correct trails : 8 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.31195 | rho : 7.5381
+The number of trials : 9 | Correct trails : 9 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>
+updating ::  saftey factor : 1.33097 | rho : 7.89744
+The number of trials : 10 | Correct trails : 10 | Error trails : 0
+Weight recieved = 0.00
+Publishing the trjaectory =====>

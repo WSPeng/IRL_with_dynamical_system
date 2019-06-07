@@ -125,11 +125,13 @@ end
 
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
-my_title_pre = strcat('result/Tuning_obs_axis/demo_', num2str(length(test_samples)));
+% my_title_pre = strcat('result/eight_subject/demo_', num2str(length(test_samples)));
+my_title_pree = strcat(mdp_params.folder_name, 'demo_');
+my_title_pre = strcat(my_title_pree, num2str(length(test_samples)));
 my_title = strcat(my_title_pre, '.jpg');
-my_title_fig = strcat(my_title_pre, '.fig');
+% my_title_fig = strcat(my_title_pre, '.fig');
 saveas(gcf, my_title)
-savefig(my_title_fig)
+% savefig(my_title_fig)
 
 % Finished.
 hold off;

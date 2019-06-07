@@ -1,6 +1,6 @@
 % Run example tests on objectworld with fixed "flower petal" reward.
 function [rho, sf] = obstacle_test(a, s, r, example_optimal, test_file_name, ...
-    example_human, weight_input)
+    example_human, weight_input, folderName)
 % two_examples --- example_optimal
 two_obstacles = 0;
 % 4 algorithm, 5 tests, 8 restarts
@@ -121,6 +121,8 @@ test_params{5}.training_samples = 64;
 for step=1:length(mdp_params)
     mdp_params{step}.seed = mdp_params{step}.seed+r-1;
 end
+
+mdp_params{s}.folder_name = folderName;
 
 % Run single test.
 if nargin > 5
