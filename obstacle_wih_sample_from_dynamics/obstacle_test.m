@@ -41,7 +41,7 @@ obs_params.fn_handle = @move_constant_v;
 % obs{1}.a = [1.2; 1.44];
 obs{1}.a = [1.25; 1.5];
 
-% obs{1}.a = [1.4; 1.68]; % 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
+obs{1}.a = [1.4; 1.68]; % 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
 % [1.06; 1.27]; the optimal trajectory is bit high in real test
 % [1.2; 1.44 ]; still a bit high
 % obs{1}.a = [1.3; 1.56];
