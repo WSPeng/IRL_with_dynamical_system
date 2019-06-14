@@ -44,7 +44,7 @@
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
-#define NUM_LIMIT 3 // 6 --- use the first 5 as training ... then later five to test is converge..
+#define NUM_LIMIT 30000 // 6 --- use the first 5 as training ... then later five to test is converge..
 
 // #define PROTOCAL_DEBUG
 
@@ -55,7 +55,7 @@
 // #define LISTEN_EEG // Test the brain activity decoder 
 
 // [enable during subject testing]
-#define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
+// #define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
 
 class MotionGenerator 
 {

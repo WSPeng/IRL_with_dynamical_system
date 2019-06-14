@@ -531,6 +531,8 @@ void MotionGenerator::mouseControlledMotion()
 								{
 									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
 									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+									// _obs._safetyFactor = 1.2;
+									// _obs._rho =  6;
 								}
 								else
 								{

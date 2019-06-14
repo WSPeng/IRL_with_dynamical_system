@@ -56,7 +56,7 @@ addpaths.m
 `$roslaunch lwr_simple_example sim.launch` OR
 `$roslaunch lwr_simple_example real.launch`
 
-`$roslaunch lwr_fri lwr_fri_console` typye control inside and starting working with the robotarm
+`$roslaunch lwr_fri lwr_fri_console.launch` typye control inside and starting working with the robotarm
 
 `$roslaunch spacenav_node classic.launch`
 `$rostopic echo -c /spacenav/joy`

@@ -2,7 +2,7 @@ function node(states, weight_in)
 
 delayIntro = false; % should be false
 
-% folderName = 'result/eight_subject/Jun_6_02/testd2/';
+% folderName = 'result/eight_subject/Jun_12_02/testd2/';
 folderName = 'result/temp/';
 
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
