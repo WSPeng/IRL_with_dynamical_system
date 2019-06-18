@@ -49,14 +49,18 @@ if nargin > 5
      
     % remove the demonstration more than 5 
     len_max = 5;
-    if length(example_human) > len_max
-        example_human = example_human(length(example_human)-len_max+1:length(example_human),1);
-    end
+
     if length(example_human) > len_max
         konstant =  length(example_human) - len_max;
     else
         konstant = 0;
+    end    
+    
+    if length(example_human) > len_max
+        example_human = example_human(length(example_human)-len_max+1:length(example_human),1);
+%         example_human = example_human(length(example_human)-len_max:length(example_human)-1,1);
     end
+
     % Also embed the weight into example_human ...    
     for i = 1:length(example_human)
         example_samples{i}.s = [0, 4.2];
@@ -76,6 +80,7 @@ if nargin > 5
         example_samples{i}.states_draw = example_human{i};
         example_samples{i}.r = 0;
         example_samples{i}.w = weight_input(i+konstant);
+%         example_samples{i}.w = weight_input(i+konstant-1);
         test_samples = [];
     end
 else

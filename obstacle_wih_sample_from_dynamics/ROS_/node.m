@@ -1,4 +1,4 @@
-function node(states, weight_in)
+function node(states, weight_in, patht)
 
 delayIntro = false; % should be false
 
@@ -52,7 +52,7 @@ j = 1;
 % need to inverse the x 
 weight_input = ones(1,1);
 
-while 1
+% while 1
     if nargin < 1
         scandata = receive(sub);
         disp('got trajctory')
@@ -163,7 +163,12 @@ while 1
         weight_input2 = sigmoid(weight_input2,5,1);
     end
     
-    [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName);
+    if nargin > 2
+        [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName, patht);
+    else
+        [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName);
+    end
+    
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor
 
@@ -190,7 +195,7 @@ while 1
    
     j = j +1;
     if nargin >= 1
-        pause(100000)
+%         pause(100000)
     end
-end
+% end
 

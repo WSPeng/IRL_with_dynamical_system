@@ -13,7 +13,8 @@ else
     VMARGIN = 1.0;
     HMARGIN = 1.0;
 end
-axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  -VMARGIN  mdp_data.bounds(2)+VMARGIN]);
+% axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  -VMARGIN  mdp_data.bounds(2)+VMARGIN]);
+axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  3.2  8.5]);
 if paper_quality
     % Expand axes.
     set(gca,'position',[0 0 1 1]);
@@ -21,8 +22,8 @@ if paper_quality
     set(gca,'xtick',[]);
     set(gca,'ytick',[]);
 else
-    set(gca,'xtick',0:mdp_data.bounds(1));
-    set(gca,'ytick',0:mdp_data.bounds(2));
+%     set(gca,'xtick',0:mdp_data.bounds(1));
+%     set(gca,'ytick',0:mdp_data.bounds(2));
 end
 daspect([1 1 1]);
 hold on;
@@ -49,6 +50,8 @@ if max(max(C))~=0
     C = C*64;
 	fig = image(x, y, C);
 end
+
+ylim([3.2 8.5])
 
 % Draw feature positions. % seems like only rbf rectangular
 obstacle_drawfeature(reward,0.0,0.0,1.0,[],[]);
@@ -78,8 +81,82 @@ if strcmp(reward.type,'sum')
     end
 end
 
+path = mdp_params.patht;
+
 % Draw the paths.
 if ~isempty(example_samples)
+    % draw trajectories ... vvv
+    if ~paper_quality
+    for i=1:length(test_samples)
+        % Collect all points in this trajectory.
+        % pts = objectworldcontrol(mdp_data,test_samples{i}.s,test_samples{i}.u);
+        %pts = [test_samples{i}.s; pts];
+        pts = test_samples{i}.states;
+        
+        % comment the next line to plot successfully when we segement the
+        % path into two parts
+%         pts = [test_samples{i}.s; pts]; % add the starting point for drawing
+        col = [0.5 0.5 0.7];
+        color_list = linspace(0, 1, length(test_samples)+1);
+        % Plot the points.
+        if 0
+            plot(pts(:,1),pts(:,end),'-','color',[color_list(i),0.5,0.7],'marker','.','markersize',14,'linewidth',1.5);
+        else
+%             color1 = [0.4660 0.8 0.1880];
+            color1 = [0, 0, 0];
+            color2 = [1, 0.0, 0.0];
+            sizem = 5;
+            switch i
+                case 1
+                    plot(pts(:,1),pts(:,end),'-','color',color1,'marker','o','markersize',sizem+1,'linewidth',1.5,...
+                        'MarkerFaceColor','m'); 
+                case 2
+                    plot(pts(:,1),pts(:,end),'-','color',color1,'marker','^','markersize',sizem,'linewidth',1.5,...
+                        'MarkerFaceColor','m'); 
+                case 3
+                    plot(pts(:,1),pts(:,end),'-','color',color1,'marker','v','markersize',sizem,'linewidth',1.5,...
+                        'MarkerFaceColor','m');    
+                case 4
+                    if  path(end-2:end-2) == 'a' || path(end-2:end-2) == 'c'
+                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
+                            'MarkerFaceColor','m');
+                    else
+                        plot(pts(:,1),pts(:,end),':','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        'MarkerFaceColor','y');
+                    end
+                case 5
+                    if path(end-2:end-2) == 'a' || path(end-2:end-2) == 'c'
+                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
+                            'MarkerFaceColor','m');
+                    else     
+                        plot(pts(:,1),pts(:,end),':','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                            'MarkerFaceColor','y');
+                    end
+                case 6
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','o','markersize',sizem+1,'linewidth',1.5,...
+                        'MarkerFaceColor','y'); 
+                case 7
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','^','markersize',sizem,'linewidth',1.5,...a
+                        'MarkerFaceColor','y'); 
+                case 8
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','v','markersize',sizem,'linewidth',1.5,...
+                        'MarkerFaceColor','y');    
+                case 9
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        'MarkerFaceColor','y');
+                case 10
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        'MarkerFaceColor','y');  
+            end
+        end
+        % Plot starting point.
+        %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
+        % Plot ending point.
+        fig_end = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10,'linewidth',2);
+        set(get(get(fig_end,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+    end
+    end
+    
     for i=1:length(example_samples)
         % Collect all points in this trajectory.
         % pts = obstacle_control(mdp_data,example_samples{i}.s,example_samples{i}.u);
@@ -95,33 +172,37 @@ if ~isempty(example_samples)
         else
             width_factor = 1;
         end
+%         this three lines are commented for ploting
         plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
-        % Plot starting point.
-        %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
-        % Plot ending point.
-        fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
-    end
-    if ~paper_quality
-    for i=1:length(test_samples)
-        % Collect all points in this trajectory.
-        % pts = objectworldcontrol(mdp_data,test_samples{i}.s,test_samples{i}.u);
-        %pts = [test_samples{i}.s; pts];
-        pts = test_samples{i}.states;
         
-        % comment the next line to plot successfully when we segement the
-        % path into two parts
-%         pts = [test_samples{i}.s; pts]; % add the starting point for drawing
-        col = [0.5 0.5 0.7];
-        color_list = linspace(0, 1, length(test_samples)+1);
-        % Plot the points.
-        plot(pts(:,1),pts(:,end),'-','color',[color_list(i),0.5,0.7],'marker','.','markersize',14,'linewidth',1.5);
         % Plot starting point.
         %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
-        plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10,'linewidth',2);
-    end
+        
+        fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
+        set(get(get(fig,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
     end
 end
+
+% legend('Computed','1','2','3','4','5','6','7','8','9','10')
+% N = [0.67, 0.51, 0.83, 0.59, 0.00, 0.58, 0.30, 0.00, 0.00, ...
+% 0.85];
+% N = 1 - N;
+% path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/eight_subject/Jun_12_01/testb2/';
+
+N = load([path, 'weight_input.mat']);
+N = N.weight_input;
+
+legendCell = cellstr(num2str(N', 'Weight=%-g'));
+legendCell = [legendCell; cellstr('IRL generated')];
+legend(legendCell,'FontSize',14)
+
+x0 = 0;
+y0 = 0;
+width = 1080;
+height = 530;
+set(gcf,'position',[x0,y0,width,height])
+set(gca,'xtick',[])
 
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
@@ -132,6 +213,34 @@ my_title = strcat(my_title_pre, '.jpg');
 % my_title_fig = strcat(my_title_pre, '.fig');
 saveas(gcf, my_title)
 % savefig(my_title_fig)
+
+imgn = path(end-2:end-1);
+NNN = path(end-12:end-8);
+switch NNN
+    case '05_01'
+        NN = 1;
+    case '05_02'
+        NN = 2;
+    case '06_01'
+        NN = 3;
+    case '06_02'
+        NN = 4;
+    case '10_01'
+        NN = 5;
+    case '10_02'
+        NN = 6;
+    case '12_01'
+        NN = 7;
+    case '12_02'
+        NN = 8;
+end
+
+my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
+
+my_title = strcat(my_title_pree, '.jpg');
+my_title_fig = strcat(my_title_pree, '.fig');
+saveas(gcf, my_title)
+savefig(my_title_fig)
 
 % Finished.
 hold off;
