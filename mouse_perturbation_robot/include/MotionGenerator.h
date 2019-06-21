@@ -70,7 +70,7 @@ class MotionGenerator
     bool _randomInsteadIRL = true;
 
     // if use iiwa instead of the lwr
-    const bool _iiwaInsteadLwr = false;
+    const bool _iiwaInsteadLwr = true;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
     const bool _boolSpacenav = 1; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
@@ -97,6 +97,7 @@ class MotionGenerator
     ros::NodeHandle _n;
     ros::Rate _loopRate;
     float _dt;
+    float dt; // for iiwa, position from velocity
 
     // Subscribers and publishers declaration
     ros::Subscriber _subRealPose;           // Subscribe to robot current pose
@@ -131,6 +132,7 @@ class MotionGenerator
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
     std_msgs::Float64MultiArray _msgCommand;
+    geometry_msgs::Pose _msgCommandiiwa;
     std_msgs::Float32 _msgWeight;
 
     // passing the message (mouse)
@@ -203,6 +205,9 @@ class MotionGenerator
     int _msgEEG;                      // The binary EEG signal
     int _msgEEGOpti;
     int temp_counter_test;
+
+    // iiwa
+    Eigen::Vector3f _desiredNextPosition;
 
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance

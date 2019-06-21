@@ -60,6 +60,8 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 
 bool MotionGenerator::init() 
 {
+	dt = 0.02; // iiwa, need calibration.
+
 	// Variable initialization
   	_wRb.setConstant(0.0f); 
   	_x.setConstant(0.0f); // end effector position
@@ -80,7 +82,7 @@ bool MotionGenerator::init()
   	else
   		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
   	if (_iiwaInsteadLwr)
-  		_targetOffset.col(Target::B) << 0.0f, -0.85f, 0.0f;
+  		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
 
   	_targetOffset.col(Target::C) << -0.16f,0.25f,0.0f;
   	_targetOffset.col(Target::D) << -0.16f,-0.25f,0.0f;
@@ -157,8 +159,8 @@ bool MotionGenerator::init()
 	}
 	else
 	{
-		_subRealPose = _n.subscribe("/iiwa/ee_pose", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
-		_subRealTwist = _n.subscribe("/iiwa/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());			
+		_subRealPose = _n.subscribe("/IIWA/Real_E_Pos", 1, &MotionGenerator::updateRealPose, this, ros::TransportHints().reliable().tcpNoDelay());
+		// _subRealTwist = _n.subscribe("/iiwa/ee_vel", 1, &MotionGenerator::updateRealTwist, this, ros::TransportHints().reliable().tcpNoDelay());			
 	}
 	
 	if(_boolSpacenav)
@@ -188,7 +190,7 @@ bool MotionGenerator::init()
 	}
 	else
 	{
-		_pubCommand = _n.advertise<std_msgs::Float64MultiArray>("/iiwa/DSImpedance/command", 1);
+		_pubCommand = _n.advertise<geometry_msgs::Pose>("/IIWA/Desired_E_Pos", 1);
 	}
 
 	//_pubFeedBackToParameter = _n.advertise<std_msgs::Float32>("/motion_generator_to_parameter_update", 1);
@@ -977,7 +979,7 @@ void MotionGenerator::mouseControlledMotion()
 	}
 
 	// Desired quaternion to have the end effector looking down
-	_qd << 0.0f, 0.0f, 1.0f, 0.0f;
+	_qd << 0.48f, -0.45f, -0.47f, 0.57f;
 	//_qd << 0.0f, -0.7f, 0.05f, 0.7f;// if points in horizontal direction
 
 }
@@ -1140,20 +1142,34 @@ void MotionGenerator::publishData()
 		// _vd(0) = -1*_vd(0);
 		// _vd(1) = -1*_vd(1);
 		// Publish desired twist (passive ds controller)
-		for(int k = 0; k < 3; k++)
-		{
-			//std::cout << "k" << k << std::endl;		
-		    _msgCommand.data[k]  = _vd(k);
-		    _msgCommand.data[k+3]  = _omegad(k);
-		}
-		for(int k = 0; k < 4; k++)
-		{
-		    _msgCommand.data[k+6]  = _qd(k);
-		}
+		// for(int k = 0; k < 3; k++)
+		// {
+		// 	//std::cout << "k" << k << std::endl;		
+		//     _msgCommand.data[k]  = _vd(k);
+		//     _msgCommand.data[k+3]  = _omegad(k);
+		// }
+		// for(int k = 0; k < 4; k++)
+		// {
+		//     _msgCommand.data[k+6]  = _qd(k);
+		// }
 		//for(int k=0;k<10;k++)
 			//std::cout<< _msgCommand.data[k] << " ";
 		//std::cout<<std::endl;
-		_pubCommand.publish(_msgCommand);
+
+		_desiredNextPosition(0) = _vd(0)*dt + _x(0);
+		_desiredNextPosition(1) = _vd(1)*dt + _x(1);
+		_desiredNextPosition(2) = _vd(2)*dt + _x(2);
+
+		_msgCommandiiwa.position.x = _desiredNextPosition(0);
+		_msgCommandiiwa.position.y = _desiredNextPosition(1);
+		_msgCommandiiwa.position.z = _desiredNextPosition(2);
+
+		_msgCommandiiwa.orientation.w = _qd(0);
+		_msgCommandiiwa.orientation.x = _qd(1);
+		_msgCommandiiwa.orientation.y = _qd(2);
+		_msgCommandiiwa.orientation.z = _qd(3);
+
+		_pubCommand.publish(_msgCommandiiwa);
 	}
 
 	//std::cout << "===" << std::endl;
