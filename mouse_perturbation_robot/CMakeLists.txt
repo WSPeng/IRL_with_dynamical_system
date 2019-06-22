@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   dynamic_reconfigure
   grasp_interface
+  utils
 )
 
 add_message_files(

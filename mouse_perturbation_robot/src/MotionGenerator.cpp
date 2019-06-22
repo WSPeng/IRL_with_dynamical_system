@@ -26,7 +26,7 @@ MotionGenerator::MotionGenerator(ros::NodeHandle &n, double frequency):
 	init_rho = 0.9f;
 
 	//obstacle definition
-	_obs._a << 0.5f, 0.1f, 0.12f; // 0.5 0.1 0.12       0.15f, 0.10f, 0.5f
+	_obs._a << 0.1f, 0.05f, 0.05f; // 0.5 0.1 0.12       0.15f, 0.10f, 0.5f 
 	_obs._p.setConstant(1.0f);
 	_obs._safetyFactor = init_sf;// was 1.1
 	_obs._tailEffect = false;
@@ -48,7 +48,22 @@ bool MotionGenerator::init()
   	_omegad.setConstant(0.0f); //angular velocity
   	_xd.setConstant(0.0f);
   	_vd.setConstant(0.0f);
+  	_quaternion.setConstant(0.0f);
 
+  	_rotR.setConstant(0.0f);
+	_previousRot.setConstant(0.0f);
+	// _previousRot << 1, 0, 0,
+	// 				0, 1, 0,
+	// 				0, 0, 1;
+
+	_previousRot << -1, 0, 0,
+					0, 1, 0,
+					0, 0, -1;
+	_initRot << -1, 0, 0,
+				0, 1, 0,
+				0, 0, -1;
+	_currentRot.setConstant(0.0f);
+  	
   	_xp.setConstant(0.0f);
   	_mouseVelocity.setConstant(0.0f);
   	_targetOffset.col(Target::A) << 0.0f, 0.0f, 0.0f;
@@ -60,11 +75,13 @@ bool MotionGenerator::init()
   	if (_iiwaInsteadLwr)
   		_targetOffset.col(Target::B) << 0.0f, -0.85f, 0.0f;
 
-  	_targetOffset.col(Target::C) << -0.30f, 0.15f, 0.0f;
+  	_targetOffset.col(Target::C) << -0.33f, 0.15f, 0.0f;
   	// _targetOffset.col(Target::D) << -0.16f, -0.25f, 0.0f;
   	// _targetOffset.col(Target::C) << -0.16f, 0.85f, 0.0f;
   	// _targetOffset.col(Target::D) << -0.16f, 0.0f, 0.0f;
-  	_targetOffset.col(Target::D) << -0.30f, 0.63f, 0.0f;
+  	_targetOffset.col(Target::D) << -0.33f, 0.63f, 0.0f;
+
+  	_obstacleCondition = ObstacleCondition::AB;
 
   	_perturbationOffset.setConstant(0.0f);
   	_phaseDuration = 0.0f;
@@ -105,6 +122,10 @@ bool MotionGenerator::init()
 	_intGripper = 0; 			// Gripper publish message
 	_intGripperSub = 0;			// Gripper sub
 	_boolGripperSend = 0;
+
+	_currentAngle = 0;
+	_targetAngle = 0;
+	_measureAngle = 0;
 
 	_state = State::INIT;
 	_previousTarget = Target::B;
@@ -163,7 +184,7 @@ bool MotionGenerator::init()
 	// Gripper 
 	_subGripper = _n.subscribe("/gripper/in", 1,&MotionGenerator::subGripper, this, ros::TransportHints().reliable().tcpNoDelay());
 
-	// =====================
+	// ========================================================
 	// Publisher definitions
 	if (!_iiwaInsteadLwr)
 	{
@@ -184,6 +205,7 @@ bool MotionGenerator::init()
 	_pubTarPosition = _n.advertise<geometry_msgs::Pose>("/send_position_target_marker", 1);
 	_pubObsPosition = _n.advertise<geometry_msgs::Pose>("/send_position_obstacle_marker", 1);
 
+	// for debugging
 	_pubDebugTrigger = _n.advertise<std_msgs::Int8>("/trigger_debug", 1);
 
 	// Gripper
@@ -309,10 +331,10 @@ void MotionGenerator::run()
 	ros::spinOnce();
 	_loopRate.sleep();
 
-  // Close file
+    // Close file
 	_outputFile.close();
 
-  // Close ros
+    // Close ros
 	ros::shutdown();
 }
 
@@ -482,32 +504,64 @@ void MotionGenerator::mouseControlledMotion()
 					{
 						if(_mouseVelocity(0)>0.0f && fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1))) // positice or negative for direction.
 						{
-							if (temporaryTarget == Target::B)
+							if (temporaryTarget == Target::B) // from B to A
+							{
 								_currentTarget = Target::A;
+								_obstacleCondition = ObstacleCondition::AB;
+							}
 							else if (temporaryTarget == Target::D)
+							{
 								_currentTarget = Target::C;
+								_obstacleCondition = ObstacleCondition::CD;
+							}
+							if (_measureAngle <10 || _measureAngle >10)
+								_targetAngle = 90;
 						}
 						else if(_mouseVelocity(0)<0.0f && fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))
 						{
-							if (temporaryTarget == Target::A)
+							if (temporaryTarget == Target::A) //from B to A
+							{
 								_currentTarget = Target::B;
+								_obstacleCondition = ObstacleCondition::AB;
+							}
 							else if (temporaryTarget == Target::C)
+							{
 								_currentTarget = Target::D;
+								_obstacleCondition = ObstacleCondition::CD;
+							}
+							if (_measureAngle <10 || _measureAngle >10)
+								_targetAngle = 90 ;
 						}
 
 						if(_mouseVelocity(1)>0.0f && fabs(_mouseVelocity(1))>fabs(_mouseVelocity(0)))
 						{
 							if (temporaryTarget == Target::A)
+							{
 								_currentTarget = Target::C;
+								_obstacleCondition = ObstacleCondition::AC;
+							}
 							else if (temporaryTarget == Target::B)
+							{
 								_currentTarget = Target::D;
+								_obstacleCondition = ObstacleCondition::BD;
+							}
+							if (_measureAngle <100 || _measureAngle >80)
+								_targetAngle = -20.0;
 						}
 						else if(_mouseVelocity(1)<0.0f && fabs(_mouseVelocity(1))>fabs(_mouseVelocity(0)))
 						{
 							if (temporaryTarget == Target::C)
+							{
 								_currentTarget = Target::A;
+								_obstacleCondition = ObstacleCondition::AC;
+							}
 							else if (temporaryTarget == Target::D)
+							{
 								_currentTarget = Target::B;
+								_obstacleCondition = ObstacleCondition::BD;
+							}
+							if (_measureAngle <100 || _measureAngle >80)
+								_targetAngle = -20.0;
 						}
 						// std::cout << "==current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
 
@@ -552,8 +606,8 @@ void MotionGenerator::mouseControlledMotion()
 									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
 									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
 
-									_obs._safetyFactor = 1.2f;
-									_obs._rho = 4.0f;
+									_obs._safetyFactor = 2.0f;
+									_obs._rho = 10.0f;
 								}
 								else
 								{
@@ -626,13 +680,37 @@ void MotionGenerator::mouseControlledMotion()
 					if (!_obsPositionInput)
 					{
 						_obs._x0 = _x0 + (_targetOffset.col(_currentTarget)+_targetOffset.col(_previousTarget))/2;
-						_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
-						_obs._x0(1) -= 0.0f; //0.0
-						if (_iiwaInsteadLwr)
-							_obs._x0(0) += 0.1f;
-						else
-							_obs._x0(0) -= 0.1f; //-0.1 +0.001
 
+						if (_obstacleCondition == ObstacleCondition::AB)
+						{
+							_obs._a << 0.5f, 0.1f, 0.12f;
+							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) -= 0.0f; //0.0
+							_obs._x0(0) -= 0.1f; //-0.1 +0.001
+						}
+						else if (_obstacleCondition == ObstacleCondition::AC)
+						{
+							// _obs._a << 0.04f, 0.5f, 0.08f;
+							_obs._a << 0.05f, 0.1f, 0.06f;
+							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) -= 0.0f; //0.0
+							_obs._x0(0) -= 0.0f; //-0.1 +0.001
+						}
+						else if (_obstacleCondition == ObstacleCondition::BD)
+						{
+							// _obs._a << 0.04f, 0.5f, 0.08f;
+							_obs._a << 0.05f, 0.1f, 0.06f;
+							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) -= 0.1f; //0.0
+							_obs._x0(0) -= 0.0f; //-0.1 +0.001
+						}
+						else if (_obstacleCondition == ObstacleCondition::CD)
+						{
+							_obs._a << 0.4f, 0.08f, 0.1f;
+							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) -= 0.0f; //0.0
+							_obs._x0(0) -= 0.1f; //-0.1 +0.001
+						}
 						sendObsPosition(true);//the sending is very frequent..
 					}
 					//else if (_recievedObsPositionInput)
@@ -802,7 +880,7 @@ void MotionGenerator::mouseControlledMotion()
 			B.col(0) = _motionDirection;
 			B.col(1) = _perturbationDirection;
 			B.col(2) << 1.0f,0.0f,0.0f;
-			gains << 0, 30.0f, 10.0f;
+			gains << 10.0f, 10.0f, 10.0f; // 0 30 10 
 
 			error = _xd-_x;
 			L = gains.asDiagonal();
@@ -837,8 +915,12 @@ void MotionGenerator::mouseControlledMotion()
 		_vd = _vd*0.3f/_vd.norm();
 	}
 
+	// _targetAngle = 90;
+	endEffectorAngleChange();
+	_qd = _quaternion;
+
 	// Desired quaternion to have the end effector looking down
-	_qd << 0.0f, 0.0f, 1.0f, 0.0f;
+	// _qd << 0.0f, 0.0f, 1.0f, 0.0f;
 	// _qd << 0.0f, 0.08715574274422824f, 0.9961946980911914f, 0.0f;
 	// _qd << 0.0f, 0.7071067811865475f, 0.7071067811865475f, 0.0f; // 90 degree --- exceed the limit
 	//_qd << 0.0f, -0.7f, 0.05f, 0.7f;// if points in horizontal direction
@@ -1476,10 +1558,36 @@ void MotionGenerator::changeRhoEta(int indcator)
 }
 
 
-void endEffectorAngleChange()
+void MotionGenerator::endEffectorAngleChange()
 {
-	if (currentAngle - targetAngle) < 
-		_currentAngle += 10*sgn(_targetAngle - _previousAngle);
+	// get current quaternion
+	// _q;
 
+	// convert to rotation matrix
+	_previousRot = Utils <float> ::quaternionToRotationMatrix(_q);
 
+	// get the current angle
+	_rot = _initRot.inverse() * _previousRot;
+	_measureAngle = acos(_rot(0))*180.0/PI;
+	// std::cout << "measure      " << _measureAngle << std::endl;
+	// std::cout << "taget     " << _targetAngle << std::endl;
+	if (abs(_currentAngle - _targetAngle) > 0.0001)
+	{
+		_currentAngle += 0.3*((_targetAngle - _currentAngle > 0) - (_targetAngle - _currentAngle < 0));
+	}
+
+	//rotation matrix from angle
+	_rotR << cos(_currentAngle* PI / 180.0 ), -sin(_currentAngle* PI / 180.0 ), 0,
+			 sin(_currentAngle* PI / 180.0 ), cos(_currentAngle* PI / 180.0 ), 0,
+			 0, 0, 1;
+
+	_currentRot = _initRot*_rotR;
+	// _previousRot = _currentRot;
+
+	// convert to quaternion
+	_quaternion = Utils <float> ::rotationMatrixToQuaternion(_currentRot);
+
+	//
+	// std::cout << "current angle  " << _currentAngle << std::endl;
+	// std::cout <<  "0:   " << _quaternion(0)  << "|  " << "1:   " << _quaternion(1) <<  "|  " << "2:   " << _quaternion(2)  <<  "|  " << "3:   " << _quaternion(3)  << std::endl; // << _quaternion(1) << _quaternion(2) << _quaternion(3)
 }

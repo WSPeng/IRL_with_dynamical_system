@@ -28,6 +28,8 @@
 #include "mouse_perturbation_robot/MouseMsgPassIRL.h"
 #include "DSObstacleAvoidance.h"
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
+#include "Utils.h"
+#include "math.h"
 
 #define MAX_XY_REL 350                    // Max mouse velocity [-]
 #define MIN_X_REL 200                    // Min mouse velocity used as threshold [-]
@@ -36,7 +38,7 @@
 
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity
 #define MAX_PERTURBATION_OFFSET 0.1f      // Max perturnation offset [m]
-#define MIN_PERTURBATION_OFFSET 0.05f     // Min perturbation offset [m]
+#define MIN_PERTURBATION_OFFSET 0.03f     // Min perturbation offset [m]
 #define TARGET_TOLERANCE 0.05f            // Tolerance radius for reaching a target [m]
 #define NB_TARGETS 4                      // Number of targets [-]
 #define MAX_RHO 8.0f //8
@@ -44,6 +46,7 @@
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
+#define PI 3.14159265
 
 // #define PROTOCAL_DEBUG // the hyper parameter is disabled in gripper
 
@@ -81,7 +84,7 @@ class MotionGenerator
     //===========================================
 
     // State phase enum
-    // INIT: Initial phase where the user get used to what a clean motion is
+    // INIT: Initial phase where the user gMatrix3fet used to what a clean motion is
     // CLEAN_MOTION: Clean motion phase
     // PAUSE: Phase reached when a target is reached to slow down the robot
     // JERKY_MOTION: PErturbation phase
@@ -89,6 +92,8 @@ class MotionGenerator
     // Target enum
     // There is four targets available. Only A and B are used for the back and forth motion
     enum Target {A = 0, B = 1, C = 2, D = 3};
+
+    enum ObstacleCondition {AB = 0, AC = 1, BD = 2, CD = 3};
 
     // ROS variables
     ros::NodeHandle _n;
@@ -147,6 +152,7 @@ class MotionGenerator
     Eigen::Vector3f _vd;        // Desired velocity [m/s] (3x1)
     Eigen::Vector4f _qd;        // Desired end effector quaternion (4x1)
     Eigen::Vector3f _omegad;    // Desired angular velocity [rad/s] (3x1)
+    Eigen::Vector4f _quaternion;
 
     // Motion variables
     Eigen::Vector3f _xp;                              // Last position in clean motion [m] (3x1)
@@ -173,7 +179,12 @@ class MotionGenerator
     int _eventLogger;
     uint8_t _brainLogger;                             // Sending the result of brain decoding
     std_msgs::Int8 _eventLoggerP;
-
+    Eigen::Matrix3f _rotR;
+    Eigen::Matrix3f _rot;
+    Eigen::Matrix3f _previousRot;
+    Eigen::Matrix3f _currentRot;
+    Eigen::Matrix3f _initRot;
+    
     //Booleans
     bool _firstRealPoseReceived;      // Monitor the first robot pose update
     bool _firstMouseEventReceived;    // Monitor the first mouse event recevied
@@ -204,6 +215,7 @@ class MotionGenerator
     int _msgEEG;                      // The binary EEG signal
     int _msgEEGOpti;
     int temp_counter_test;
+    int _obstacleCondition;
 
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance
@@ -213,9 +225,10 @@ class MotionGenerator
     Target _currentTarget;        // Current target
     Target _previousTarget;       // Previous target
     
-    int _currentAngle;
-    int _targtAngle;
-    int _previousAngle;
+    float _currentAngle;
+    float _targetAngle;
+    float _previousAngle;
+
 
     std_msgs::Float32 _msg_para_up;
     Obstacle _obs;
@@ -235,6 +248,7 @@ class MotionGenerator
     double _rhosfSave [20][2];
     double init_sf;
     double init_rho;
+    double _measureAngle;
 
     int _delayInterval;
     geometry_msgs::Pose _msgMouseI;
