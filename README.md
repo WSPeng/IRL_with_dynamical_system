@@ -167,3 +167,10 @@ https://github.com/epfl-lasa/lasa-wiki/wiki/Robotiq-gripper
 
 
 rosrun gripper_c Gripper_c
+
+
+## Some links
+
+'https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/examples/index.htm'
+
+'https://www.ethz.ch/content/dam/ethz/special-interest/mavt/robotics-n-intelligent-systems/rsl-dam/documents/RobotDynamics2016/RD2016script.pdf'
