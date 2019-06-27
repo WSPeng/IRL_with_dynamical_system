@@ -69,17 +69,18 @@ bool MotionGenerator::init()
   	_targetOffset.col(Target::A) << 0.0f, 0.0f, 0.0f;
   	// The target B is the target
   	if (!_obsPositionInput)
-  		_targetOffset.col(Target::B) << 0.0f, 0.78f, 0.0f; // 0.0f, 0.85f, 0.0f;
+  		_targetOffset.col(Target::B) << 0.0f, 1.15f, 0.0f; // 0.0f, 0.85f, 0.0f;
+  		// _targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
   	else
   		_targetOffset.col(Target::B) << 0.0f, 0.85f, 0.0f;
   	if (_iiwaInsteadLwr)
   		_targetOffset.col(Target::B) << 0.0f, -0.85f, 0.0f;
 
-  	_targetOffset.col(Target::C) << -0.33f, 0.15f, 0.0f;
+  	_targetOffset.col(Target::C) << -0.33f, 0.33f, 0.0f;
   	// _targetOffset.col(Target::D) << -0.16f, -0.25f, 0.0f;
   	// _targetOffset.col(Target::C) << -0.16f, 0.85f, 0.0f;
   	// _targetOffset.col(Target::D) << -0.16f, 0.0f, 0.0f;
-  	_targetOffset.col(Target::D) << -0.33f, 0.63f, 0.0f;
+  	_targetOffset.col(Target::D) << -0.33f, 0.82f, 0.0f;
 
   	_obstacleCondition = ObstacleCondition::AB;
 
@@ -149,6 +150,8 @@ bool MotionGenerator::init()
 	// resize(n, std_msgs::MultiArrayDimension())
 	_numOfDemoCounter = 0;
 
+	_gripperObject = 0;
+
 	// Subscriber definitions
 	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
 	if (!_iiwaInsteadLwr)
@@ -183,6 +186,8 @@ bool MotionGenerator::init()
 
 	// Gripper 
 	_subGripper = _n.subscribe("/gripper/in", 1,&MotionGenerator::subGripper, this, ros::TransportHints().reliable().tcpNoDelay());
+	// Gripper status
+	_subGripperStatus = _n.subscribe("/SModelRobotUnput", 1, &MotionGenerator::subGripperStatus, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// ========================================================
 	// Publisher definitions
@@ -539,14 +544,17 @@ void MotionGenerator::mouseControlledMotion()
 							{
 								_currentTarget = Target::C;
 								_obstacleCondition = ObstacleCondition::AC;
+								if (_measureAngle <100 || _measureAngle >80)
+									_targetAngle = 40.0;
 							}
 							else if (temporaryTarget == Target::B)
 							{
 								_currentTarget = Target::D;
 								_obstacleCondition = ObstacleCondition::BD;
+								if (_measureAngle <100 || _measureAngle >80)
+									_targetAngle = -20.0;
 							}
-							if (_measureAngle <100 || _measureAngle >80)
-								_targetAngle = -20.0;
+							
 						}
 						else if(_mouseVelocity(1)<0.0f && fabs(_mouseVelocity(1))>fabs(_mouseVelocity(0)))
 						{
@@ -554,14 +562,17 @@ void MotionGenerator::mouseControlledMotion()
 							{
 								_currentTarget = Target::A;
 								_obstacleCondition = ObstacleCondition::AC;
+								if (_measureAngle <100 || _measureAngle >80)
+									_targetAngle = 40.0;
 							}
 							else if (temporaryTarget == Target::D)
 							{
 								_currentTarget = Target::B;
 								_obstacleCondition = ObstacleCondition::BD;
+								if (_measureAngle <100 || _measureAngle >80)
+									_targetAngle = -20.0;
 							}
-							if (_measureAngle <100 || _measureAngle >80)
-								_targetAngle = -20.0;
+							
 						}
 						// std::cout << "==current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
 
@@ -606,8 +617,8 @@ void MotionGenerator::mouseControlledMotion()
 									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
 									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
 
-									_obs._safetyFactor = 2.0f;
-									_obs._rho = 10.0f;
+									_obs._safetyFactor = 1.0f;
+									_obs._rho = 1.0f;
 								}
 								else
 								{
@@ -662,7 +673,7 @@ void MotionGenerator::mouseControlledMotion()
 
 				// If new target, updates previous one and compute new motion and perturbation direction.
 				// Also updates the relative location of the obstacle
-				if(_currentTarget != temporaryTarget)
+				if( _currentTarget != temporaryTarget)
 				{
 					// std::cout << "current target " << _currentTarget << " temporary " << temporaryTarget << std::endl; 
 					_indicatorRand = true;
@@ -691,18 +702,22 @@ void MotionGenerator::mouseControlledMotion()
 						else if (_obstacleCondition == ObstacleCondition::AC)
 						{
 							// _obs._a << 0.04f, 0.5f, 0.08f;
-							_obs._a << 0.05f, 0.1f, 0.06f;
-							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
-							_obs._x0(1) -= 0.0f; //0.0
-							_obs._x0(0) -= 0.0f; //-0.1 +0.001
+							// _obs._a << 0.05f, 0.1f, 0.06f;
+							// _obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+							// _obs._x0(1) -= 0.0f; //0.0
+							// _obs._x0(0) -= 0.0f; //-0.1 +0.001
+							_obs._a << 0.05f, 0.05f, 0.2f;
+							_obs._x0(2) -= 0.04f;
+							_obs._x0(1) -= 0.015f; 
+							_obs._x0(0) -= 0.015f; 					
 						}
 						else if (_obstacleCondition == ObstacleCondition::BD)
 						{
 							// _obs._a << 0.04f, 0.5f, 0.08f;
-							_obs._a << 0.05f, 0.1f, 0.06f;
-							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
-							_obs._x0(1) -= 0.1f; //0.0
-							_obs._x0(0) -= 0.0f; //-0.1 +0.001
+							_obs._a << 0.05f, 0.05f, 0.2f;
+							_obs._x0(2) -= 0.04f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) += 0.015f; //0.0
+							_obs._x0(0) -= 0.015f; //-0.1 +0.001
 						}
 						else if (_obstacleCondition == ObstacleCondition::CD)
 						{
@@ -787,7 +802,8 @@ void MotionGenerator::mouseControlledMotion()
 				gains << 10.0f, 10.0f, 10.0f; //was 10 10 30
 
 				// Compute error and desired velocity
-				error = _xd-_x;
+				if (abs(_currentAngle - _targetAngle) < 0.0001)
+					error = _xd-_x;
 				// make the speed slower
 				error = error; //  * 0.01f; -> unstable... which makes the gain small..
 				L = gains.asDiagonal();
@@ -1373,9 +1389,6 @@ void MotionGenerator::sendValueArduino(uint8_t value)
 
 void MotionGenerator::sendMsgForParameterUpdate()
 {
-	// std::string s = std::to_string(1.1);
-	// _msgRealPoseArray.header.frame_id = s;
-
 	_pubFeedBackToParameter.publish(_msgRealPoseArray);
 	std::cout << "Publishing the trjaectory =====>" << "\n";
 	// publish the weight
@@ -1465,7 +1478,39 @@ void MotionGenerator::subMessageWeight(const std_msgs::String::ConstPtr& msg)
 	_msgWeight.data = std::stod(msgMessage.data);
 	// _msgWeight.data = msgMessage.data;
 	_ifWeightEEGReveive = true;
-	_msgRealPoseArray.header.frame_id = msgMessage.data; // frame_id is string
+	std::stringstream ss;
+	if (_obstacleCondition == ObstacleCondition::AB)
+	{
+		if (_gripperObject == 0)
+			_ss8 = strIndicator[0];
+		else if (_gripperObject == 1)
+			_ss8 = strIndicator[1];
+	}
+	else if (_obstacleCondition == ObstacleCondition::CD)
+	{
+		if (_gripperObject == 0)
+			_ss8 = strIndicator[2];
+		else if (_gripperObject == 1)
+			_ss8 = strIndicator[3];
+	}
+	else if (_obstacleCondition == ObstacleCondition::AC)
+	{
+		if (_gripperObject == 0)
+			_ss8 = strIndicator[4];
+		else if (_gripperObject == 1)
+			_ss8 = strIndicator[5];
+	}
+	else if (_obstacleCondition == ObstacleCondition::BD)
+	{
+		if (_gripperObject == 0)
+			_ss8 = strIndicator[6];
+		else if (_gripperObject == 1)
+			_ss8 = strIndicator[7];
+	}
+
+	ss <<  _ss8 << " " << msgMessage.data;
+
+	_msgRealPoseArray.header.frame_id = ss.str(); // frame_id is string
 	std::cout << "Weight recieved = " <<  msgMessage.data << std::endl;
 	// _msgRealPoseArray.header.frame_id = 1.0 - msgMessage.data;
 }
@@ -1488,6 +1533,19 @@ void MotionGenerator::subMessageEEGOpti(const std_msgs::String::ConstPtr& msg)
 void MotionGenerator::subGripper(const std_msgs::Int8::ConstPtr& msg)
 {
 	
+}
+
+void MotionGenerator::subGripperStatus(const robotiq_s_model_control::SModel_robot_input& msg)
+{
+	gripperStatus = msg;
+	if (gripperStatus.gPOA<150 && gripperStatus.gPOA>50)
+	{
+		_gripperObject = 1;
+	}
+	else
+	{
+		_gripperObject = 0;
+	}
 }
 
 

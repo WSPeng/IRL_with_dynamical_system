@@ -8,6 +8,7 @@
 #include "Eigen/Eigen"
 #include <iostream>
 #include <string.h>
+#include <sstream>
 
 #include "ros/ros.h"
 #include "std_msgs/Int8.h"
@@ -30,6 +31,7 @@
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
 #include "Utils.h"
 #include "math.h"
+#include <grasp_interface/rs_gripper_interface.h>
 
 #define MAX_XY_REL 350                    // Max mouse velocity [-]
 #define MIN_X_REL 200                    // Min mouse velocity used as threshold [-]
@@ -95,6 +97,8 @@ class MotionGenerator
 
     enum ObstacleCondition {AB = 0, AC = 1, BD = 2, CD = 3};
 
+    std::string strIndicator[8] = {"AB", "ABobs", "CD", "CDobs", "AC", "ACobs", "BD", "BDobs"};
+
     // ROS variables
     ros::NodeHandle _n;
     ros::Rate _loopRate;
@@ -112,7 +116,8 @@ class MotionGenerator
     ros::Subscriber _subMessageWeight;      // Sub the weight from EEG side
     ros::Subscriber _subMessageEEGOpti;
     ros::Subscriber _subGripper;            // sub the gripper out
-    
+    ros::Subscriber _subGripperStatus;      // gripper status
+
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
     ros::Publisher _pubFeedBackToParameter; // Publish feed back to rho and sf generator
@@ -205,7 +210,7 @@ class MotionGenerator
     bool _ifWeightEEGReveive;         // 
     bool _boolReverseMsgEEGOpti;      // 
     bool _boolGripperSend;
-
+    bool _gripperObject;                // 1 is close. 0 is no object.
 
     // Arduino related variables
     int farduino;
@@ -265,6 +270,10 @@ class MotionGenerator
     int _numOfErrorTrails;
     int _numOfCorrectTrails;
     int temp_counter;
+
+    std::string _ss8;
+
+    robotiq_s_model_control::SModel_robot_input gripperStatus;     /// The status returned from the gripper
 
   public:
     // Class constructor
@@ -358,6 +367,8 @@ class MotionGenerator
 
     // Gripper 
     void subGripper(const std_msgs::Int8::ConstPtr& msg);
+
+    void subGripperStatus(const robotiq_s_model_control::SModel_robot_input& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);
