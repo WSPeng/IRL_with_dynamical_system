@@ -40,7 +40,7 @@
 
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity
 #define MAX_PERTURBATION_OFFSET 0.1f      // Max perturnation offset [m]
-#define MIN_PERTURBATION_OFFSET 0.03f     // Min perturbation offset [m]
+#define MIN_PERTURBATION_OFFSET 0.01f     // Min perturbation offset [m]
 #define TARGET_TOLERANCE 0.05f            // Tolerance radius for reaching a target [m]
 #define NB_TARGETS 4                      // Number of targets [-]
 #define MAX_RHO 8.0f //8

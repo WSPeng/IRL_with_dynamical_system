@@ -151,6 +151,7 @@ bool MotionGenerator::init()
 	_numOfDemoCounter = 0;
 
 	_gripperObject = 0;
+	_ss8 = "before";
 
 	// Subscriber definitions
 	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
@@ -187,7 +188,7 @@ bool MotionGenerator::init()
 	// Gripper 
 	_subGripper = _n.subscribe("/gripper/in", 1,&MotionGenerator::subGripper, this, ros::TransportHints().reliable().tcpNoDelay());
 	// Gripper status
-	_subGripperStatus = _n.subscribe("/SModelRobotUnput", 1, &MotionGenerator::subGripperStatus, this, ros::TransportHints().reliable().tcpNoDelay());
+	_subGripperStatus = _n.subscribe("/SModelRobotInput", 1, &MotionGenerator::subGripperStatus, this, ros::TransportHints().reliable().tcpNoDelay());
 
 	// ========================================================
 	// Publisher definitions
@@ -714,10 +715,10 @@ void MotionGenerator::mouseControlledMotion()
 						else if (_obstacleCondition == ObstacleCondition::BD)
 						{
 							// _obs._a << 0.04f, 0.5f, 0.08f;
-							_obs._a << 0.05f, 0.05f, 0.2f;
-							_obs._x0(2) -= 0.04f; //0.05f move the obstacle lower, 0.1
-							_obs._x0(1) += 0.015f; //0.0
-							_obs._x0(0) -= 0.015f; //-0.1 +0.001
+							_obs._a << 0.1f, 0.1f, 0.08f;
+							_obs._x0(2) -= 0.015f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) += 0.02f; //0.0
+							_obs._x0(0) -= 0.02f; //-0.1 +0.001
 						}
 						else if (_obstacleCondition == ObstacleCondition::CD)
 						{
@@ -787,6 +788,35 @@ void MotionGenerator::mouseControlledMotion()
 					// _state = State::PAUSE;
 				}
 
+				if (_obstacleCondition == ObstacleCondition::AB)
+				{
+					if (_gripperObject == 0)
+						_ss8 = strIndicator[0];
+					else if (_gripperObject == 1)
+						_ss8 = strIndicator[1];
+				}
+				else if (_obstacleCondition == ObstacleCondition::CD)
+				{
+					if (_gripperObject == 0)
+						_ss8 = strIndicator[2];
+					else if (_gripperObject == 1)
+						_ss8 = strIndicator[3];
+				}
+				else if (_obstacleCondition == ObstacleCondition::AC)
+				{
+					if (_gripperObject == 0)
+						_ss8 = strIndicator[4];
+					else if (_gripperObject == 1)
+						_ss8 = strIndicator[5];
+				}
+				else if (_obstacleCondition == ObstacleCondition::BD)
+				{
+					if (_gripperObject == 0)
+						_ss8 = strIndicator[6];
+					else if (_gripperObject == 1)
+						_ss8 = strIndicator[7];
+				}
+
 				obsModulator.setObstacle(_obs, _obs2, _numObstacle);
 				//std::cout<<'?' << std::endl;
 				// Compute the gain matrix M = B*L*B'
@@ -804,6 +834,9 @@ void MotionGenerator::mouseControlledMotion()
 				// Compute error and desired velocity
 				if (abs(_currentAngle - _targetAngle) < 0.0001)
 					error = _xd-_x;
+				else
+					_msgRealPoseArray.poses.clear();
+
 				// make the speed slower
 				error = error; //  * 0.01f; -> unstable... which makes the gain small..
 				L = gains.asDiagonal();
@@ -1123,7 +1156,7 @@ void MotionGenerator::logData()
 {
 	_outputFile << ros::Time::now() << " " << _x(0) << " " << _x(1) << " " << _x(2) << " " << (int)(_perturbationFlag) << " " 
 	<< (int)(_switchingTrajectories) << " " << _obs._p(0) << " " << _obs._safetyFactor << " " << _obs._rho << " " 
-	<< (int)(_errorButtonPressed) << " " << (int)_eventLogger 
+	<< (int)(_errorButtonPressed) << " " << (int)_eventLogger << " " << _ss8
 	#ifdef LISTEN_EEG
 	<< " " << _msgEEG <<  " " << std::endl; // add a brain logger here
 	#else
@@ -1479,34 +1512,6 @@ void MotionGenerator::subMessageWeight(const std_msgs::String::ConstPtr& msg)
 	// _msgWeight.data = msgMessage.data;
 	_ifWeightEEGReveive = true;
 	std::stringstream ss;
-	if (_obstacleCondition == ObstacleCondition::AB)
-	{
-		if (_gripperObject == 0)
-			_ss8 = strIndicator[0];
-		else if (_gripperObject == 1)
-			_ss8 = strIndicator[1];
-	}
-	else if (_obstacleCondition == ObstacleCondition::CD)
-	{
-		if (_gripperObject == 0)
-			_ss8 = strIndicator[2];
-		else if (_gripperObject == 1)
-			_ss8 = strIndicator[3];
-	}
-	else if (_obstacleCondition == ObstacleCondition::AC)
-	{
-		if (_gripperObject == 0)
-			_ss8 = strIndicator[4];
-		else if (_gripperObject == 1)
-			_ss8 = strIndicator[5];
-	}
-	else if (_obstacleCondition == ObstacleCondition::BD)
-	{
-		if (_gripperObject == 0)
-			_ss8 = strIndicator[6];
-		else if (_gripperObject == 1)
-			_ss8 = strIndicator[7];
-	}
 
 	ss <<  _ss8 << " " << msgMessage.data;
 
@@ -1538,6 +1543,7 @@ void MotionGenerator::subGripper(const std_msgs::Int8::ConstPtr& msg)
 void MotionGenerator::subGripperStatus(const robotiq_s_model_control::SModel_robot_input& msg)
 {
 	gripperStatus = msg;
+	// std::cout << "gripper object" << std::endl;
 	if (gripperStatus.gPOA<150 && gripperStatus.gPOA>50)
 	{
 		_gripperObject = 1;

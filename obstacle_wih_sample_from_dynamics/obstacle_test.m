@@ -11,7 +11,7 @@ names = {'Linear','Nonlinear','MaxEnt','OptV'};
 colors = {[0 0 0.5],[0 0 0],[0.2 0.8 0.2],[0.8 0.2 0.2]};
 order = [1 2 3 4];
 % disp(names);
-fprintf(1,'Starting run %i %i %i\n',a,s,r);
+% fprintf(1,'Starting run %i %i %i\n',a,s,r);
 
 % Set up constants.
 test_metric_names = metricnames();

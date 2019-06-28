@@ -1,5 +1,7 @@
 function node(states, weight_in)
 
+TRAIN_EVERY_TIME = false;
+
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
     if(~exist('node1','var'))
@@ -12,11 +14,6 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
         sub = robotics.ros.Subscriber(node1, ...
             '/motion_generator_to_parameter_update', 'geometry_msgs/PoseArray');
     end
-
-%     if(~exist('sub_weight','var'))
-%         sub_weight = robotics.ros.Subscriber(node1, ...
-%             '/motion_generator_to_parameter_update_weight', 'std_msgs/Float32');
-%     end    
     
      % matlab function for publish
     if(~exist('pub','var'))
@@ -28,15 +25,6 @@ if nargin<1 % if there is a input argument, then skip the ROS node creation (if 
         msg = rosmessage('std_msgs/Float32MultiArray');
     end
     
-    % one more message record the mouse, which is unneccessary for now.
-%     if(~exist('sub_mouse','var'))
-%         folderpath = "~/catkin_ws/src";
-%         rosgenmsg(folderpath)
-%        folderpath = "~//Downloads/Untitled Folder/";
-%         sub_mouse = robotics.ros.Subscriber(node1, ...
-%             '/mouse_message_update_to_irl', 'mouse_perturbation_robot/MouseMsgPassIRL');
-%     end
-
     states_ = cell(1,1);
     
     save_sf_rho = zeros(2,1);
@@ -50,153 +38,161 @@ weight_input = ones(1,1);
 weight_input_collect = cell(8,1);
 cc = 0; % the counter of counter 
 
-while 1
-    if nargin < 1
-        scandata = receive(sub);
-        disp('got trajctory')
-        tic
-        
-        str = scandata.Header.FrameId;
-        str_expresion = regexp(str, '(\w+)\s+(\d.+)', 'tokens');
-        str_weight = str_expresion{1}{2};
-        str_indicator = str_expresion{1}{1};
-        if str_weight == ""
-            weight_input(j,1) = 1;
-        else
-            weight_input(j,1) = 1 - str2double(str_weight); % 1 - 
-            disp(['weight recieved : ', num2str(weight_input(j,1))])
+if nargin < 1
+    scandata = receive(sub);
+    disp('got trajctory')
+    tic
+
+    str = scandata.Header.FrameId;
+    str_expresion = regexp(str, '(\w+)\s+(\d.+)', 'tokens');
+    str_weight = str_expresion{1}{2};
+    str_indicator = str_expresion{1}{1};
+    if str_weight == ""
+        weight_input(j,1) = 1;
+    else
+        weight_input(j,1) = 1 - str2double(str_weight); % 1 - 
+        disp(['weight recieved : ', num2str(weight_input(j,1))])
+    end
+
+    % unpack pose data to trajectory
+    T = length(scandata.Poses);
+    for i = 1:T
+        x(i) = scandata.Poses(i).Position.X;
+        y(i) = scandata.Poses(i).Position.Y;
+        z(i) = scandata.Poses(i).Position.Z;
+    end
+%         figure;plot3(x, y, z)
+    states = zeros(T,2);
+
+    if (contains(str_indicator, 'AB')) 
+        for i = 1:T
+            states(i,1) = scandata.Poses(i).Position.Y;
+            states(i,2) = scandata.Poses(i).Position.Z;
         end
-                
-        % unpack pose data to trajectory
-        T = length(scandata.Poses);
-        if (contains(str_indicator, 'AB'))
-            states = zeros(T,2);
-            for i = 1:T
-                states(i,1) = scandata.Poses(i).Position.Y;
-                states(i,2) = scandata.Poses(i).Position.Z;
-            end
-            
-            % store
-            save(['data_' num2str(j) '.mat'], 'states');
-            if (~contains(str_indicator, 'obs')) % no object grabbed
-                cc = 1;             
-            else
-                cc = 2;
-            end
-        elseif (contains(str_indicator, 'CD'))
-            for i = 1:T
-                states(i,1) = scandata.Poses(i).Position.Y;
-                states(i,2) = scandata.Poses(i).Position.Z;
-            end
-            
-            if (~contains(str_indicator, 'obs')) % no object grabbed
-                cc = 3;             
-            else
-                cc = 4;
-            end
 
-        elseif (contains(str_indicator, 'AC'))
-            for i = 1:T
-                states(i,1) = scandata.Poses(i).Position.X;
-                states(i,2) = scandata.Poses(i).Position.Y;
-            end
-            angle = 45/180*pi;
-            rotation_matrix = [cos(angle), - sin(angle); sin(angle), cos(angle)];
-            states = states*rotation_matrix;
-            
-            if (~contains(str_indicator, 'obs')) % no object grabbed
-                cc = 5;             
-            else
-                cc = 6;
-            end
-        elseif (contains(str_indicator, 'BD'))
-            for i = 1:T
-                states(i,1) = scandata.Poses(i).Position.X;
-                states(i,2) = scandata.Poses(i).Position.Y;
-            end
-            
-            states(:,1) = states(:,1) - states(1,1);
-            states(:,2) = states(:,2) - states(1,2);
-            
-            angle = 45/180*pi;
-            rotation_matrix = [cos(angle), - sin(angle); sin(angle), cos(angle)];
-            states = states*rotation_matrix;
-            
-            if (states(floor(T*2/3),2)<states(1,2))
-                states(:,2) = -states(:,2);
-            end
-            
-            if (~contains(str_indicator, 'obs')) % no object grabbed
-                cc = 7;             
-            else
-                cc = 8;
-            end            
-        end
-        states_r = rescale(states, T);
-        states_tbl = subsample(states_r, T);
-        
-        counter(cc) = counter(cc) + 1;
-        if counter(cc) == 1
-            ss = cell(1,1);
-            ss{1} = states_tbl;
-            states_collect{cc} = ss;
-            w = weight_input(j,1);
-            weight_input_collect{cc} = w;
+        if (~contains(str_indicator, 'obs')) % no object grabbed
+            cc = 1;             
+            disp('--- AB ---')
         else
-            ss = states_collect{cc};
-            ss{counter(cc)} = states_tbl;
-            states_collect{cc} = ss;
-            w = weight_input_collect{cc};
-            w(counter(cc),1) = weight_input(j,1);
-            weight_input_collect{cc} = w;
-        end       
-            
-%             states(i,1) = scandata.Poses(i).Position.X;
-%             states(i,2) = scandata.Poses(i).Position.Y;
-%             states(i,3) = scandata.Poses(i).Position.Z;
-        
-%         figure;plot(states(:,1), states(:,2))
-%         figure;plot3(states(:,1), states(:,2), states(:,3))
-                
-    else 
-        T = length(states);
-        states_ = states;
-        weight_input = ones(T,1);
-        if nargin > 1
-            weight_input = weight_in;
-        end    
-    end
-    [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
-%     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
-    % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
-    % Should be fixed to be 2.. ame performace is very poor
+            disp('--- AB with obejct ---')
+            cc = 2;
+        end
+    elseif (contains(str_indicator, 'CD'))
+        for i = 1:T
+            states(i,1) = scandata.Poses(i).Position.Y;
+            states(i,2) = scandata.Poses(i).Position.Z;
+        end
 
-    msg.Data(1) = rho;
-    msg.Data(2) = sf;
+        if (~contains(str_indicator, 'obs')) % no object grabbed
+            disp('--- CD ---')
+            cc = 3;             
+        else
+            disp('--- CD with object ---')
+            cc = 4;
+        end
 
-    disp('sending')
-    disp(rho)
-    disp(sf)
-    
-    save_sf_rho(:,j) = [sf; rho];
-    
-    if exist('pub','var')
-        send(pub, msg);
+    elseif (contains(str_indicator, 'AC'))
+        state = zeros(T,3);
+        for i = 1:T
+            state(i,1) = scandata.Poses(i).Position.X;
+            state(i,2) = scandata.Poses(i).Position.Y;
+            state(i,3) = scandata.Poses(i).Position.Z;
+        end
+
+        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
+        states(:,2) = state(:,3);
+
+        if (~contains(str_indicator, 'obs')) % no object grabbed
+            disp('--- AC ---')
+            cc = 5;             
+        else
+            disp('--- AC with object ---')
+            cc = 6;
+        end
+    elseif (contains(str_indicator, 'BD'))
+        state = zeros(T,3);
+        for i = 1:T
+            state(i,1) = scandata.Poses(i).Position.X;
+            state(i,2) = scandata.Poses(i).Position.Y;
+            state(i,3) = scandata.Poses(i).Position.Z;
+        end
+
+        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
+        states(:,2) = state(:,3);
+
+%             angle = 45/180*pi;
+%             rotation_matrix = [cos(angle), - sin(angle); sin(angle), cos(angle)];
+%             states = states*rotation_matrix;
+
+        if (~contains(str_indicator, 'obs')) % no object grabbed
+            disp('--- BD ---')
+            cc = 7;             
+        else
+            disp('--- BD with object ---')
+            cc = 8;
+        end            
     end
-    
-    elapsedTime = toc
-    
-    save_time_elapsed(1,j) = elapsedTime;
-    save_ = cell(1,2);
-    save_{1} = save_sf_rho;
-    save_{2} = save_time_elapsed;
-    save('save_.mat', 'save_');
-   
-    j = j +1;
-    if nargin >= 1
-        pause(100000)
-    end
+
+
+    states_r = rescale(states, T);
+    states_tbl = subsample(states_r, T);
+
+    counter(cc) = counter(cc) + 1;
+    if counter(cc) == 1
+        ss = cell(1,1);
+        ss{1} = states_tbl;
+        states_collect{cc} = ss;
+        w = weight_input(j,1);
+        weight_input_collect{cc} = w;
+    else
+        ss = states_collect{cc};
+        ss{counter(cc)} = states_tbl;
+        states_collect{cc} = ss;
+        w = weight_input_collect{cc};
+        w(counter(cc),1) = weight_input(j,1);
+        weight_input_collect{cc} = w;
+    end       
+
+else 
+    T = length(states);
+    states_ = states;
+    weight_input = ones(T,1);
+    if nargin > 1
+        weight_input = weight_in;
+    end    
 end
+
+
+% store
+save(['data_' num2str(j) '.mat'], 'states_collect');
+
+[rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
+%     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
+% First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
+% Should be fixed to be 2.. ame performace is very poor
+
+msg.Data(1) = rho;
+msg.Data(2) = sf;
+
+disp('sending')
+disp(rho)
+disp(sf)
+
+save_sf_rho(:,j) = [sf; rho];
+
+if exist('pub','var')
+    send(pub, msg);
+end
+
+elapsedTime = toc
+
+save_time_elapsed(1,j) = elapsedTime;
+save_ = cell(1,2);
+save_{1} = save_sf_rho;
+save_{2} = save_time_elapsed;
+save('save_.mat', 'save_');
+
+j = j +1;
 
 end
 
@@ -244,3 +240,19 @@ function [px,py,pz] = projection(a,b,c,d,x,y,z)
     py=X(2);
     pz=X(3);
 end
+
+
+
+%     if(~exist('sub_weight','var'))
+%         sub_weight = robotics.ros.Subscriber(node1, ...
+%             '/motion_generator_to_parameter_update_weight', 'std_msgs/Float32');
+%     end    
+
+    % one more message record the mouse, which is unneccessary for now.
+%     if(~exist('sub_mouse','var'))
+%         folderpath = "~/catkin_ws/src";
+%         rosgenmsg(folderpath)
+%        folderpath = "~//Downloads/Untitled Folder/";
+%         sub_mouse = robotics.ros.Subscriber(node1, ...
+%             '/mouse_message_update_to_irl', 'mouse_perturbation_robot/MouseMsgPassIRL');
+%     end
