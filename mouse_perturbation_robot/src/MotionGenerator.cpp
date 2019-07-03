@@ -150,8 +150,14 @@ bool MotionGenerator::init()
 	// resize(n, std_msgs::MultiArrayDimension())
 	_numOfDemoCounter = 0;
 
+	_indexEightCond = 0;
+
 	_gripperObject = 0;
 	_ss8 = "before";
+
+	for (int row = 0; row < 2; ++row)
+		for (int col = 0; col < 8; ++col)
+			_updatedRhoEta[row][col] = 0.0f;
 
 	// Subscriber definitions
 	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
@@ -615,11 +621,11 @@ void MotionGenerator::mouseControlledMotion()
 								// move to random generating mode
 								if(_randomWholeRange)
 								{
-									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
-									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+									// _obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
+									// _obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
 
-									_obs._safetyFactor = 1.0f;
-									_obs._rho = 1.0f;
+									// _obs._safetyFactor = 1.0f;
+									// _obs._rho = 1.0f;
 								}
 								else
 								{
@@ -791,34 +797,40 @@ void MotionGenerator::mouseControlledMotion()
 				if (_obstacleCondition == ObstacleCondition::AB)
 				{
 					if (_gripperObject == 0)
-						_ss8 = strIndicator[0];
+						_indexEightCond = 0;
 					else if (_gripperObject == 1)
-						_ss8 = strIndicator[1];
+						_indexEightCond = 1;
 				}
 				else if (_obstacleCondition == ObstacleCondition::CD)
 				{
 					if (_gripperObject == 0)
-						_ss8 = strIndicator[2];
+						_indexEightCond = 2;
 					else if (_gripperObject == 1)
-						_ss8 = strIndicator[3];
+						_indexEightCond = 3;
 				}
 				else if (_obstacleCondition == ObstacleCondition::AC)
 				{
 					if (_gripperObject == 0)
-						_ss8 = strIndicator[4];
+						_indexEightCond = 4;
 					else if (_gripperObject == 1)
-						_ss8 = strIndicator[5];
+						_indexEightCond = 5;
 				}
 				else if (_obstacleCondition == ObstacleCondition::BD)
 				{
 					if (_gripperObject == 0)
-						_ss8 = strIndicator[6];
+						_indexEightCond = 6;
 					else if (_gripperObject == 1)
-						_ss8 = strIndicator[7];
+						_indexEightCond = 7;
 				}
+				_ss8 = strIndicator[_indexEightCond];
 
+				if (_updatedRhoEta[0][_indexEightCond] > 0.0 && _updatedRhoEta[1][_indexEightCond] > 0.0)
+				{
+					_obs._rho = _updatedRhoEta[0][_indexEightCond];
+					_obs._safetyFactor = _updatedRhoEta[1][_indexEightCond];
+				}
+					
 				obsModulator.setObstacle(_obs, _obs2, _numObstacle);
-				//std::cout<<'?' << std::endl;
 				// Compute the gain matrix M = B*L*B'
 				// B is an orthogonal matrix containing the directions corrected
 				// L is a diagonal matrix defining the correction gains along the directions
@@ -1249,9 +1261,15 @@ void MotionGenerator::updateIRLParameter(const std_msgs::Float32MultiArray::Cons
 	{
 		_obs._safetyFactor = msg -> data[1];
 		_obs._rho = msg -> data[0];
-		std::cout<<"saftey factor : "<<_obs._safetyFactor << " | ";
-		std::cout<<"rho : " <<_obs._rho << "\n";
+		std::cout << "saftey factor : " << _obs._safetyFactor << " | ";
+		std::cout << "rho : " << _obs._rho << "\n";
+		// update the array according to the flag from IRL node
+		int index = (int) msg -> data[2];
+		std::cout << "flag : " << index  << "\n";
+		_updatedRhoEta[0][index] = msg -> data[0];
+		_updatedRhoEta[1][index] = msg -> data[1];
 	}
+	
 }
 
 

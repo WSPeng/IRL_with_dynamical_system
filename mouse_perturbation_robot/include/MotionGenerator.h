@@ -97,7 +97,7 @@ class MotionGenerator
 
     enum ObstacleCondition {AB = 0, AC = 1, BD = 2, CD = 3};
 
-    std::string strIndicator[8] = {"AB", "ABobs", "CD", "CDobs", "AC", "ACobs", "BD", "BDobs"};
+    std::string strIndicator[8] = {"AB", "ABobj", "CD", "CDobj", "AC", "ACobj", "BD", "BDobj"};
 
     // ROS variables
     ros::NodeHandle _n;
@@ -274,6 +274,9 @@ class MotionGenerator
     std::string _ss8;
 
     robotiq_s_model_control::SModel_robot_input gripperStatus;     /// The status returned from the gripper
+
+    double _updatedRhoEta [2][8];
+    int _indexEightCond;
 
   public:
     // Class constructor

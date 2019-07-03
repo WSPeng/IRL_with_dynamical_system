@@ -38,6 +38,7 @@ weight_input = ones(1,1);
 weight_input_collect = cell(8,1);
 cc = 0; % the counter of counter 
 
+while 1
 if nargin < 1
     scandata = receive(sub);
     disp('got trajctory')
@@ -47,15 +48,16 @@ if nargin < 1
     str_expresion = regexp(str, '(\w+)\s+(\d.+)', 'tokens');
     str_weight = str_expresion{1}{2};
     str_indicator = str_expresion{1}{1};
-    if str_weight == ""
+    if str_weight == "" 
         weight_input(j,1) = 1;
     else
-        weight_input(j,1) = 1 - str2double(str_weight); % 1 - 
+        weight_input(j,1) = 1 - str2double(str_weight); % 1 - p.p
         disp(['weight recieved : ', num2str(weight_input(j,1))])
     end
 
     % unpack pose data to trajectory
     T = length(scandata.Poses);
+    x = zeros(1,T); y = x; z = x;
     for i = 1:T
         x(i) = scandata.Poses(i).Position.X;
         y(i) = scandata.Poses(i).Position.Y;
@@ -70,7 +72,7 @@ if nargin < 1
             states(i,2) = scandata.Poses(i).Position.Z;
         end
 
-        if (~contains(str_indicator, 'obs')) % no object grabbed
+        if (~contains(str_indicator, 'obj')) % no object grabbed
             cc = 1;             
             disp('--- AB ---')
         else
@@ -83,7 +85,7 @@ if nargin < 1
             states(i,2) = scandata.Poses(i).Position.Z;
         end
 
-        if (~contains(str_indicator, 'obs')) % no object grabbed
+        if (~contains(str_indicator, 'obj')) % no object grabbed
             disp('--- CD ---')
             cc = 3;             
         else
@@ -102,7 +104,7 @@ if nargin < 1
         states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
         states(:,2) = state(:,3);
 
-        if (~contains(str_indicator, 'obs')) % no object grabbed
+        if (~contains(str_indicator, 'obj')) % no object grabbed
             disp('--- AC ---')
             cc = 5;             
         else
@@ -124,7 +126,7 @@ if nargin < 1
 %             rotation_matrix = [cos(angle), - sin(angle); sin(angle), cos(angle)];
 %             states = states*rotation_matrix;
 
-        if (~contains(str_indicator, 'obs')) % no object grabbed
+        if (~contains(str_indicator, 'obj')) % no object grabbed
             disp('--- BD ---')
             cc = 7;             
         else
@@ -173,6 +175,8 @@ save(['data_' num2str(j) '.mat'], 'states_collect');
 
 msg.Data(1) = rho;
 msg.Data(2) = sf;
+% add flag
+msg.Data(3) = cc - 1;
 
 disp('sending')
 disp(rho)
@@ -193,6 +197,12 @@ save_{2} = save_time_elapsed;
 save('save_.mat', 'save_');
 
 j = j +1;
+
+if nargin >= 1
+    pause(1000)
+end
+
+end
 
 end
 
