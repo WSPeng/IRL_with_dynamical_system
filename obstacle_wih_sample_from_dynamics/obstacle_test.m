@@ -1,6 +1,6 @@
 % Run example tests on objectworld with fixed "flower petal" reward.
 function [rho, sf] = obstacle_test(a, s, r, example_optimal, test_file_name, ...
-    example_human, weight_input)
+    example_human, ss_params)
 % two_examples --- example_optimal
 two_obstacles = 0;
 % 4 algorithm, 5 tests, 8 restarts
@@ -41,7 +41,9 @@ obs_params.fn_handle = @move_constant_v;
 % obs{1}.a = [1.2; 1.44];
 obs{1}.a = [1.25; 1.5];
 
-% obs{1}.a = [1.4; 1.68]; % 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
+% obs{1}.a = [1.4; 1.68];
+obs{1}.a = [1.344; 1.6128];
+% 1.15 1.42 [1.2; 1.44 (the optimal trajectory is a bit small)]
 % [1.06; 1.27]; the optimal trajectory is bit high in real test
 % [1.2; 1.44 ]; still a bit high
 % obs{1}.a = [1.3; 1.56];
@@ -126,7 +128,7 @@ end
 if nargin > 5
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s},...
-                          example_human, weight_input); % the thrid one corresponding to the MDP
+                          example_human, ss_params); % the thrid one corresponding to the MDP
 else
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s});
@@ -137,7 +139,7 @@ save([test_file_name '_' num2str(a) '_' num2str(s) '_' num2str(r) '.mat'],...
     'mdp_params','mdp_cat_name','mdp_param_names',...
     'algorithms','names','colors','order','restarts','test_result');
 
-visualize(test_result, example_human)
+visualize(test_result, example_human, ss_params)
 
 if nargout > 0
     uu = test_result.irl_result.example_samples{1,1}.u(1,:);

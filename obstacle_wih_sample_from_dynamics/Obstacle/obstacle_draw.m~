@@ -182,7 +182,8 @@ if ~isempty(example_samples)
     end
 end
 
-N = ss_params.weight_input;
+N = load([path, 'weight_input.mat']);
+N = N.weight_input;
 
 legendCell = cellstr(num2str(N', 'Weight=%-g'));
 legendCell = [legendCell; cellstr('IRL generated')];
@@ -196,44 +197,55 @@ set(gcf,'position',[x0,y0,width,height])
 set(gca,'xtick',[])
 if (contains(ss_params.indicator, 'AB')) 
     movegui('northeast')
-    if (~contains(str_indicator, 'obj'))
-        title('AB without object')
-    else
-        title('AB with object')
-    end
+    title('AB')
 elseif (contains(ss_params.indicator, 'BD')) 
     movegui('northwest')
-    if (~contains(str_indicator, 'obj'))
-        title('BD without object')
-    else
-        title('BD with object')
-    end
+    title('BD')
 elseif (contains(ss_params.indicator, 'CD')) 
     movegui('southeast')
-    if (~contains(str_indicator, 'obj'))
-        title('CD without object')
-    else
-        title('CD with object')
-    end
+    title('BD')
 elseif (contains(ss_params.indicator, 'AC')) 
     movegui('southwest')
-    if (~contains(str_indicator, 'obj'))
-        title('AC without object')
-    else
-        title('AC with object')
-    end
+    title('AB')
 end
 
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
-% my_title_pre = strcat('result/Tuning_obs_axis/demo_', num2str(length(test_samples)));
-my_title_pree = strcat(ss_params.folderName, 'demo_');
-my_title_pre = strcat(my_title_pree, num2str(length(test_samples)));
+my_title_pre = strcat('result/Tuning_obs_axis/demo_', num2str(length(test_samples)));
 my_title = strcat(my_title_pre, '.jpg');
-
-% my_title_fig = strcat(my_title_pre, '.fig');
+my_title_fig = strcat(my_title_pre, '.fig');
 saveas(gcf, my_title)
-% savefig(my_title_fig)
+savefig(my_title_fig)
+
+imgn = path(end-2:end-1);
+NNN = path(end-12:end-8);
+switch NNN
+    case '05_01'
+        NN = 1;
+    case '05_02'
+        NN = 2;
+    case '06_01'
+        NN = 3;
+    case '06_02'
+        NN = 4;
+    case '10_01'
+        NN = 5;
+    case '10_02'
+        NN = 6;
+    case '12_01'
+        NN = 7;
+    case '12_02'
+        NN = 8;
+end
+
+my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
+
+my_title = strcat(my_title_pree, '.jpg');
+my_title_fig = strcat(my_title_pree, '.fig');
+saveas(gcf, my_title)
+savefig(my_title_fig)
+
+
 
 % Finished.
 hold off;

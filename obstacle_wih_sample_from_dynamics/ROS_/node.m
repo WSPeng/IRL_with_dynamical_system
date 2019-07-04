@@ -2,6 +2,10 @@ function node(states, weight_in)
 
 TRAIN_EVERY_TIME = false;
 
+% folderName = 'result/eight_subject/Jun_6_02/testd2/';
+% folderName = 'result/eight_subject/Jun_12_02/testd2/';
+folderName = 'result/temp/';
+
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
     if(~exist('node1','var'))
@@ -45,16 +49,24 @@ if nargin < 1
     tic
 
     str = scandata.Header.FrameId;
-    str_expresion = regexp(str, '(\w+)\s+(\d.+)', 'tokens');
+    str_expresion = regexp(str, '(\w+)\s+([\d\.]+)\s+(\d+)', 'tokens');
     str_weight = str_expresion{1}{2};
     str_indicator = str_expresion{1}{1};
+    str_number_of_demo_until_test = str2double(str_expresion{1}{3});
+    
     if str_weight == "" 
         weight_input(j,1) = 1;
+        disp('No weight specified.')
     else
         weight_input(j,1) = 1 - str2double(str_weight); % 1 - p.p
         disp(['weight recieved : ', num2str(weight_input(j,1))])
     end
-
+    
+    % in case 0 weight received
+    if weight_input(j,1) == 0
+        weight_input(j,1) = 0.0001;
+    end
+    
     % unpack pose data to trajectory
     T = length(scandata.Poses);
     x = zeros(1,T); y = x; z = x;
@@ -164,11 +176,23 @@ else
     end    
 end
 
+SIGMOID = 1;
+if SIGMOID
+    % sigmoid
+    w = w*10;
+    w = sigmoid(w,5,1);
+end
 
 % store
-save(['data_' num2str(j) '.mat'], 'states_collect');
+% save([folderName 'data_' num2str(j) '.mat'], 'states');
+save([folderName 'data_' num2str(j) '.mat'], 'states_collect');
+ss_params = {struct( 'weight',          w,...
+                     'num_train_demo', str_number_of_demo_until_test,...
+                     'indicator',      str_indicator, ...
+                     'folderName',     folderName)};
 
-[rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
+% [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
+[rho, sf] = obstacle_test(2,1,1,1,'sim', ss, ss_params);
 %     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
 % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
 % Should be fixed to be 2.. ame performace is very poor

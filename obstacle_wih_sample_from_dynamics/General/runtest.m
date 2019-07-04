@@ -1,6 +1,6 @@
 % Run IRL test with specified algorithm and example.
 function test_result = runtest(algorithm,algorithm_params,...
-    mdp,mdp_params,test_params, example_human, weight_input)
+    mdp,mdp_params,test_params, example_human, ss_params)
 
 % test_result - structure that contains results of the test
 % algorithm - string specifying the IRL algorithm to use
@@ -15,10 +15,12 @@ function test_result = runtest(algorithm,algorithm_params,...
 rng(1);
 
 % Set default test parameters.
-test_params = setdefaulttestparams(test_params);
+test_params = setdefaulttestparams(test_params); %sturct
 
 % Construct MDP and features.
 [mdp_data, reward, features_pt, features_dyn] = feval(strcat(mdp,'build'),mdp_params);
+
+weight_input = ss_params.weight;
 
 example_samples = cell(1);
 if nargin > 5
@@ -48,11 +50,19 @@ if nargin > 5
     example_human = states_reverse;
      
     % remove the demonstration more than 5 
-    len_max = 10;
+    len_max = 5;
+
+    if length(example_human) > len_max
+        konstant =  length(example_human) - len_max;
+    else
+        konstant = 0;
+    end    
+    
     if length(example_human) > len_max
         example_human = example_human(length(example_human)-len_max+1:length(example_human),1);
+%         example_human = example_human(length(example_human)-len_max:length(example_human)-1,1);
     end
-    
+
     % Also embed the weight into example_human ...    
     for i = 1:length(example_human)
         example_samples{i}.s = [0, 4.2];
@@ -71,7 +81,8 @@ if nargin > 5
         example_samples{i}.states = example_human{i};
         example_samples{i}.states_draw = example_human{i};
         example_samples{i}.r = 0;
-        example_samples{i}.w = weight_input(i);
+        example_samples{i}.w = weight_input(i+konstant);
+%         example_samples{i}.w = weight_input(i+konstant-1);
         test_samples = [];
     end
 else
@@ -91,8 +102,13 @@ irl_result = feval(strcat(algorithm,'run'), algorithm_params, mdp, mdp_data,...
 % Evaluate IRL result by resynthesizing trajectories.
 % irl_result.example_samples = example_samples;
 % irl_result.test_samples = test_samples;
+
+% embed some parameters into the struct test_params,
+test_params.num_train_demo = ss_params.num_train_demo;
+test_params.indicator = ss_params.indicator;
+
 [irl_result.example_samples, irl_result.test_samples, b_reward] = ...
-    resampleexamples(mdp_data, mdp, irl_result.reward, reward, test_params,...
+    resampleexamples(mdp_data, mdp, irl_result.reward, reward, test_params,... % mdp is string.
                      example_samples, test_samples, test_params.verbosity);
 
 % Evaluate metrics.
@@ -104,7 +120,7 @@ test_metrics = 0;
 % here make the the true reward to be plotted...
 % b_reward is what changed inside the resanpleexample function
 
-% disp(irl_result.reward.features{1,2}.gp.inv_widths)
+disp(irl_result.reward.features{1,2}.gp.inv_widths)
 
 irl_result.reward = b_reward;
 %%%%%%%%%%%

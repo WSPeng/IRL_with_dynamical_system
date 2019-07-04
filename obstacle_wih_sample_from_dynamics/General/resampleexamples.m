@@ -2,7 +2,7 @@
 function [example_samples,test_samples, reward] = resampleexamples(mdp_data, mdp, reward,...
                             true_reward, test_params, old_examples, old_tests, verbose)
 
-plot_bool = 0;
+pllot = 0;
                         
 BOUND_SF = [0.9, 1.6];
 BOUND_RHO = [0, 9.0];
@@ -122,7 +122,7 @@ if gradient_descent
     initu = 0;
     rbest = -Inf;
     tolGrad = 1e-3;
-    maxiter = 30;
+    maxiter = 30; %30 or 32
     alpha = 0.1/3/2; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
@@ -130,16 +130,16 @@ if gradient_descent
     d_sf = alpha;
     
     % Plot
-    if plot_bool
+    if pllot
         figure; clf; xlim([-0.5 8.5]); ylim([0.8 1.8]);     hold on
     end
     %ylim([-0.5 8.5]);
     
-    % plot the ecllipse region 
-    p = calculateEllipse(5.5, 1.25, 0.56, 0.07, 7.2);
-%     p = calculateEllipse(6, 1.2, 0.32, 0.015, 7.2);
-%     p = calculateEllipse(5, 1.15, 0.32, 0.015, 7.2);
-    if plot_bool    
+    if 0
+        % plot the ecllipse region 
+        p = calculateEllipse(5.5, 1.25, 0.56, 0.07, 7.2);
+    %     p = calculateEllipse(6, 1.2, 0.32, 0.015, 7.2);
+    %     p = calculateEllipse(5, 1.15, 0.32, 0.015, 7.2);
         plot(p(:,1), p(:,2), '.-')
     end
     
@@ -256,8 +256,7 @@ if gradient_descent
                 end
             end
             %%%
-            
-            if plot_bool
+            if pllot
                 plot([rho rho_new], [sf sf_new],'color',[color_list(niter+1) 0 0],'marker','o')
                 refresh
             end
@@ -327,12 +326,11 @@ if gradient_descent
             end
             %%%
 
-            if plot_bool
-                % plot([rho rho_new],[sf sf_new],'ko-')
+            % plot([rho rho_new],[sf sf_new],'ko-')
+            if pllot
                 plot([rho rho_new], [sf sf_new],'color',[1 0 0],'marker','o')
                 refresh
             end
-            
             niter = niter + 1;
             dx = norm([rho_new-rho, sf-sf_new]);
 
@@ -351,10 +349,9 @@ if gradient_descent
     
     
     [x, y] = meshgrid(rho_,sf_);
-    if plot_bool
+    if pllot
         plot(x,y,'k*')
     end
-        
     hold off
 end
 
