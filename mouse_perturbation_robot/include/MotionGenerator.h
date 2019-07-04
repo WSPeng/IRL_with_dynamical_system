@@ -8,7 +8,6 @@
 #include "Eigen/Eigen"
 #include <iostream>
 #include <string.h>
-#include <sstream>
 
 #include "ros/ros.h"
 #include "std_msgs/Int8.h"
@@ -31,7 +30,6 @@
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
 #include "Utils.h"
 #include "math.h"
-#include <grasp_interface/rs_gripper_interface.h>
 
 #define MAX_XY_REL 350                    // Max mouse velocity [-]
 #define MIN_X_REL 200                    // Min mouse velocity used as threshold [-]
@@ -40,7 +38,7 @@
 
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity
 #define MAX_PERTURBATION_OFFSET 0.1f      // Max perturnation offset [m]
-#define MIN_PERTURBATION_OFFSET 0.01f     // Min perturbation offset [m]
+#define MIN_PERTURBATION_OFFSET 0.03f     // Min perturbation offset [m]
 #define TARGET_TOLERANCE 0.05f            // Tolerance radius for reaching a target [m]
 #define NB_TARGETS 4                      // Number of targets [-]
 #define MAX_RHO 8.0f //8
@@ -48,6 +46,7 @@
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
+#define NUM_LIMIT 30000
 #define PI 3.14159265
 
 // #define PROTOCAL_DEBUG // the hyper parameter is disabled in gripper
@@ -69,8 +68,9 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = true;
-
+    // const bool _randomInsteadIRL = true;
+    bool _randomInsteadIRL = true;
+    
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;
 
@@ -97,8 +97,6 @@ class MotionGenerator
 
     enum ObstacleCondition {AB = 0, AC = 1, BD = 2, CD = 3};
 
-    std::string strIndicator[8] = {"AB", "ABobj", "CD", "CDobj", "AC", "ACobj", "BD", "BDobj"};
-
     // ROS variables
     ros::NodeHandle _n;
     ros::Rate _loopRate;
@@ -116,8 +114,7 @@ class MotionGenerator
     ros::Subscriber _subMessageWeight;      // Sub the weight from EEG side
     ros::Subscriber _subMessageEEGOpti;
     ros::Subscriber _subGripper;            // sub the gripper out
-    ros::Subscriber _subGripperStatus;      // gripper status
-
+    
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
     ros::Publisher _pubFeedBackToParameter; // Publish feed back to rho and sf generator
@@ -210,7 +207,7 @@ class MotionGenerator
     bool _ifWeightEEGReveive;         // 
     bool _boolReverseMsgEEGOpti;      // 
     bool _boolGripperSend;
-    bool _gripperObject;                // 1 is close. 0 is no object.
+
 
     // Arduino related variables
     int farduino;
@@ -270,13 +267,6 @@ class MotionGenerator
     int _numOfErrorTrails;
     int _numOfCorrectTrails;
     int temp_counter;
-
-    std::string _ss8;
-
-    robotiq_s_model_control::SModel_robot_input gripperStatus;     /// The status returned from the gripper
-
-    double _updatedRhoEta [2][8];
-    int _indexEightCond;
 
   public:
     // Class constructor
@@ -370,8 +360,6 @@ class MotionGenerator
 
     // Gripper 
     void subGripper(const std_msgs::Int8::ConstPtr& msg);
-
-    void subGripperStatus(const robotiq_s_model_control::SModel_robot_input& msg);
 
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);
