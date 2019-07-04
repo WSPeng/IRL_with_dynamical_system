@@ -1,7 +1,10 @@
 function node(states, weight_in)
 
 TRAIN_EVERY_TIME = false;
-ss_params = cell(1,1);
+
+% folderName = 'result/eight_subject/Jun_6_02/testd2/';
+% folderName = 'result/eight_subject/Jun_12_02/testd2/';
+folderName = 'result/temp/';
 
 if nargin<1 % if there is a input argument, then skip the ROS node creation (if false)
     % create a ros node
@@ -49,15 +52,21 @@ if nargin < 1
     str_expresion = regexp(str, '(\w+)\s+([\d\.]+)\s+(\d+)', 'tokens');
     str_weight = str_expresion{1}{2};
     str_indicator = str_expresion{1}{1};
-    str_number_of_demo_until_test = str2num(str_expresion{1}{3});
+    str_number_of_demo_until_test = str2double(str_expresion{1}{3});
     
     if str_weight == "" 
         weight_input(j,1) = 1;
+        disp('No weight specified.')
     else
         weight_input(j,1) = 1 - str2double(str_weight); % 1 - p.p
         disp(['weight recieved : ', num2str(weight_input(j,1))])
     end
-
+    
+    % in case 0 weight received
+    if weight_input(j,1) == 0
+        weight_input(j,1) = 0.0001;
+    end
+    
     % unpack pose data to trajectory
     T = length(scandata.Poses);
     x = zeros(1,T); y = x; z = x;
@@ -121,7 +130,7 @@ if nargin < 1
             state(i,2) = scandata.Poses(i).Position.Y;
             state(i,3) = scandata.Poses(i).Position.Z;
         end
-
+        
         states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
         states(:,2) = state(:,3);
 
@@ -167,12 +176,20 @@ else
     end    
 end
 
+SIGMOID = 1;
+if SIGMOID
+    % sigmoid
+    w = w*10;
+    w = sigmoid(w,5,1);
+end
 
 % store
-save(['data_' num2str(j) '.mat'], 'states_collect');
-ss_params = {struct('sensors',w,...
-                     'motors',2,...
-                     )}; % change to the pattern I defined.
+% save([folderName 'data_' num2str(j) '.mat'], 'states');
+save([folderName 'data_' num2str(j) '.mat'], 'states_collect');
+ss_params = {struct( 'weight',          w,...
+                     'num_train_demo', str_number_of_demo_until_test,...
+                     'indicator',      str_indicator, ...
+                     'folderName',     folderName)};
 
 % [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
 [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, ss_params);
@@ -238,8 +255,11 @@ end
 
 
 function states_tbl = subsample(states_r, T)
+    % elongate the list before sub sampling
+    % ...
     % sub sampleing
-    lll = 50; % set the length to be 50
+%     lll = 50; % set the length to be 50
+    lll = floor(T/30); 
     index = linspace(lll, T-lll, 50);
     index = floor(index);
     states_tbl = states_r(index, :);

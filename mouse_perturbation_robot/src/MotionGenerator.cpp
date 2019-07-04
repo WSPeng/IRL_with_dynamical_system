@@ -158,6 +158,8 @@ bool MotionGenerator::init()
 	for (int row = 0; row < 2; ++row)
 		for (int col = 0; col < 8; ++col)
 			_updatedRhoEta[row][col] = 0.0f;
+	for (int col = 0; col < 8; ++col)
+		_amoutOfTrailEightCond[col] = 0;
 
 	// Subscriber definitions
 	_subMouse = _n.subscribe("/mouse", 1, &MotionGenerator::updateMouseData, this, ros::TransportHints().reliable().tcpNoDelay());
@@ -415,9 +417,7 @@ void MotionGenerator::mouseControlledMotion()
 			if(_mouseInUse or currentTime - _lastMouseTime < _commandLagDuration)
 			{
 				if (_mouseInUse)
-				{
 					_lastMouseTime = ros::Time::now().toSec();
-				}
 				// Save current target
 				temporaryTarget = _currentTarget;
 
@@ -583,6 +583,38 @@ void MotionGenerator::mouseControlledMotion()
 						}
 						// std::cout << "==current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
 
+						if (_obstacleCondition == ObstacleCondition::AB)
+						{
+							if (_gripperObject == 0)
+								_indexEightCond = 0;
+							else if (_gripperObject == 1)
+								_indexEightCond = 1;
+						}
+						else if (_obstacleCondition == ObstacleCondition::CD)
+						{
+							if (_gripperObject == 0)
+								_indexEightCond = 2;
+							else if (_gripperObject == 1)
+								_indexEightCond = 3;
+						}
+						else if (_obstacleCondition == ObstacleCondition::AC)
+						{
+							if (_gripperObject == 0)
+								_indexEightCond = 4;
+							else if (_gripperObject == 1)
+								_indexEightCond = 5;
+						}
+						else if (_obstacleCondition == ObstacleCondition::BD)
+						{
+							if (_gripperObject == 0)
+								_indexEightCond = 6;
+							else if (_gripperObject == 1)
+								_indexEightCond = 7;
+						}
+						_ss8 = strIndicator[_indexEightCond];
+
+
+
 						//if((_currentTarget != _previousTarget))
 						if((_currentTarget != temporaryTarget)) // only enter once.. 
 						{
@@ -666,6 +698,7 @@ void MotionGenerator::mouseControlledMotion()
 
     				_msgEEG == 0;
     			}
+
 				if (_msgEEG == 1)
 				{
 					_eventLogger |= (1 << 2);
@@ -768,12 +801,15 @@ void MotionGenerator::mouseControlledMotion()
 
 					if (_previousTarget != _currentTarget)
 					{
-						//_eventLogger = 15;
-						_trialCount++;
-						_numOfCorrectTrails = _trialCount - _numOfErrorTrails;
-						std::cout << "The number of trials : " << _trialCount;
-						std::cout << " | Correct trails : " << _numOfCorrectTrails;
-						std::cout << " | Error trails : " <<  _numOfErrorTrails << std::endl; 
+						_amoutOfTrailEightCond[_indexEightCond]  = _amoutOfTrailEightCond[_indexEightCond]++;
+						std::cout << "Num of trails AB : " << _amoutOfTrailEightCond[0];
+						std::cout << "| Num of trails AB with object : " << _amoutOfTrailEightCond[1] << std::endl;
+						std::cout << "| Num of trails CD : " << _amoutOfTrailEightCond[2];
+						std::cout << "| Num of trails CD with object: " << _amoutOfTrailEightCond[3] << std::endl;
+						std::cout << "| Num of trails AC : " << _amoutOfTrailEightCond[4];
+						std::cout << "| Num of trails AC with object: " << _amoutOfTrailEightCond[5] << std::endl;
+						std::cout << "| Num of trails BD : " << _amoutOfTrailEightCond[6];
+						std::cout << "| Num of trails BD with object: " << _amoutOfTrailEightCond[7] << std::endl;												
 						if (_switchingTrajectories) // ?
 						{
 							_msg_para_up.data = 1.0f;
@@ -794,39 +830,11 @@ void MotionGenerator::mouseControlledMotion()
 					// _state = State::PAUSE;
 				}
 
-				if (_obstacleCondition == ObstacleCondition::AB)
-				{
-					if (_gripperObject == 0)
-						_indexEightCond = 0;
-					else if (_gripperObject == 1)
-						_indexEightCond = 1;
-				}
-				else if (_obstacleCondition == ObstacleCondition::CD)
-				{
-					if (_gripperObject == 0)
-						_indexEightCond = 2;
-					else if (_gripperObject == 1)
-						_indexEightCond = 3;
-				}
-				else if (_obstacleCondition == ObstacleCondition::AC)
-				{
-					if (_gripperObject == 0)
-						_indexEightCond = 4;
-					else if (_gripperObject == 1)
-						_indexEightCond = 5;
-				}
-				else if (_obstacleCondition == ObstacleCondition::BD)
-				{
-					if (_gripperObject == 0)
-						_indexEightCond = 6;
-					else if (_gripperObject == 1)
-						_indexEightCond = 7;
-				}
-				_ss8 = strIndicator[_indexEightCond];
-
 				// the limit 5 or 3
-				if (_trialCount>= NUM_LIMIT)
+				if (_amoutOfTrailEightCond[_indexEightCond] >= NUM_LIMIT)
 					_randomInsteadIRL = false;
+				else
+					_randomInsteadIRL = true;
 
 				if (_updatedRhoEta[0][_indexEightCond] > 0.0 && _updatedRhoEta[1][_indexEightCond] > 0.0)
 				{
@@ -921,7 +929,7 @@ void MotionGenerator::mouseControlledMotion()
 			}
 			break;
 		}
-		case State::JERKY_MOTION:
+		case State::JERKY_MOTION: // discard this part
     	{
 	    	_perturbationDirection << 0.0f,0.0f,1.0f;
 			// Update perturbation offset based on perturbation velocity + apply saturation
@@ -1535,8 +1543,8 @@ void MotionGenerator::subMessageWeight(const std_msgs::String::ConstPtr& msg)
 	_ifWeightEEGReveive = true;
 	std::stringstream ss;
 
-	ss <<  _ss8 << " " << msgMessage.data;
-
+	ss <<  _ss8 << " " << msgMessage.data << " " << std::to_string(NUM_LIMIT);
+ 
 	_msgRealPoseArray.header.frame_id = ss.str(); // frame_id is string
 	std::cout << "Weight recieved = " <<  msgMessage.data << std::endl;
 	// _msgRealPoseArray.header.frame_id = 1.0 - msgMessage.data;

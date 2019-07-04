@@ -278,6 +278,7 @@ class MotionGenerator
 
     double _updatedRhoEta [2][8];
     int _indexEightCond;
+    int _amoutOfTrailEightCond [8];
 
   public:
     // Class constructor

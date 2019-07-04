@@ -68,16 +68,12 @@ obs{1}.x0 = [5.2; 3.6];
 str_indicator = ss_params.indicator;
 if (contains(str_indicator, 'AB')) 
     obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
 elseif (contains(str_indicator, 'CD'))  
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+    
 elseif (contains(str_indicator, 'AC'))
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+    
 elseif (contains(str_indicator, 'BD'))
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+    
 end
 
 obs{1}.tailEffect = false; % the tail effect is turned off..

@@ -130,7 +130,7 @@ if nargin < 1
             state(i,2) = scandata.Poses(i).Position.Y;
             state(i,3) = scandata.Poses(i).Position.Z;
         end
-
+        
         states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
         states(:,2) = state(:,3);
 
@@ -144,7 +144,7 @@ if nargin < 1
         else
             disp('--- BD with object ---')
             cc = 8;
-        end            
+        end
     end
 
 
@@ -188,7 +188,7 @@ end
 save([folderName 'data_' num2str(j) '.mat'], 'states_collect');
 ss_params = {struct( 'weight',          w,...
                      'num_train_demo', str_number_of_demo_until_test,...
-                     'indicator',      str_indicator, ...
+                     'indicator',      str_indicator, ... % string
                      'folderName',     folderName)};
 
 % [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
@@ -255,8 +255,11 @@ end
 
 
 function states_tbl = subsample(states_r, T)
+    % elongate the list before sub sampling
+    % ...
     % sub sampleing
-    lll = 50; % set the length to be 50
+%     lll = 50; % set the length to be 50
+    lll = floor(T/30); 
     index = linspace(lll, T-lll, 50);
     index = floor(index);
     states_tbl = states_r(index, :);
