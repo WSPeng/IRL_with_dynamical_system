@@ -67,17 +67,22 @@ obs{1}.x0 = [5.2; 3.6];
 % different pbstacle definition
 str_indicator = ss_params.indicator;
 if (contains(str_indicator, 'AB')) 
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+%     obs{1}.a = [1.344; 1.6128];
+    obs{1}.a = [0.95; 1.13];
+%     obs{1}.x0 = [5.2; 3.6];
+    obs{1}.x0 = [5.2; 3.7];
 elseif (contains(str_indicator, 'CD'))  
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+%     obs{1}.a = [1.344; 1.6128];
+    obs{1}.a = [1.3; 1.53];
+    obs{1}.x0 = [5.2; 3.5];
+    
 elseif (contains(str_indicator, 'AC'))
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+    obs{1}.a = [1.4; 1.36];
+    obs{1}.x0 = [5.2; 3.4];
 elseif (contains(str_indicator, 'BD'))
-    obs{1}.a = [1.344; 1.6128];
-    obs{1}.x0 = [5.2; 3.6];
+%     obs{1}.a = [1.3; 1.3]; %make x smaller
+    obs{1}.a = [1.4; 1.36];
+    obs{1}.x0 = [5.2; 3.4];
 end
 
 obs{1}.tailEffect = false; % the tail effect is turned off..

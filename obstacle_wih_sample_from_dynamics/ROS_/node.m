@@ -1,6 +1,7 @@
 function node(states, weight_in)
 
-TRAIN_EVERY_TIME = false;
+% TRAIN_EVERY_TIME = false;
+TRAIN_EVERY_TIME = true;
 
 % folderName = 'result/eight_subject/Jun_6_02/testd2/';
 % folderName = 'result/eight_subject/Jun_12_02/testd2/';
@@ -75,7 +76,9 @@ if nargin < 1
         y(i) = scandata.Poses(i).Position.Y;
         z(i) = scandata.Poses(i).Position.Z;
     end
-%         figure;plot3(x, y, z)
+    
+%     figure;plot3(x, y, z);xlabel('x');ylabel('y');zlabel('z');
+    
     states = zeros(T,2);
 
     if (contains(str_indicator, 'AB')) 
@@ -113,7 +116,7 @@ if nargin < 1
             state(i,3) = scandata.Poses(i).Position.Z;
         end
 
-        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
+        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,2) - state(1,2)).^2).^(1/2) ;
         states(:,2) = state(:,3);
 
         if (~contains(str_indicator, 'obj')) % no object grabbed
@@ -131,7 +134,7 @@ if nargin < 1
             state(i,3) = scandata.Poses(i).Position.Z;
         end
         
-        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,1) - state(2,1)).^2).^(1/2) ;
+        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,2) - state(1,2)).^2).^(1/2) ;
         states(:,2) = state(:,3);
 
 %             angle = 45/180*pi;
@@ -148,7 +151,7 @@ if nargin < 1
     end
 
 
-    states_r = rescale(states, T);
+    states_r = rescale(states, T, cc);
     states_tbl = subsample(states_r, T);
 
     counter(cc) = counter(cc) + 1;
@@ -170,11 +173,16 @@ if nargin < 1
 else 
     T = length(states);
     states_ = states;
-    weight_input = ones(T,1);
+    w = ones(T,1);
     if nargin > 1
-        weight_input = weight_in;
-    end    
+        w = weight_in;
+    end
+    str_number_of_demo_until_test = 10;
+    str_indicator = 'CD';
+    ss = states_;
 end
+
+w_legend = w;
 
 SIGMOID = 1;
 if SIGMOID
@@ -186,33 +194,36 @@ end
 % store
 % save([folderName 'data_' num2str(j) '.mat'], 'states');
 save([folderName 'data_' num2str(j) '.mat'], 'states_collect');
-ss_params = {struct( 'weight',          w,...
+ss_params = struct( 'weight',          w,...
                      'num_train_demo', str_number_of_demo_until_test,...
                      'indicator',      str_indicator, ... % string
-                     'folderName',     folderName)};
+                     'folderName',     folderName,...
+                     'weight_legend',  w_legend);
 
-% [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
-[rho, sf] = obstacle_test(2,1,1,1,'sim', ss, ss_params);
-%     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
-% First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
-% Should be fixed to be 2.. ame performace is very poor
+if (TRAIN_EVERY_TIME ||  length(ss) > str_number_of_demo_until_test )
+    % [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
+    [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, ss_params);
+    %     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
+    % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
+    % Should be fixed to be 2.. ame performace is very poor
+    
+    msg.Data(1) = rho;
+    msg.Data(2) = sf;
+    % add flag
+    msg.Data(3) = cc - 1;
 
-msg.Data(1) = rho;
-msg.Data(2) = sf;
-% add flag
-msg.Data(3) = cc - 1;
+    formatSpec = 'sending rho %4.2f and sf %4.2f .. \n';
+    fprintf(formatSpec, rho, sf)
 
-disp('sending')
-disp(rho)
-disp(sf)
+    save_sf_rho(:,j) = [sf; rho];
 
-save_sf_rho(:,j) = [sf; rho];
-
-if exist('pub','var')
-    send(pub, msg);
+    if exist('pub','var')
+        send(pub, msg);
+    end
 end
 
-elapsedTime = toc
+elapsedTime = toc;
+fprintf('elapsed time : %4.2f \n', elapsedTime)
 
 save_time_elapsed(1,j) = elapsedTime;
 save_ = cell(1,2);
@@ -231,7 +242,7 @@ end
 end
 
 
-function states_r = rescale(states, T)
+function states_r = rescale(states, T, cc)
     % Raise error when empty data received
     if isempty(states)
         error('Empty demonstration provided.')
@@ -240,17 +251,32 @@ function states_r = rescale(states, T)
     rangex = [min(states(:,1)) max(states(:,1))];
     rangey = [min(states(:,2)) max(states(:,2))];
     a = [abs(rangex(1)), 0];
-    states_r = (states+repmat(a,length(states),1))./abs(rangex(2)-rangex(1)).*10;
+%     if (cc == 1 || cc == 2)
+    if (cc == 11 || cc == 12)
+        states_r = (states+repmat(a,length(states),1))./abs(rangex(2)-rangex(1)).*12;
+        % reverse x
+        if (states_r(T,1) < states_r(1,1))
+            states_r(:,1) = -states_r(:,1) + 12;
+        end
+        
+        dd = -1 - states_r(1,1);
+        states_r(:,1) = states_r(:,1) + dd;     
+        dd = 4.2 - states_r(1,2);
+        states_r(:,2) = states_r(:,2) + dd;     
+    else
+        states_r = (states+repmat(a,length(states),1))./abs(rangex(2)-rangex(1)).*10;
+        % reverse x
+        if (states_r(T,1) < states_r(1,1))
+            states_r(:,1) = -states_r(:,1) + 10;
+        end
 
-    % reverse x
-    if (states_r(T,1) < states_r(1,1))
-        states_r(:,1) = -states_r(:,1) + 10;
+        % figure;plot(states_r(:,1),states_r(:,2))
+
+        % put the first point at 0,4.2
+        dd = 4.2 - states_r(1,2);
+        states_r(:,2) = states_r(:,2) + dd;        
     end
-    % figure;plot(states_r(:,1),states_r(:,2))
 
-    % put the first point at 0,4.2
-    dd = 4.2 - states_r(1,2);
-    states_r(:,2) = states_r(:,2) + dd;
 end
 
 

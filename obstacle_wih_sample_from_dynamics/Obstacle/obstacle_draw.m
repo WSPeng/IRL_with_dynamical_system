@@ -118,7 +118,8 @@ if ~isempty(example_samples)
                         if  ss_params.num_train_demo == 5
                             plot(pts(:,1),pts(:,end),'-','color',color1,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
                                 'MarkerFaceColor','m');
-                        elseif ss_params.num_train_demo == 3
+%                         elseif ss_params.num_train_demo == 3
+                        else
                             plot(pts(:,1),pts(:,end),':','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
                             'MarkerFaceColor','y');
                         end
@@ -126,7 +127,8 @@ if ~isempty(example_samples)
                         if ss_params.num_train_demo == 5
                             plot(pts(:,1),pts(:,end),'-','color',color1,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
                                 'MarkerFaceColor','m');
-                        elseif ss_params.num_train_demo == 3     
+%                         elseif ss_params.num_train_demo == 3
+                        else
                             plot(pts(:,1),pts(:,end),':','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
                                 'MarkerFaceColor','y');
                         end
@@ -182,9 +184,9 @@ if ~isempty(example_samples)
     end
 end
 
-N = ss_params.weight_input;
+N = ss_params.weight_legend;
 
-legendCell = cellstr(num2str(N', 'Weight=%-g'));
+legendCell = cellstr(num2str(N, 'Weight=%-g'));
 legendCell = [legendCell; cellstr('IRL generated')];
 legend(legendCell,'FontSize',14)
 
@@ -194,36 +196,42 @@ width = 1080;
 height = 530;
 set(gcf,'position',[x0,y0,width,height])
 set(gca,'xtick',[])
+
+str_indicator = ss_params.indicator;
 if (contains(ss_params.indicator, 'AB')) 
+    if (~contains(str_indicator, 'obj'))
+        title(gca, 'AB without object')
+    else
+        title(gca, 'AB with object')
+    end
     movegui('northeast')
-    if (~contains(str_indicator, 'obj'))
-        title('AB without object')
-    else
-        title('AB with object')
-    end
 elseif (contains(ss_params.indicator, 'BD')) 
+    
+    if (~contains(str_indicator, 'obj'))
+        title(gca, 'BD without object')
+    else
+        title(gca, 'BD with object')
+    end
     movegui('northwest')
-    if (~contains(str_indicator, 'obj'))
-        title('BD without object')
-    else
-        title('BD with object')
-    end
 elseif (contains(ss_params.indicator, 'CD')) 
+    
+    if (~contains(str_indicator, 'obj'))
+        title(gca, 'CD without object')
+    else
+        title(gca, 'CD with object')
+    end
     movegui('southeast')
-    if (~contains(str_indicator, 'obj'))
-        title('CD without object')
-    else
-        title('CD with object')
-    end
 elseif (contains(ss_params.indicator, 'AC')) 
-    movegui('southwest')
+    
     if (~contains(str_indicator, 'obj'))
-        title('AC without object')
+        title(gca, 'AC without object')
     else
-        title('AC with object')
+        title(gca, 'AC with object')
     end
+    movegui('southwest')
 end
 
+drawnow;
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/Tuning_obs_axis/demo_', num2str(length(test_samples)));

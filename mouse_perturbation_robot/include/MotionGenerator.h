@@ -41,15 +41,16 @@
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity
 #define MAX_PERTURBATION_OFFSET 0.1f      // Max perturnation offset [m]
 #define MIN_PERTURBATION_OFFSET 0.01f     // Min perturbation offset [m]
-#define TARGET_TOLERANCE 0.05f            // Tolerance radius for reaching a target [m]
+#define TARGET_TOLERANCE 0.01f            // Tolerance radius for reaching a target [m]
 #define NB_TARGETS 4                      // Number of targets [-]
 #define MAX_RHO 8.0f //8
 #define MIN_RHO 0.5f
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
-#define NUM_LIMIT 30000
+#define NUM_LIMIT 10
 #define PI 3.14159265
+#define ANGLE_OFFSET -45
 
 // #define PROTOCAL_DEBUG // the hyper parameter is disabled in gripper
 
@@ -70,7 +71,8 @@ class MotionGenerator
     const int _numObstacle = 1;
 
     // random generate rho and sf at each end of trails
-    const bool _randomInsteadIRL = true;
+    // const bool _randomInsteadIRL = true;
+    bool _randomInsteadIRL = true;
 
     // if use iiwa instead of the lwr
     const bool _iiwaInsteadLwr = false;

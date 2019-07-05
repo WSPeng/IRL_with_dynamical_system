@@ -4,8 +4,8 @@ function [example_samples,test_samples, reward] = resampleexamples(mdp_data, mdp
 
 pllot = 0;
                         
-BOUND_SF = [0.9, 1.6];
-BOUND_RHO = [0, 9.0];
+BOUND_SF = [0.7, 1.65];
+BOUND_RHO = [0, 8.5];
 % the reward is learned reward -                 
 with_dynamics = false;
 gradient_descent = true;

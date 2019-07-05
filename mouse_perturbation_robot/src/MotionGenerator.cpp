@@ -527,7 +527,7 @@ void MotionGenerator::mouseControlledMotion()
 								_obstacleCondition = ObstacleCondition::CD;
 							}
 							if (_measureAngle <10 || _measureAngle >10)
-								_targetAngle = 90;
+								_targetAngle = 90 + ANGLE_OFFSET;
 						}
 						else if(_mouseVelocity(0)<0.0f && fabs(_mouseVelocity(0))>fabs(_mouseVelocity(1)))
 						{
@@ -542,7 +542,7 @@ void MotionGenerator::mouseControlledMotion()
 								_obstacleCondition = ObstacleCondition::CD;
 							}
 							if (_measureAngle <10 || _measureAngle >10)
-								_targetAngle = 90 ;
+								_targetAngle = 90 + ANGLE_OFFSET;
 						}
 
 						if(_mouseVelocity(1)>0.0f && fabs(_mouseVelocity(1))>fabs(_mouseVelocity(0)))
@@ -552,14 +552,14 @@ void MotionGenerator::mouseControlledMotion()
 								_currentTarget = Target::C;
 								_obstacleCondition = ObstacleCondition::AC;
 								if (_measureAngle <100 || _measureAngle >80)
-									_targetAngle = 40.0;
+									_targetAngle = 40.0 + ANGLE_OFFSET;
 							}
 							else if (temporaryTarget == Target::B)
 							{
 								_currentTarget = Target::D;
 								_obstacleCondition = ObstacleCondition::BD;
 								if (_measureAngle <100 || _measureAngle >80)
-									_targetAngle = -20.0;
+									_targetAngle = -20.0 + ANGLE_OFFSET;
 							}
 							
 						}
@@ -570,14 +570,14 @@ void MotionGenerator::mouseControlledMotion()
 								_currentTarget = Target::A;
 								_obstacleCondition = ObstacleCondition::AC;
 								if (_measureAngle <100 || _measureAngle >80)
-									_targetAngle = 40.0;
+									_targetAngle = 40.0 + ANGLE_OFFSET;
 							}
 							else if (temporaryTarget == Target::D)
 							{
 								_currentTarget = Target::B;
 								_obstacleCondition = ObstacleCondition::BD;
 								if (_measureAngle <100 || _measureAngle >80)
-									_targetAngle = -20.0;
+									_targetAngle = -20.0 + ANGLE_OFFSET;
 							}
 							
 						}
@@ -613,7 +613,11 @@ void MotionGenerator::mouseControlledMotion()
 						}
 						_ss8 = strIndicator[_indexEightCond];
 
-
+						// the limit 5 or 3
+						if (_amoutOfTrailEightCond[_indexEightCond] >= NUM_LIMIT)
+							_randomInsteadIRL = false;
+						else
+							_randomInsteadIRL = true;
 
 						//if((_currentTarget != _previousTarget))
 						if((_currentTarget != temporaryTarget)) // only enter once.. 
@@ -653,19 +657,34 @@ void MotionGenerator::mouseControlledMotion()
 								// move to random generating mode
 								if(_randomWholeRange)
 								{
-									// _obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
-									// _obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
+									_obs._safetyFactor = 1.0f + 0.5f*(float)std::rand()/RAND_MAX;
+									_obs._rho = 1.0f + 7*(float)std::rand()/RAND_MAX;
 
 									// _obs._safetyFactor = 1.0f;
 									// _obs._rho = 1.0f;
+
+									// float rhoo[11] = {1, 2, 1, 8, 8, 6, 6, 4, 4, 2, 2};
+									// float sff[11] = {1, 1.1, 1, 1.6, 1.6, 1.4, 1.4, 1.2, 1.2, 1.1, 1.1};
+
+									// _obs._safetyFactor = sff[temp_counter_test];
+									// _obs._rho = rhoo[temp_counter_test];
+									// temp_counter_test++;
 								}
 								else
 								{
 									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
 									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
 								}
-								ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
-							}							
+							}
+
+							if (_updatedRhoEta[0][_indexEightCond] > 0.0 && _updatedRhoEta[1][_indexEightCond] > 0.0 && !_randomInsteadIRL )
+							{
+								_obs._rho = _updatedRhoEta[0][_indexEightCond];
+								_obs._safetyFactor = _updatedRhoEta[1][_indexEightCond];
+							}
+
+							ROS_INFO_STREAM("Switching Trajectory parameters. Safety Factor: " << _obs._safetyFactor << " Rho: " << _obs._rho);
+
 							temp_counter++;
 							_ifSentTraj = false;
 						}
@@ -746,14 +765,17 @@ void MotionGenerator::mouseControlledMotion()
 							// _obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
 							// _obs._x0(1) -= 0.0f; //0.0
 							// _obs._x0(0) -= 0.0f; //-0.1 +0.001
-							_obs._a << 0.05f, 0.05f, 0.2f;
-							_obs._x0(2) -= 0.04f;
-							_obs._x0(1) -= 0.015f; 
-							_obs._x0(0) -= 0.015f; 					
+							// _obs._a << 0.05f, 0.05f, 0.2f;
+							// _obs._x0(2) -= 0.04f;
+							// _obs._x0(1) -= 0.015f; 
+							// _obs._x0(0) -= 0.015f; 	
+							_obs._a << 0.1f, 0.1f, 0.08f;
+							_obs._x0(2) -= 0.015f; //0.05f move the obstacle lower, 0.1
+							_obs._x0(1) -= 0.02f; //0.0
+							_obs._x0(0) -= 0.02f; //-0.1 +0.001										
 						}
 						else if (_obstacleCondition == ObstacleCondition::BD)
 						{
-							// _obs._a << 0.04f, 0.5f, 0.08f;
 							_obs._a << 0.1f, 0.1f, 0.08f;
 							_obs._x0(2) -= 0.015f; //0.05f move the obstacle lower, 0.1
 							_obs._x0(1) += 0.02f; //0.0
@@ -761,10 +783,10 @@ void MotionGenerator::mouseControlledMotion()
 						}
 						else if (_obstacleCondition == ObstacleCondition::CD)
 						{
-							_obs._a << 0.4f, 0.08f, 0.1f;
-							_obs._x0(2) -= 0.05f; //0.05f move the obstacle lower, 0.1
+							_obs._a << 0.3f, 0.06f, 0.071f; //0.06
+							_obs._x0(2) -= 0.03f; //0.05f move the obstacle lower, 0.1
 							_obs._x0(1) -= 0.0f; //0.0
-							_obs._x0(0) -= 0.1f; //-0.1 +0.001
+							_obs._x0(0) -= 0.06f; //-0.1 +0.001
 						}
 						sendObsPosition(true);//the sending is very frequent..
 					}
@@ -801,15 +823,18 @@ void MotionGenerator::mouseControlledMotion()
 
 					if (_previousTarget != _currentTarget)
 					{
-						_amoutOfTrailEightCond[_indexEightCond]  = _amoutOfTrailEightCond[_indexEightCond]++;
-						std::cout << "Num of trails AB : " << _amoutOfTrailEightCond[0];
-						std::cout << "| Num of trails AB with object : " << _amoutOfTrailEightCond[1] << std::endl;
-						std::cout << "| Num of trails CD : " << _amoutOfTrailEightCond[2];
-						std::cout << "| Num of trails CD with object: " << _amoutOfTrailEightCond[3] << std::endl;
-						std::cout << "| Num of trails AC : " << _amoutOfTrailEightCond[4];
-						std::cout << "| Num of trails AC with object: " << _amoutOfTrailEightCond[5] << std::endl;
-						std::cout << "| Num of trails BD : " << _amoutOfTrailEightCond[6];
-						std::cout << "| Num of trails BD with object: " << _amoutOfTrailEightCond[7] << std::endl;												
+						_trialCount++;
+						if (_trialCount >= 1)
+							_amoutOfTrailEightCond[_indexEightCond]  = _amoutOfTrailEightCond[_indexEightCond] + 1;
+
+						std::cout << " Num of AB : " << _amoutOfTrailEightCond[0];
+						std::cout << "| Num of AB with object : " << _amoutOfTrailEightCond[1] ;
+						std::cout << "| Num of CD : " << _amoutOfTrailEightCond[2];
+						std::cout << "| Num of CD with object: " << _amoutOfTrailEightCond[3] << std::endl;
+						std::cout << "| Num of AC : " << _amoutOfTrailEightCond[4];
+						std::cout << "| Num of AC with object: " << _amoutOfTrailEightCond[5];
+						std::cout << "| Num of BD : " << _amoutOfTrailEightCond[6];
+						std::cout << "| Num of BD with object: " << _amoutOfTrailEightCond[7] << std::endl;								
 						if (_switchingTrajectories) // ?
 						{
 							_msg_para_up.data = 1.0f;
@@ -829,19 +854,7 @@ void MotionGenerator::mouseControlledMotion()
 					_reachedTime = ros::Time::now().toSec();
 					// _state = State::PAUSE;
 				}
-
-				// the limit 5 or 3
-				if (_amoutOfTrailEightCond[_indexEightCond] >= NUM_LIMIT)
-					_randomInsteadIRL = false;
-				else
-					_randomInsteadIRL = true;
-
-				if (_updatedRhoEta[0][_indexEightCond] > 0.0 && _updatedRhoEta[1][_indexEightCond] > 0.0)
-				{
-					_obs._rho = _updatedRhoEta[0][_indexEightCond];
-					_obs._safetyFactor = _updatedRhoEta[1][_indexEightCond];
-				}
-					
+				
 				obsModulator.setObstacle(_obs, _obs2, _numObstacle);
 				// Compute the gain matrix M = B*L*B'
 				// B is an orthogonal matrix containing the directions corrected
@@ -868,7 +881,7 @@ void MotionGenerator::mouseControlledMotion()
 				// std::cout << "vd : " << _vd(0) << "|" << _vd(1) << "|" << _vd(2) << std::endl;
 				_vd = obsModulator.obsModulationEllipsoid(_x, _vd, false, _numObstacle);
 				_xp = _x;
-				if (distance > TARGET_TOLERANCE)
+				if (distance > TARGET_TOLERANCE && (abs(_currentAngle - _targetAngle) < 0.0001))
 				{
 					//block_pose.position.x = _msgRealPose.position.x;
     				//block_pose.position.y = _msgRealPose.position.y;
