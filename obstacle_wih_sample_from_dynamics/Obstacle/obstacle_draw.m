@@ -235,7 +235,7 @@ drawnow;
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/Tuning_obs_axis/demo_', num2str(length(test_samples)));
-my_title_pree = strcat(ss_params.folderName, 'demo_');
+my_title_pree = strcat(ss_params.folderName, str_indicator);
 my_title_pre = strcat(my_title_pree, num2str(length(test_samples)));
 my_title = strcat(my_title_pre, '.jpg');
 

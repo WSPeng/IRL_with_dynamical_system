@@ -77,11 +77,12 @@ elseif (contains(str_indicator, 'CD'))
     obs{1}.x0 = [5.2; 3.5];
     
 elseif (contains(str_indicator, 'AC'))
-    obs{1}.a = [1.4; 1.36];
+%     obs{1}.a = [1.4; 1.36];
+    obs{1}.a = [1.44; 1.4];
     obs{1}.x0 = [5.2; 3.4];
 elseif (contains(str_indicator, 'BD'))
 %     obs{1}.a = [1.3; 1.3]; %make x smaller
-    obs{1}.a = [1.4; 1.36];
+    obs{1}.a = [1.44; 1.4];
     obs{1}.x0 = [5.2; 3.4];
 end
 

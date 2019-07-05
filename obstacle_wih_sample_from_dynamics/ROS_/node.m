@@ -1,7 +1,7 @@
 function node(states, weight_in)
 
-% TRAIN_EVERY_TIME = false;
-TRAIN_EVERY_TIME = true;
+TRAIN_EVERY_TIME = false;
+% TRAIN_EVERY_TIME = true;
 
 % folderName = 'result/eight_subject/Jun_6_02/testd2/';
 % folderName = 'result/eight_subject/Jun_12_02/testd2/';

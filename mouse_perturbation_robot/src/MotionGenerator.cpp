@@ -461,13 +461,13 @@ void MotionGenerator::mouseControlledMotion()
 							_updateIRLParameter = true;
 							if (_numOfDemo == 0)
 							{
-								_rhosfSave[_numOfDemo][0] = init_rho;
-								_rhosfSave[_numOfDemo][1] = init_sf;
+								// _rhosfSave[_numOfDemo][0] = init_rho;
+								// _rhosfSave[_numOfDemo][1] = init_sf;
 							}
 							else
 							{
-								_rhosfSave[_numOfDemo][0] = _obs._rho;
-								_rhosfSave[_numOfDemo][1] = _obs._safetyFactor;
+								// _rhosfSave[_numOfDemo][0] = _obs._rho;
+								// _rhosfSave[_numOfDemo][1] = _obs._safetyFactor;
 							}
 							_numOfDemo++;
 							//for(int i=0;i<_numObstacle;++i)
