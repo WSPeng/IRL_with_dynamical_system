@@ -190,9 +190,15 @@ end
 % N = 1 - N;
 % path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/eight_subject/Jun_12_01/testb2/';
 
-N = load([path, 'weight_input.mat']);
-N = N.weight_input;
+%%
+% enable the next two lines for figure plot -- but seems like we won't need
+% it anymore
+% N = load([path, 'weight_input.mat']);
+% N = N.weight_input;
 
+
+N = length(test_samples);
+%%
 legendCell = cellstr(num2str(N', 'Weight=%-g'));
 legendCell = [legendCell; cellstr('IRL generated')];
 legend(legendCell,'FontSize',14)
@@ -235,7 +241,12 @@ switch NNN
         NN = 8;
 end
 
-my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
+
+% enable the next line for figure plot -- but seems like we won't need
+% it anymore
+% my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
+% my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(N), '_', imgn);
+my_title_pree = strcat('result/temp/', 'sub_', num2str(N), '_', imgn);
 
 my_title = strcat(my_title_pree, '.jpg');
 my_title_fig = strcat(my_title_pree, '.fig');
