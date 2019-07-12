@@ -43,11 +43,13 @@ weight_input = ones(1,1);
 weight_input_collect = cell(8,1);
 cc = 0; % the counter of counter 
 
+tic
+
 while 1
 if nargin < 1
     scandata = receive(sub);
     disp('got trajctory')
-    tic
+    
 
     str = scandata.Header.FrameId;
     str_expresion = regexp(str, '(\w+)\s+([\d\.]+)\s+(\d+)', 'tokens');
