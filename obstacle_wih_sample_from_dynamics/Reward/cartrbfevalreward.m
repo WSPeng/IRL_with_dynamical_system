@@ -11,21 +11,16 @@ Dx = size(states,2);
 pts = [states(:,1) states(:,end)];
     
 % Compute distances.
-reward.pos = [5,4];
 d = bsxfun(@minus,reward.pos,pts);
 
 % Compute value.
 % r = reward.r(1)*exp(-0.5*reward.width*sum(d.^2,2)); 
-% diag(d*d') is same as sum(d.^2,2)
 E = eye(2);
-% E = [0.5,0;0,1];
-% r = reward.r(1)*exp(-0.5*reward.width*diag(d*E*d'));
-r = reward.r(1)*reward.width*diag(d*E*d');
+r = reward.r(1)*exp(-0.5*reward.width*diag(d*E*d'));
 
 if nargout >= 2
     % Compute gradient.
-%     drdx = (reward.width*bsxfun(@times,d,r));
-    drdx = reward.r(1)*reward.width*d*E*2*-1;
+    drdx = (reward.width*bsxfun(@times,d,r));
     g = permute(gradprod(A,B,permute(drdx,[1 3 2])),[1 3 2]);
 end
 
@@ -39,8 +34,7 @@ if nargout >= 6
     % drdx has already been computed.
     d2rdxdx = zeros(T,Dx,Dx);
     for t=1:T
-%         D = ((reward.width^2)*bsxfun(@times,d(t,:),d(t,:)')*r(t) - reward.width*r(t)*eye(2));
-        D = reward.r(1)*reward.width*2*E*eye(2);
+        D = ((reward.width^2)*bsxfun(@times,d(t,:),d(t,:)')*r(t) - reward.width*r(t)*eye(2));
         d2rdxdx(t,:,:) = D;
     end
 end
