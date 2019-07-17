@@ -1,7 +1,8 @@
 function pre_process_data(path)
 
 if nargin < 1
-    path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/eight_subject/Jun_12_01/testb2/';
+%     path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/eight_subject/Jun_12_01/testb2/';
+    path = '/home/swei/Documents/result/eight_subject/Jun_12_01/testb2/';
 end
 
 for j = 1:10
@@ -12,7 +13,7 @@ for j = 1:10
     T = length(states);
 
     % resacle the states
-    rangex = [min(states(:,1)) max(states(:,1))];
+    rangex = [min(states(:,1)) max(states(:,1))];c
     rangey = [min(states(:,2)) max(states(:,2))];
     a = [abs(rangex(1)), 0];
     

@@ -13,8 +13,10 @@ else
     VMARGIN = 1.0;
     HMARGIN = 1.0;
 end
+margin_wsp_low = 3.2;
+margin_wsp_high = 8.5;
 % axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  -VMARGIN  mdp_data.bounds(2)+VMARGIN]);
-axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  3.2  8.5]);
+axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  margin_wsp_low  margin_wsp_high]);
 if paper_quality
     % Expand axes.
     set(gca,'position',[0 0 1 1]);
@@ -30,9 +32,11 @@ hold on;
 
 % Draw the reward function.
 % Create regular samples.
-STEP_SIZE = 0.2;
-x = -HMARGIN:STEP_SIZE:(mdp_data.bounds(1)+HMARGIN);
-y = -VMARGIN:STEP_SIZE:(mdp_data.bounds(2)+VMARGIN);
+STEP_SIZE = 0.05; % 0.2
+% x = -HMARGIN: STEP_SIZE: (mdp_data.bounds(1)+HMARGIN);
+% y = -VMARGIN: STEP_SIZE: (mdp_data.bounds(2)+VMARGIN);
+x = -HMARGIN: STEP_SIZE: (mdp_data.bounds(1)+HMARGIN);
+y = margin_wsp_low-0.0: STEP_SIZE: (margin_wsp_high+0.0);
 [X,Y] = meshgrid(x,y);
 pts = [X(:) Y(:)];
 R = feval(strcat(reward.type,'evalreward'),reward,mdp_data,[],zeros(size(pts,1),mdp_data.udims),pts * mdp_data.sensor_basis,[],[],[],[]);
@@ -246,7 +250,7 @@ end
 % it anymore
 % my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
 % my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(N), '_', imgn);
-my_title_pree = strcat('result/temp/', 'sub_', num2str(N), '_', imgn);
+my_title_pree = strcat('result/temp', 'sub_', num2str(N), '_', imgn);
 
 my_title = strcat(my_title_pree, '.jpg');
 my_title_fig = strcat(my_title_pree, '.fig');

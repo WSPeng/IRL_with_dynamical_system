@@ -351,8 +351,9 @@ if gradient_descent
     [x, y] = meshgrid(rho_,sf_);
     if pllot
         plot(x,y,'k*')
+        hold off
     end
-    hold off
+    
 end
 
 end

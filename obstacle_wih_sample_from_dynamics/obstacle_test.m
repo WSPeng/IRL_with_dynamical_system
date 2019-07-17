@@ -5,12 +5,8 @@ function [rho, sf] = obstacle_test(a, s, r, example_optimal, test_file_name, ...
 two_obstacles = 0;
 % 4 algorithm, 5 tests, 8 restarts
 
-algorithms = {'ame','gpirl','maxent','optv'};
+algorithms = {'ame','gpirl'};
 algorithm_params = {struct(),struct(),struct(),struct()};
-names = {'Linear','Nonlinear','MaxEnt','OptV'};
-colors = {[0 0 0.5],[0 0 0],[0.2 0.8 0.2],[0.8 0.2 0.2]};
-order = [1 2 3 4];
-% disp(names);
 fprintf(1,'Starting run %i %i %i\n',a,s,r);
 
 % Set up constants.
@@ -128,7 +124,7 @@ mdp_params{s}.folder_name = folderName;
 if nargin > 8
     mdp_params{s}.patht = patht;
 end
-% Run single test.
+% Run single test.2
 if nargin > 5
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s},...

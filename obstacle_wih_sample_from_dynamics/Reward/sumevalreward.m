@@ -55,6 +55,9 @@ for i=1:length(reward.theta),
     
     % Add up the components.
     r = r + cr*reward.theta(i);
+%     if i == 3
+%         r = cr*reward.theta(i);
+%     end
     if nargout >= 2,
         if iscell(cg),
             if ~deferred,

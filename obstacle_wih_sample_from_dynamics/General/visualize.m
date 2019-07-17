@@ -13,7 +13,8 @@ if render
 else
 %     w = 1800;
     w = 900;
-    h = 900;
+%     h = 900;
+    h = 320;
     figure('Position',[20 50 w h]);
 end
 hold on;

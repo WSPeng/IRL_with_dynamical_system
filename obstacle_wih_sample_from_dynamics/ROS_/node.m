@@ -166,7 +166,7 @@ weight_input = ones(1,1);
     if nargin > 2
         [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName, patht);
     else
-        [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName);
+        [rho, sf] = obstacle_test(2,2,1,1,'sim', states_, weight_input2, folderName);
     end
     
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
