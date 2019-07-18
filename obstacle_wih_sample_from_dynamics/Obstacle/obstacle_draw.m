@@ -177,14 +177,14 @@ if ~isempty(example_samples)
             width_factor = 1;
         end
 %         this three lines are commented for ploting
-%         plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
+        plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
         
         % Plot starting point.
-        %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
+%         plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
         
-%         fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
-%         set(get(get(fig,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
+        set(get(get(fig,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
     end
 end
 

@@ -44,7 +44,7 @@ for f=1:F
     info.f(:,f) = r;
 
 %     %%%
-%     if f == 1
+%     if f == 4
 %         info.f(:,f) = r;
 %     else
 %         info.f(:,f) = zeros(T,1);

@@ -55,7 +55,7 @@ for i=1:length(reward.theta)
     
     % Add up the components.
     r = r + cr*reward.theta(i);
-%     if i == 4
+%     if i == 5
 %         r = cr*reward.theta(i);
 %     end
     if nargout >= 2,
