@@ -63,14 +63,14 @@ class MotionGenerator
     private:
     //===========================================
     // 1 or 2 for obstacle number
-    const int _numObstacle = 1;
+    const int _numObstacle = 2;
 
     // random generate rho and sf at each end of trails
     // const bool _randomInsteadIRL = true;
     bool _randomInsteadIRL = true;
 
     // if use iiwa instead of the lwr
-    const bool _iiwaInsteadLwr = true;
+    const bool _iiwaInsteadLwr = false;
 
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
     const bool _boolSpacenav = 1; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator

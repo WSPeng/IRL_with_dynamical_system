@@ -191,6 +191,7 @@ weight_input = ones(1,1);
     save_ = cell(1,2);
     save_{1} = save_sf_rho;
     save_{2} = save_time_elapsed;
+    save_{3} = states_;
     save('save_.mat', 'save_');
    
     j = j +1;
