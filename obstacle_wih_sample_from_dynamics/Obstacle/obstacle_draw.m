@@ -85,7 +85,7 @@ if strcmp(reward.type,'sum')
     end
 end
 
-path = mdp_params.patht;
+% path = mdp_params.patht;
 
 % Draw the paths.
 if ~isempty(example_samples)
@@ -121,21 +121,13 @@ if ~isempty(example_samples)
                     plot(pts(:,1),pts(:,end),'-','color',color1,'marker','v','markersize',sizem,'linewidth',1.5,...
                         'MarkerFaceColor','m');    
                 case 4
-                    if  path(end-2:end-2) == 'a' || path(end-2:end-2) == 'c'
-                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
-                            'MarkerFaceColor','m');
-                    else
+
                         plot(pts(:,1),pts(:,end),':','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
                         'MarkerFaceColor','y');
-                    end
                 case 5
-                    if path(end-2:end-2) == 'a' || path(end-2:end-2) == 'c'
-                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
-                            'MarkerFaceColor','m');
-                    else     
                         plot(pts(:,1),pts(:,end),':','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
                             'MarkerFaceColor','y');
-                    end
+
                 case 6
                     plot(pts(:,1),pts(:,end),'-','color',color2,'marker','o','markersize',sizem+1,'linewidth',1.5,...
                         'MarkerFaceColor','y'); 
@@ -224,37 +216,16 @@ my_title = strcat(my_title_pre, '.jpg');
 saveas(gcf, my_title)
 % savefig(my_title_fig)
 
-imgn = path(end-2:end-1);
-NNN = path(end-12:end-8);
-switch NNN
-    case '05_01'
-        NN = 1;
-    case '05_02'
-        NN = 2;
-    case '06_01'
-        NN = 3;
-    case '06_02'
-        NN = 4;
-    case '10_01'
-        NN = 5;
-    case '10_02'
-        NN = 6;
-    case '12_01'
-        NN = 7;
-    case '12_02'
-        NN = 8;
-end
-
 
 % enable the next line for figure plot -- but seems like we won't need
 % it anymore
 % my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
 % my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(N), '_', imgn);
-my_title_pree = strcat('result/temp', 'sub_', num2str(N), '_', imgn);
+% my_title_pree = strcat('result/temp', 'sub_', num2str(N), '_', imgn);
 
-my_title = strcat(my_title_pree, '.jpg');
+% my_title = strcat(my_title_pree, '.jpg');
 % my_title_fig = strcat(my_title_pree, '.fig');
-saveas(gcf, my_title)
+% saveas(gcf, my_title)
 % savefig(my_title_fig)
 
 % Finished.

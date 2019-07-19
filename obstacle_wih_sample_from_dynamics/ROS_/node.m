@@ -52,7 +52,7 @@ j = 1;
 % need to inverse the x 
 weight_input = ones(1,1);
 
-% while 1
+while 1
     if nargin < 1
         scandata = receive(sub);
         disp('got trajctory')
@@ -196,7 +196,7 @@ weight_input = ones(1,1);
    
     j = j +1;
     if nargin >= 1
-%         pause(100000)
+    	pause(100000)
     end
-% end
+end
 
