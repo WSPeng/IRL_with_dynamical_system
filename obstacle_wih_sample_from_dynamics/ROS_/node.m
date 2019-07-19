@@ -164,7 +164,7 @@ weight_input = ones(1,1);
     end
     
     if nargin > 2
-        [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input2, folderName, patht);
+        [rho, sf] = obstacle_test(1,1,1,1,'sim', states_, weight_input2, folderName, patht);
     else
         [rho, sf] = obstacle_test(2,2,1,1,'sim', states_, weight_input2, folderName);
     end

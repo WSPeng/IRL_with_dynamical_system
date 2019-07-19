@@ -122,7 +122,7 @@ if gradient_descent
     initu = 0;
     rbest = -Inf;
     tolGrad = 1e-3;
-    maxiter = 30; %30 or 32
+    maxiter = 10; %30 or 32
     alpha = 0.1/3/2; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
@@ -188,6 +188,7 @@ if gradient_descent
 
     if mdp_data.num_obs ~= 3 % TODO
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
+            disp('GD')
             u = [ones(T,1)*rho; ones(T,1)*sf];
 
     %         r = -trajectoryreward(u, s, mdp_data, mdp, reward);

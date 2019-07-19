@@ -113,8 +113,11 @@ test_metrics = 0;
 % here make the the true reward to be plotted...
 % b_reward is what changed inside the resanpleexample function
 
-disp(irl_result.reward.features{1,2}.gp.inv_widths)
-
+if ~strcmp(algorithm, 'ame')
+    disp(irl_result.reward.features{1,2}.gp.inv_widths)
+else
+    disp(irl_result.reward.theta')
+end
 irl_result.reward = b_reward;
 %%%%%%%%%%%
 

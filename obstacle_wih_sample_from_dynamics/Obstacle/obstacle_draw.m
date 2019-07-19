@@ -253,9 +253,9 @@ end
 my_title_pree = strcat('result/temp', 'sub_', num2str(N), '_', imgn);
 
 my_title = strcat(my_title_pree, '.jpg');
-my_title_fig = strcat(my_title_pree, '.fig');
+% my_title_fig = strcat(my_title_pree, '.fig');
 saveas(gcf, my_title)
-savefig(my_title_fig)
+% savefig(my_title_fig)
 
 % Finished.
 hold off;
