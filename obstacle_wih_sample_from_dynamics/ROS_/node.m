@@ -141,6 +141,7 @@ weight_input = ones(1,1);
         index = linspace(lll, T-lll, 50);
         index = floor(index);
         states_tbl = states_r(index, :);
+%         states_tbl = flip(states_tbl);
         % use the trajectory for learning
         states_{j} = states_tbl;
         %if length(states_) > 5

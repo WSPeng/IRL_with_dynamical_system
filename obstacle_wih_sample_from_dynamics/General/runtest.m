@@ -33,9 +33,11 @@ if nargin > 5
         
         % Filter the trajectory by horizontal coordinate
         threshold_h = 0.7;
+%         threshold_h = 0.9;
         index1 = example_human{i}(:,1) < max(example_human{i}(:,1))*threshold_h;
         % Or too close to the obstacle 
-        threshold_v = 4.8;
+%         threshold_v = 4.8;
+        threshold_v = 1.8;
         index2 = example_human{i}(:,2) > threshold_v;
         nn = ceil(length(example_human{i})/2);
         index2 = index2 | logical([ones(nn,1); 
@@ -45,6 +47,7 @@ if nargin > 5
         states_reverse{i} = example_human{i}(index_, :);
     end
     
+    % disabled for 2 obs trying
     example_human = states_reverse;
      
     % remove the demonstration more than 5 

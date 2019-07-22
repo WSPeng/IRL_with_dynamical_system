@@ -13,8 +13,8 @@ else
     VMARGIN = 1.0;
     HMARGIN = 1.0;
 end
-margin_wsp_low = 3.2;
-margin_wsp_high = 8.5;
+margin_wsp_low = 2.2;
+margin_wsp_high = 7.5;
 % axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  -VMARGIN  mdp_data.bounds(2)+VMARGIN]);
 axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  margin_wsp_low  margin_wsp_high]);
 if paper_quality
@@ -55,7 +55,7 @@ if max(max(C))~=0
 	fig = image(x, y, C);
 end
 
-ylim([3.2 8.5])
+ylim([margin_wsp_low margin_wsp_high])
 
 % Draw feature positions. % seems like only rbf rectangular
 obstacle_drawfeature(reward,0.0,0.0,1.0,[],[]);
@@ -177,14 +177,14 @@ if ~isempty(example_samples)
             width_factor = 1;
         end
 %         this three lines are commented for ploting
-        plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
+%         plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
         
         % Plot starting point.
 %         plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
         
-        fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
-        set(get(get(fig,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+%         fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
+%         set(get(get(fig,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
     end
 end
 
@@ -199,7 +199,6 @@ end
 % it anymore
 % N = load([path, 'weight_input.mat']);
 % N = N.weight_input;
-
 
 N = length(test_samples);
 %%

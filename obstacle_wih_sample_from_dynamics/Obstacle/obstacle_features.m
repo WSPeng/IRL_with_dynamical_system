@@ -142,15 +142,17 @@ elseif strcmp(mdp_params.feature_type,'obs')&& mdp_params.fixed_pattern == 3
     % obstacle feature
     features_pt = cell(1,1);
     % linear
-    features_pt{1} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-                          'width',1.0,'r',2.0);
-    features_pt{2} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-                          'width',0.5,'r',2.0);
-    features_pt{3} = struct('type', 'cartebf', 'pos', [mdp_data.objects(2).pos(:,1), mdp_data.objects(2).pos(:,end)],...
-                            'width', 0.1, 'r', 1.0, 'E', [0.65,0;0,1]);
-    features_pt{4} = struct('type', 'cartebf', 'pos', [mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)], ...
-                            'width', 0.8, 'r', 1.0, 'E', [0.5,0;0,1]);
+    features_pt{1} = struct('type','cartrbf','pos',[5, 4], 'width',1.0,'r',2.0);
+    features_pt{2} = struct('type','cartrbf','pos',[5, 4], 'width',0.5,'r',2.0);
+    features_pt{3} = struct('type', 'cartebf', 'pos', [5, 4], 'width', 0.1, 'r', 1.0, 'E', [0.65,0;0,1]);
+    features_pt{4} = struct('type', 'cartebf', 'pos', [5, 4], 'width', 0.8, 'r', 1.0, 'E', [0.5,0;0,1]);
     % --
+    
+    % 2 obstacle
+%     features_pt{1} = struct('type','cartrbf','pos',[3, 4], 'width',1.0,'r',2.0);
+%     features_pt{2} = struct('type','cartrbf','pos',[3, 4], 'width',0.5,'r',2.0);
+%     features_pt{3} = struct('type','cartrbf','pos',[8, 4.5], 'width',1.5,'r',2.0);
+%     features_pt{4} = struct('type','cartrbf','pos',[8, 4.5], 'width',0.8,'r',2.0);
     
     % nonlinear
 
