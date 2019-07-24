@@ -84,7 +84,7 @@ class MotionGenerator
     const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm [random in the large range of rho and sf]
-    const bool _randomWholeRange = false;
+    const bool _randomWholeRange = true;
 
     //===========================================
 

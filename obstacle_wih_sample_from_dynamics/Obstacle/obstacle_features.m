@@ -157,8 +157,8 @@ elseif strcmp(mdp_params.feature_type,'obs')&& mdp_params.fixed_pattern == 3
 %     features_pt{6} = struct('type', 'cartebf', 'pos', [mdp_data.objects(3).pos(:,1), mdp_data.objects(3).pos(:,end)],...
 %                             'width', 2.0, 'r', 1.0, 'E', [0.5,0;0,1]);                    
 %       width = linspace(0.3, 2.0, 16);
-    width = linspace(0.1, 1.5, 10); 
-%     width = [1, 0.5]; 
+%     width = linspace(0.1, 1.5, 10); 
+    width = [1, 0.5]; 
 %    axis1 = [0.5, 0.8, 1];
     axis1 = [0.6, 0.8, 1.0]; 
 %     axis1 = [0.6, 1.0]; 

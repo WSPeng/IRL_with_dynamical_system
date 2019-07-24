@@ -73,7 +73,8 @@ downward end effector
 Four points  
 `$rosrun motion_example moveToDesiredJoints 50 34.7 1.73 -92.2 -1.94 52.8 42.2`    
 `$rosrun motion_example moveToDesiredJoints 44.5 34.7 1.73 -92.2 -1.94 52.8 42.2`    
-`$rosrun motion_example moveToDesiredJoints 55 53.8 5.3 -57.8 -3.1 69.6 40`   
+`$rosrun motion_example moveToDesiredJoints 55 53.8 5.3 -57.8 -3.1 69.6 40`  
+`$rosrun motion_example moveToDesiredJoints 45.6 39.2 5.38 -88.98 0.986 52.8167 45`  
 
 damping eigen - 90/1000  
 damping eigen - 90/500  
