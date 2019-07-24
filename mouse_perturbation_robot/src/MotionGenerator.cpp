@@ -579,12 +579,12 @@ void MotionGenerator::mouseControlledMotion()
 								if (_measureAngle <100 || _measureAngle >80)
 									_targetAngle = -20.0 + ANGLE_OFFSET;
 							}
-							
 						}
 						// std::cout << "==current target " << _currentTarget << " temporary " << temporaryTarget <<  " previous " << _previousTarget << std::endl;
 
 						if (_obstacleCondition == ObstacleCondition::AB)
 						{
+							_indexEightCond2 = 0;
 							if (_gripperObject == 0)
 								_indexEightCond = 0;
 							else if (_gripperObject == 1)
@@ -592,6 +592,7 @@ void MotionGenerator::mouseControlledMotion()
 						}
 						else if (_obstacleCondition == ObstacleCondition::CD)
 						{
+							_indexEightCond2 = 0;
 							if (_gripperObject == 0)
 								_indexEightCond = 2;
 							else if (_gripperObject == 1)
@@ -600,24 +601,58 @@ void MotionGenerator::mouseControlledMotion()
 						else if (_obstacleCondition == ObstacleCondition::AC)
 						{
 							if (_gripperObject == 0)
+							{
 								_indexEightCond = 4;
+								if (temporaryTarget == Target::C)
+									_indexEightCond2 = 8;
+							}
 							else if (_gripperObject == 1)
+							{
 								_indexEightCond = 5;
+								if (temporaryTarget == Target::C)
+									_indexEightCond2 = 9;
+							}
 						}
 						else if (_obstacleCondition == ObstacleCondition::BD)
 						{
 							if (_gripperObject == 0)
+							{
 								_indexEightCond = 6;
+								if (temporaryTarget == Target::D)
+									_indexEightCond2 = 10;
+							}	
 							else if (_gripperObject == 1)
+							{
 								_indexEightCond = 7;
+								if (temporaryTarget == Target::D)
+									_indexEightCond2 = 11;
+							}	
 						}
 						_ss8 = strIndicator[_indexEightCond];
+						if (_indexEightCond2 == 8)
+							_ss8 = strIndicator[_indexEightCond2];
+						else if(_indexEightCond2 == 9)
+							_ss8 = strIndicator[_indexEightCond2];
+						else if (_indexEightCond2 == 10)
+							_ss8 = strIndicator[_indexEightCond2];
+						else if(_indexEightCond2 == 11)
+							_ss8 = strIndicator[_indexEightCond2];
 
 						// the limit 5 or 3
-						if (_amoutOfTrailEightCond[_indexEightCond] >= NUM_LIMIT)
+						// if (_amoutOfTrailEightCond[_indexEightCond] >= NUM_LIMIT)
+						// 	_randomInsteadIRL = false;
+						// else
+						// 	_randomInsteadIRL = true;
+
+						bool randomInsteadIRLbool = false;
+						for (int indxxx=0 ; indxxx<8 ; ++indxxx)
+						{
+							if (_amoutOfTrailEightCond[indxxx] < NUM_LIMIT)
+								randomInsteadIRLbool = true;
+						}
+
+						if (!randomInsteadIRLbool && _amoutOfTrailEightCond[_indexEightCond] >= NUM_LIMIT)
 							_randomInsteadIRL = false;
-						else
-							_randomInsteadIRL = true;
 
 						//if((_currentTarget != _previousTarget))
 						if((_currentTarget != temporaryTarget)) // only enter once.. 
@@ -663,8 +698,8 @@ void MotionGenerator::mouseControlledMotion()
 									// _obs._safetyFactor = 1.0f;
 									// _obs._rho = 1.0f;
 
-									// float rhoo[11] = {1, 2, 1, 8, 8, 6, 6, 4, 4, 2, 2};
-									// float sff[11] = {1, 1.1, 1, 1.6, 1.6, 1.4, 1.4, 1.2, 1.2, 1.1, 1.1};
+									// float rhoo[8] = {1, 1, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+									// float sff[8] =  {1, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6};
 
 									// _obs._safetyFactor = sff[temp_counter_test];
 									// _obs._rho = rhoo[temp_counter_test];
@@ -674,6 +709,8 @@ void MotionGenerator::mouseControlledMotion()
 								{
 									// _obs._safetyFactor = 1.0f + 0.1f*(float)std::rand()/RAND_MAX; // 1.0 to 1.1 with center at 1.05
 									// _obs._rho = 3.0f + 2*(float)std::rand()/RAND_MAX; // 3 to 5 with center at 4
+									_obs._safetyFactor = 1.4f;
+									_obs._rho = 4.0f;
 								}
 							}
 
@@ -769,17 +806,19 @@ void MotionGenerator::mouseControlledMotion()
 							// _obs._x0(2) -= 0.04f;
 							// _obs._x0(1) -= 0.015f; 
 							// _obs._x0(0) -= 0.015f; 	
-							_obs._a << 0.1f, 0.1f, 0.08f;
+							_obs._a << 0.08f, 0.08f, 0.08f;
 							_obs._x0(2) -= 0.015f; //0.05f move the obstacle lower, 0.1
 							_obs._x0(1) -= 0.02f; //0.0
 							_obs._x0(0) -= 0.02f; //-0.1 +0.001										
 						}
 						else if (_obstacleCondition == ObstacleCondition::BD)
 						{
-							_obs._a << 0.1f, 0.1f, 0.08f;
+							_obs._a << 0.08f, 0.08f, 0.08f;
 							_obs._x0(2) -= 0.015f; //0.05f move the obstacle lower, 0.1
 							_obs._x0(1) += 0.02f; //0.0
 							_obs._x0(0) -= 0.02f; //-0.1 +0.001
+							// _obs._x0(1) += 0.018f; //0.0
+							// _obs._x0(0) -= 0.022f; //-0.1 +0.001
 						}
 						else if (_obstacleCondition == ObstacleCondition::CD)
 						{

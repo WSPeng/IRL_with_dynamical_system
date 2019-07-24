@@ -78,12 +78,13 @@ elseif (contains(str_indicator, 'CD'))
     
 elseif (contains(str_indicator, 'AC'))
 %     obs{1}.a = [1.4; 1.36];
-    obs{1}.a = [1.44; 1.4];
-    obs{1}.x0 = [5.2; 3.4];
+    obs{1}.a = [1.44; 1.65];
+    obs{1}.x0 = [5.2; 3.8];
 elseif (contains(str_indicator, 'BD'))
 %     obs{1}.a = [1.3; 1.3]; %make x smaller
-    obs{1}.a = [1.44; 1.4];
-    obs{1}.x0 = [5.2; 3.4];
+%     obs{1}.a = [1.44; 1.48];
+    obs{1}.a = [1.44; 1.65];
+    obs{1}.x0 = [5.2; 3.8];
 end
 
 obs{1}.tailEffect = false; % the tail effect is turned off..

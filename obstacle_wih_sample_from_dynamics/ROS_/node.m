@@ -44,7 +44,8 @@ weight_input_collect = cell(8,1);
 cc = 0; % the counter of counter 
 
 tic
-
+iii = 1;
+nnn = 1;
 while 1
 if nargin < 1
     scandata = receive(sub);
@@ -117,10 +118,24 @@ if nargin < 1
             state(i,2) = scandata.Poses(i).Position.Y;
             state(i,3) = scandata.Poses(i).Position.Z;
         end
-
-        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,2) - state(1,2)).^2).^(1/2) ;
-        states(:,2) = state(:,3);
-
+        
+        if (contains(str_indicator, '1'))
+            iii = 0;
+        else
+            iii = 1;
+        end
+        
+%         figure; plot3(state(:,1),state(:,2),state(:,3))
+        
+        st = zeros(T,3);
+        
+        for i = 1:T        
+            st(i,:) = rot3(state(i,:), iii, 'ac');
+        end
+%         figure; plot3(st(:,1),st(:,2),st(:,3))
+        states(:,1) = st(:,2);
+        states(:,2) = st(:,3);
+        
         if (~contains(str_indicator, 'obj')) % no object grabbed
             disp('--- AC ---')
             cc = 5;             
@@ -136,9 +151,23 @@ if nargin < 1
             state(i,3) = scandata.Poses(i).Position.Z;
         end
         
-        states(:,1) = ((state(:,1) - state(1,1)).^2 + (state(:,2) - state(1,2)).^2).^(1/2) ;
-        states(:,2) = state(:,3);
+        % project
+%         surface = [1 -1 0.1 0];
+        st = zeros(T,3);
+%         iii = ~iii;
+        if (contains(str_indicator, '1'))
+            iii = 0;
+        else
+            iii = 1;
+        end
+        
+        for i = 1:T        
+            st(i,:) = rot3(state(i,:), iii, 'BD');
+        end
 
+        states(:,1) = st(:,1);
+        states(:,2) = st(:,3);
+        
 %             angle = 45/180*pi;
 %             rotation_matrix = [cos(angle), - sin(angle); sin(angle), cos(angle)];
 %             states = states*rotation_matrix;
@@ -151,7 +180,6 @@ if nargin < 1
             cc = 8;
         end
     end
-
 
     states_r = rescale(states, T, cc);
     states_tbl = subsample(states_r, T);
@@ -202,9 +230,27 @@ ss_params = struct( 'weight',          w,...
                      'folderName',     folderName,...
                      'weight_legend',  w_legend);
 
-if (TRAIN_EVERY_TIME ||  length(ss) > str_number_of_demo_until_test )
+aaa = 10;
+for i = 1:8
+     aa = size(states_collect{i});
+     fprintf('%4.0f ', aa(2))
+     if aaa > aa(2)
+         aaa = aa(2);
+     end
+end
+
+bool_ = false;
+if (aaa >= str_number_of_demo_until_test)
+    bool_ = true;
+end
+
+% if (TRAIN_EVERY_TIME ||  length(ss) > str_number_of_demo_until_test )
+% if (TRAIN_EVERY_TIME ||  aaa > str_number_of_demo_until_test )
+if (TRAIN_EVERY_TIME ||  (bool_ && length(ss) > str_number_of_demo_until_test)  )
     % [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
     [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, ss_params);
+    fprintf('testing num %4.2f \n', nnn)
+    nnn = nnn + 1;
     %     [rho, sf] = obstacle_test(2,1,1,1,'sim', states_, weight_input);
     % First parameter: 1 use ame, 2 use gpirl. [Tuning reminder]
     % Should be fixed to be 2.. ame performace is very poor

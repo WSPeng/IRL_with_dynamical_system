@@ -48,7 +48,7 @@
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
-#define NUM_LIMIT 5
+#define NUM_LIMIT 3                      // limit 
 #define PI 3.14159265
 #define ANGLE_OFFSET -45
 
@@ -84,7 +84,7 @@ class MotionGenerator
     const bool  _useArduino = true; 
 
     // enable it when "evaluate" the algorithm [random in the large range of rho and sf]
-    const bool _randomWholeRange = true;
+    const bool _randomWholeRange = false;
 
     //===========================================
 
@@ -100,7 +100,7 @@ class MotionGenerator
 
     enum ObstacleCondition {AB = 0, AC = 1, BD = 2, CD = 3};
 
-    std::string strIndicator[8] = {"AB", "ABobj", "CD", "CDobj", "AC", "ACobj", "BD", "BDobj"};
+    std::string strIndicator[12] = {"AB", "ABobj", "CD", "CDobj", "AC", "ACobj", "BD", "BDobj", "AC1", "ACobj1", "BD1", "BDobj1"};
 
     // ROS variables
     ros::NodeHandle _n;
@@ -280,6 +280,7 @@ class MotionGenerator
 
     double _updatedRhoEta [2][8];
     int _indexEightCond;
+    int _indexEightCond2;
     int _amoutOfTrailEightCond [8];
 
   public:
