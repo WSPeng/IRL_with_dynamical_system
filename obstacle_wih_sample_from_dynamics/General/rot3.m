@@ -18,8 +18,6 @@ else
     theta = -40/180*pi;
 end
 
-
-
 if flag == 'ac'
     R = makehgtform('yrotate', theta);    
 else
