@@ -1,7 +1,7 @@
 function node(states, weight_in)
 
-% TRAIN_EVERY_TIME = false;
-TRAIN_EVERY_TIME = true;
+TRAIN_EVERY_TIME = false;
+% TRAIN_EVERY_TIME = true;
 
 % folderName = 'result/eight_subject/Jun_6_02/testd2/';
 % folderName = 'result/eight_subject/Jun_12_02/testd2/';
@@ -151,7 +151,7 @@ if nargin < 1
             state(i,2) = scandata.Poses(i).Position.Y;
             state(i,3) = scandata.Poses(i).Position.Z;
         end
-        figure;plot3(state(:,1),state(:,2),state(:,3))
+%         figure;plot3(state(:,1),state(:,2),state(:,3))
         st = zeros(T,3);
 %         iii = ~iii;
         if (contains(str_indicator, '1'))
@@ -163,7 +163,7 @@ if nargin < 1
         for i = 1:T        
             st(i,:) = rot3(state(i,:), iii, 'BD');
         end
-figure;plot3(st(:,1),st(:,2),st(:,3))
+% figure;plot3(st(:,1),st(:,2),st(:,3))
 %         states(:,1) = st(:,1);
         states(:,1) = st(:,2);
         states(:,2) = st(:,3);
