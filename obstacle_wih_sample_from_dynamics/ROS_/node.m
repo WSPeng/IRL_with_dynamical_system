@@ -1,7 +1,7 @@
-function node(states, weight_in)
+function node(states, ssss, weight_in)
 
-TRAIN_EVERY_TIME = false;
-% TRAIN_EVERY_TIME = true;
+% TRAIN_EVERY_TIME = false;
+TRAIN_EVERY_TIME = true;
 
 % folderName = 'result/eight_subject/Jun_6_02/testd2/';
 % folderName = 'result/eight_subject/Jun_12_02/testd2/';
@@ -204,11 +204,12 @@ else
     T = length(states);
     states_ = states;
     w = ones(T,1);
-    if nargin > 1
+    if nargin > 2
         w = weight_in;
     end
     str_number_of_demo_until_test = 10;
-    str_indicator = 'CD';
+    str_indicator = 'ABobj';
+    str_indicator = ssss;
     ss = states_;
 end
 
@@ -273,16 +274,17 @@ end
 elapsedTime = toc;
 fprintf('elapsed time : %4.2f \n', elapsedTime)
 
-save_time_elapsed(1,j) = elapsedTime;
-save_ = cell(1,2);
-save_{1} = save_sf_rho;
-save_{2} = save_time_elapsed;
-save('save_.mat', 'save_');
-
+if nargin < 1
+    save_time_elapsed(1,j) = elapsedTime;
+    save_ = cell(1,2);
+    save_{1} = save_sf_rho;
+    save_{2} = save_time_elapsed;
+    save('save_.mat', 'save_');
+end
 j = j +1;
 
 if nargin >= 1
-    pause(1000)
+     return
 end
 
 end

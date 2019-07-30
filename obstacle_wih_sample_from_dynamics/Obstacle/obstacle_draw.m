@@ -13,6 +13,7 @@ else
     VMARGIN = 1.0;
     HMARGIN = 1.0;
 end
+
 % axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  -VMARGIN  mdp_data.bounds(2)+VMARGIN]);
 axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  3.2  8.5]);
 if paper_quality
@@ -188,7 +189,7 @@ N = ss_params.weight_legend;
 
 legendCell = cellstr(num2str(N, 'Weight=%-g'));
 legendCell = [legendCell; cellstr('IRL generated')];
-legend(legendCell,'FontSize',14)
+legend(legendCell,'FontSize',22)
 
 x0 = 0;
 y0 = 0;
@@ -198,38 +199,38 @@ set(gcf,'position',[x0,y0,width,height])
 set(gca,'xtick',[])
 
 str_indicator = ss_params.indicator;
-if (contains(ss_params.indicator, 'AB')) 
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'AB without object')
-    else
-        title(gca, 'AB with object')
-    end
-    movegui('northeast')
-elseif (contains(ss_params.indicator, 'BD')) 
-    
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'BD without object')
-    else
-        title(gca, 'BD with object')
-    end
-    movegui('northwest')
-elseif (contains(ss_params.indicator, 'CD')) 
-    
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'CD without object')
-    else
-        title(gca, 'CD with object')
-    end
-    movegui('southeast')
-elseif (contains(ss_params.indicator, 'AC')) 
-    
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'AC without object')
-    else
-        title(gca, 'AC with object')
-    end
-    movegui('southwest')
-end
+% if (contains(ss_params.indicator, 'AB')) 
+%     if (~contains(str_indicator, 'obj'))
+%         title(gca, 'AB without object')
+%     else
+%         title(gca, 'AB with object')
+%     end
+%     movegui('northeast')
+% elseif (contains(ss_params.indicator, 'BD')) 
+%     
+%     if (~contains(str_indicator, 'obj'))
+%         title(gca, 'BD without object')
+%     else
+%         title(gca, 'BD with object')
+%     end
+%     movegui('northwest')
+% elseif (contains(ss_params.indicator, 'CD')) 
+%     
+%     if (~contains(str_indicator, 'obj'))
+%         title(gca, 'CD without object')
+%     else
+%         title(gca, 'CD with object')
+%     end
+%     movegui('southeast')
+% elseif (contains(ss_params.indicator, 'AC')) 
+%     
+%     if (~contains(str_indicator, 'obj'))
+%         title(gca, 'AC without object')
+%     else
+%         title(gca, 'AC with object')
+%     end
+%     movegui('southwest')
+% end
 
 drawnow;
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
@@ -239,9 +240,9 @@ my_title_pree = strcat(ss_params.folderName, str_indicator);
 my_title_pre = strcat(my_title_pree, num2str(length(test_samples)));
 my_title = strcat(my_title_pre, '.jpg');
 
-% my_title_fig = strcat(my_title_pre, '.fig');
+my_title_fig = strcat(my_title_pre, '.fig');
 saveas(gcf, my_title)
-% savefig(my_title_fig)
+savefig(my_title_fig)
 
 % Finished.
 hold off;
